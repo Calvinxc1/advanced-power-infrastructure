@@ -1,0 +1,31 @@
+id: task_map
+default_load:
+  - AGENTS.md
+  - .governance/policies/universal.yaml
+routes:
+  file_or_command_work:
+    - .governance/policies/execution.yaml
+    - .governance/policies/safety.yaml
+  factorio_mod_work:
+    - .governance/policies/execution.yaml
+    - .governance/policies/safety.yaml
+    - .governance/policies/factorio-mod.yaml
+  release_work:
+    - .governance/policies/release.yaml
+    - .governance/policies/changelog.yaml
+  changelog_work:
+    - .governance/policies/changelog.yaml
+  gitflow_work:
+    - .governance/policies/gitflow.yaml
+  code_review:
+    - .governance/policies/code-review.yaml
+  acceptance_discussion:
+    - .governance/policies/ai-acceptance.yaml
+  risk_validation_discussion:
+    - .governance/policies/risk-validation.yaml
+  enforcement_or_override_discussion:
+    - .governance/policies/enforcement.yaml
+  override_execution:
+    - .governance/processes/override-governance.yaml
+    - .governance/overrides/policy-overrides-spec.yaml
+    - .governance/overrides/policy-overrides.yaml

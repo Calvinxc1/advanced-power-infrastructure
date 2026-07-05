@@ -1,0 +1,9 @@
+id: code_review
+status: active
+summary: Review priorities for this mod.
+rules:
+  - Prioritize Factorio load failures, nil prototype access, dependency drift, unlock regressions, migration risks, and recipe or technology inconsistencies.
+  - Check whether changes remain compatible with the declared dependency versions in `src/info.json`.
+  - Treat active Factorio 2.0 compatibility as relevant context when evaluating changed behavior.
+  - Call out missing validation separately from defects.
+  - Provide file and line references for findings when possible.

@@ -1,0 +1,9 @@
+id: safety
+status: active
+summary: Safety boundaries for repository changes.
+rules:
+  - Never use `git reset --hard`, `git checkout --`, or equivalent destructive cleanup unless explicitly requested.
+  - Do not overwrite local saves, Factorio user data, or installed mods outside this repository.
+  - Do not change dependency lower bounds without checking compatibility intent.
+  - Avoid global search-and-replace across prototype files unless the target pattern is unambiguous.
+  - Stop and ask if unexpected unrelated changes appear during a task.

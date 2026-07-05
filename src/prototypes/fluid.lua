@@ -1,0 +1,6 @@
+require("prototypes.fluid.vanilla-patches")
+require("prototypes.fluid.production-machine-patches")
+require("prototypes.fluid.entities")
+require("prototypes.fluid.items")
+require("prototypes.fluid.recipes")
+require("prototypes.fluid.technologies")

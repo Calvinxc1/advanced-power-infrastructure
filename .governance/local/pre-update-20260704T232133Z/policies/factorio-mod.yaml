@@ -1,0 +1,16 @@
+id: factorio_mod
+status: active
+summary: Factorio-specific contribution and validation policy.
+rules:
+  - Keep mod metadata in `src/info.json` aligned with Factorio 2.0 and the intended Advanced Power Infrastructure scope.
+  - "Put data-stage code in the appropriate Factorio lifecycle file: `data.lua`, `data-updates.lua`, prototype modules, or `data-final-fixes.lua`."
+  - "Prefer `data:extend` for new prototypes and narrow table mutation for adjustments to dependency prototypes."
+  - Guard cross-mod prototype mutations when the target may not exist.
+  - Preserve recipe, item, entity, technology, and migration names unless a migration strategy is intentionally added.
+  - Keep gameplay changes explainable in terms of power progression, recipe balance, technology unlocks, compatibility, or Factorio 2.0 porting needs.
+  - Validate syntax with Lua tooling when available and validate load behavior in Factorio when a change touches prototypes.
+acceptance_checks:
+  - "`src/info.json` remains valid JSON."
+  - Lua files parse or are reviewed for Factorio data-stage syntax compatibility.
+  - Prototype mutations do not assume optional data exists without a guard.
+  - New gameplay changes are represented in changelog or release notes when user-visible.

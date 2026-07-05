@@ -1,4 +1,63 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.3
+Date: 2026.06.11
+  Bugfix
+    - Added the Space Age dependency required by the Space Age science pack progression.
+    - Fixed upgraded steam engine and steam turbine health values.
+    - Completed Power Overload huge electric pole MK2-MK4 prototype registration and localization.
+    - Adjusted Power Overload huge electric pole wire reach progression to 40, 48, 56, and 64.
+    - Hardened primary steam turbine recipe migration handling.
+    - Fixed medium and big electric pole technology descriptions.
+    - Forced electric distribution technology display names and custom pole branch visibility.
+  Changes
+    - Split electric pole upgrade progression into local distribution and long-range transmission branches.
+    - Added custom technology icons for the medium and big electric pole upgrade tracks.
+    - Renamed electric pole branch technologies around local distribution and distance transmission.
+    - Renamed the small pole MK2 technology to Improved electric poles.
+    - Renamed custom pole branch technology prototype IDs to locale-friendly semantic names.
+    - Added custom technology icons for the substation and huge electric pole upgrade tracks.
+    - Removed distance power transmission 2 as a prerequisite for improved distance power transmission 1.
+    - Retuned custom technology icons toward the stock Factorio technology style.
+    - Made custom pole branch technology icon backgrounds transparent.
+    - Aligned substation upgrade science costs with their one-tech-ahead medium pole gates.
+    - Reduced upgraded substation wire and supply range growth to smaller 2-tile coverage steps.
+    - Added first-pass iron and steel fluid infrastructure progression for pipeline extent and pump speed.
+    - Trimmed iron and steel pipe-to-ground underground reach for the new fluid progression.
+    - Split steel fluid infrastructure into separate pipe and pump technology tracks with custom icons.
+    - Added a subtle steel-blue icon tint to steel fluid infrastructure items.
+    - Simplified steel fluid research icons around the unlocked infrastructure items.
+    - Gated steel boiler and steam-engine upgrades behind the matching steel pipe and pump infrastructure tracks.
+    - Applied the steel-blue sheen to Tier 2 boiler icons and entity graphics.
+    - Made Power Overload a required dependency.
+    - Consolidated steam engines and steam turbines back to one item per tier.
+    - Renamed the base steam engine to Iron Steam Engine and MK2 to Steel Steam Engine.
+    - Applied the steel-blue sheen to Steel Steam Engine icons and entity graphics while reverting other steam engines and turbines to base graphics.
+    - Simplified steel fluid infrastructure technology icons to one large visual instance per unlocked item.
+    - Renamed steel boiler and steel steam engine backend prototype IDs for material-tier consistency.
+    - Added the repo-local `aer_` custom prototype ID policy and migrated custom prototype IDs to that namespace.
+    - Enlarged steel fluid infrastructure technology icons and aligned their steel-blue sheen with the unlocked item icons.
+    - Renamed the first boiler and steam engine upgrade technologies to Steel Boilers and Steel Steam Engines with steel-tier research icons.
+    - Renamed the steel boiler and steel steam engine technology prototype IDs to match material-tier naming.
+    - Reorganized prototype definitions into system folders and split fluid infrastructure definitions by prototype responsibility.
+    - Regenerated steel-tier technology icons from base item icons with the same steel-blue overlay used by in-game item icons.
+    - Added rubber-lined fluid infrastructure, boilers, and steam engines as a blue-science stepping-stone tier using plastic and lubricant.
+    - Adjusted steel pipe-to-ground crafting to consume a full underground pair for a full upgraded pair.
+    - Removed duplicated pumping speed text from custom pump and offshore pump descriptions.
+    - Retuned steel and rubber-lined fluid infrastructure research costs and moved steel boiler and steam-engine upgrades back out of chemical science.
+    - Gated steel boiler and steam-engine upgrades behind flammables and raised their research costs.
+    - Moved rubber-lined boiler and steam-engine upgrades into production science while keeping rubber-lined fluid infrastructure in chemical science.
+    - Added advanced circuits to the rubber-lined steam engine recipe.
+    - Added low-pressure steel pipe and pump infrastructure for space platforms, branching from steel fluid infrastructure.
+    - Added heat-resistant pipe and pump infrastructure for Vulcanus, unlocked by calcite processing.
+    - Added tungsten fluid piping and pumping tracks for Vulcanus with steel-tier pipe and pump stats.
+    - Added low-pressure space-platform, reinforced, foundation, and high-pressure foundation fluid infrastructure tiers.
+    - Added fluid infrastructure benchmark documentation.
+    - Added tiered solar panels and accumulators with late-game Fulgora and Aquilo progression.
+    - Added the power footprint benchmark covering solar, steam, nuclear, and fusion power lines.
+    - Expanded nuclear progression with named reactor, heat exchanger, heat pipe, and steam turbine upgrade lines.
+    - Added Promethium fusion reactor and generator upgrades as separate late-game technology tracks.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.0.2
 Date: 2025.04.17
   Bugfix

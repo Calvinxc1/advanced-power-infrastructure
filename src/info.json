@@ -1,10 +1,15 @@
 {
-  "name": "Advanced_Electric",
-  "version": "0.0.2",
+  "name": "advanced-power-infrastructure",
+  "version": "0.0.3",
   "factorio_version": "2.0",
-  "title": "Advanced Electric - Remade",
+  "title": "Advanced Power Infrastructure",
   "author": "Jason M. Cherry",
   "contact": "",
-  "description": "Remake of dwinks original Advanced Electric mod - Adds additional ranks of boilers, steam engines, steam turbines, power poles, nuclear reactors, and adds primary load versions of steam engines and turbines.",
-  "dependencies": ["base >= 2.0.0"]
+  "description": "Adds expanded power infrastructure progression for boilers, steam engines, steam turbines, power poles, nuclear reactors, fusion power, solar power, accumulators, and related power systems.",
+  "dependencies": [
+    "base >= 2.0.0",
+    "space-age >= 2.0.0",
+    "PowerOverload >= 1.6.0",
+    "? RampantArsenalFork"
+  ]
 }

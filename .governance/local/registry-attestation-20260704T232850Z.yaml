@@ -1,0 +1,23 @@
+type: agent_registry_attestation
+canonical_agent_name: Advanced Power Infrastructure Factorio Modding Agent
+previous_canonical_agent_name: Coding Agent
+agent_kind: coding_agent
+active_governance_branch: coding-agent
+source_repository: gitea.infra.newedenhomestead.net:ai-projects/ai-governance.git
+source_commit: e7312d8d33db228f89ce62af66f32b8e9b8ec7f5
+previous_active_canon_version: coding-agent/1.0.0
+current_active_canon_version: coding-agent/1.0.0
+previous_generalized_canon_version: trunk/2.7.0
+current_generalized_canon_version: trunk/2.7.0
+self_stamp_path: .governance/local/version-stamp.yaml
+self_stamp_updated: 2026-07-04T23:28:50Z
+registry_loop_transport: gitea_issue
+registry_loop_result: submitted_ai-projects_ai-governance_issue_32
+registry_loop_target: https://gitea.infra.newedenhomestead.net/ai-projects/ai-governance/issues/32
+updated_at: 2026-07-04T23:28:50Z
+result: local_canonical_agent_name_updated
+reconciliation:
+  - Jason changed the workspace-local canonical agent name from Coding Agent to Advanced Power Infrastructure Factorio Modding Agent.
+  - Agent kind remains coding_agent and active governance branch remains coding-agent.
+  - Canon versions are unchanged at coding-agent/1.0.0 and trunk/2.7.0.
+  - Central agent-registry/agents.yaml was not directly edited; registry update remains pending until Jason or a ratified process consumes issue 32.

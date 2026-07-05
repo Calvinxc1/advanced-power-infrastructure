@@ -1,0 +1,8 @@
+id: enforcement
+status: active
+summary: How policy conflicts are handled.
+rules:
+  - Prefer the narrowest policy that directly applies to the task.
+  - If policies conflict, follow the precedence stated in `AGENTS.md`.
+  - Temporary exceptions must be recorded through the override process.
+  - A user instruction can direct project goals, but should not silently erase safety or dirty-worktree protections.

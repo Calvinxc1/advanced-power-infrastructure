@@ -1,0 +1,11 @@
+canonical_agent_name: Advanced Power Infrastructure Factorio Modding Agent
+agent_kind: coding_agent
+active_governance_branch: coding-agent
+active_canon_version: coding-agent/1.0.0
+generalized_canon_version: trunk/2.7.0
+canon_version_log_ref: canon-version-log/versions.yaml
+provenance_commit: e7312d8d33db228f89ce62af66f32b8e9b8ec7f5
+source_repository_or_path: gitea.infra.newedenhomestead.net:ai-projects/ai-governance.git#coding-agent
+self_stamp_timestamp: 2026-07-04T23:28:50Z
+agent_declared_status: renamed_registry_attestation_submitted_central_update_pending
+notes: Local governance updated from the coding-agent branch. Previous local governance files were preserved under .governance/local/pre-update-20260704T232133Z. Jason set this workspace-local canonical agent name to Advanced Power Infrastructure Factorio Modding Agent on 2026-07-04. The central registry row has no standardized self_stamp_path for this workspace-specific coding agent name, so this workspace uses the local stamp path defined by the governance init template. Registry rename attestation submitted to ai-projects/ai-governance issue 32.

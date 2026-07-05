@@ -1,0 +1,27 @@
+id: factorio_mod
+status: active
+summary: Factorio-specific contribution and validation policy.
+rules:
+  - Keep mod metadata in `src/info.json` aligned with Factorio 2.0 and the intended Advanced Power Infrastructure scope.
+  - "Put data-stage code in the appropriate Factorio lifecycle file: `data.lua`, `data-updates.lua`, prototype modules, or `data-final-fixes.lua`."
+  - "Prefer `data:extend` for new prototypes and narrow table mutation for adjustments to dependency prototypes."
+  - Guard cross-mod prototype mutations when the target may not exist.
+  - Preserve recipe, item, entity, technology, and migration names unless a migration strategy is intentionally added.
+  - Prefix every custom prototype ID created by Advanced Power Infrastructure with `aer_`.
+  - Use `_` only as the namespace separator after `aer`; use hyphens inside the descriptive prototype name as needed, for example `aer_steel-boiler`.
+  - Do not introduce unprefixed custom prototype IDs or new `advanced-electric-*` custom prototype IDs.
+  - Organize prototype modules by gameplay system first, then by prototype responsibility.
+  - Keep `src/data.lua` and lifecycle entrypoints shallow by requiring top-level system aggregators such as `prototypes.electric`, `prototypes.power`, and `prototypes.fluid`.
+  - Use require-only aggregator modules to express load order inside each system before reaching leaf prototype definition files.
+  - Put system-owned item groups and item subgroups in system category modules, for example `prototypes.electric.categories` and `prototypes.power.categories`, rather than a cross-system top-level category file.
+  - Keep leaf prototype definition files named by responsibility, for example `entities.lua`, `items.lua`, `recipes.lua`, `technologies.lua`, `constants.lua`, `helpers.lua`, or `vanilla-patches.lua`.
+  - Prefer system-level category files over one category file per individual entity unless a subsystem has genuinely independent inventory ownership.
+  - Use full Factorio module paths in `require()` calls; do not rely on relative require behavior.
+  - Keep gameplay changes explainable in terms of power progression, recipe balance, technology unlocks, compatibility, or Factorio 2.0 porting needs.
+  - Validate syntax with Lua tooling when available and validate load behavior in Factorio when a change touches prototypes.
+acceptance_checks:
+  - "`src/info.json` remains valid JSON."
+  - Lua files parse or are reviewed for Factorio data-stage syntax compatibility.
+  - Prototype mutations do not assume optional data exists without a guard.
+  - New gameplay changes are represented in changelog or release notes when user-visible.
+  - Prototype structure changes preserve the system aggregator pattern and keep lifecycle entrypoints shallow.

@@ -1,0 +1,11 @@
+id: universal
+status: active
+summary: Baseline repository rules for all work.
+rules:
+  - Preserve the repository's purpose as a personal Factorio mod for Advanced Power Infrastructure.
+  - Prefer small, reviewable changes with clear gameplay or compatibility intent.
+  - Do not rewrite unrelated Lua prototypes, docs, or metadata while completing a scoped task.
+  - Treat existing uncommitted changes as user work unless explicitly told otherwise.
+  - Ask before making destructive git operations, deleting mod content, or changing the license.
+  - Keep files ASCII unless a file already uses non-ASCII or Factorio metadata requires it.
+  - Favor explicit behavior over clever abstractions in Lua prototype edits.

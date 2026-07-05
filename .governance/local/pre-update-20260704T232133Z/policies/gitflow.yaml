@@ -1,0 +1,9 @@
+id: gitflow
+status: active
+summary: Git workflow policy.
+rules:
+  - Do not create commits, tags, or branches unless requested.
+  - Keep unrelated dirty worktree changes intact.
+  - Mention pre-existing dirty files when they affect the task boundary.
+  - Prefer focused commits when committing is requested: governance, docs, prototype balance, and release metadata should be separable when practical.
+  - Do not amend commits unless explicitly requested.

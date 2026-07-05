@@ -1,0 +1,8 @@
+id: override_governance
+status: active
+summary: Process for temporary policy exceptions.
+rules:
+  - Record approved exceptions in `.governance/overrides/policy-overrides.yaml`.
+  - Each override must identify scope, rationale, approver, creation date, and expiration or review trigger.
+  - Overrides cannot disable dirty-worktree protections or destructive-command consent requirements.
+  - Remove expired overrides instead of normalizing exceptions into standing practice.
