@@ -1,0 +1,58 @@
+name: Validate
+
+on:
+  pull_request:
+
+jobs:
+  factorio-validation:
+    name: Factorio validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Prepare Factorio environment
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          factorio_bin="${FACTORIO_BIN:-}"
+          if [[ -z "$factorio_bin" ]]; then
+            if command -v factorio >/dev/null 2>&1; then
+              factorio_bin="$(command -v factorio)"
+            elif [[ -x "$HOME/Games/steam/steamapps/common/Factorio/bin/x64/factorio" ]]; then
+              factorio_bin="$HOME/Games/steam/steamapps/common/Factorio/bin/x64/factorio"
+            fi
+          fi
+
+          if [[ -z "$factorio_bin" ]]; then
+            echo "Factorio executable not found. Set FACTORIO_BIN in the runner environment." >&2
+            exit 127
+          fi
+
+          if [[ ! -x "$factorio_bin" ]]; then
+            echo "FACTORIO_BIN is not executable: $factorio_bin" >&2
+            exit 127
+          fi
+
+          mods_dir="${FACTORIO_MODS_DIR:-$HOME/.factorio/mods}"
+          mkdir -p "$mods_dir"
+
+          mod_name="$(python3 -c 'import json; print(json.load(open("src/info.json", encoding="utf-8"))["name"])')"
+
+          rm -rf "$mods_dir/$mod_name"
+          ln -s "$PWD/src" "$mods_dir/$mod_name"
+
+          {
+            echo "FACTORIO_BIN=$factorio_bin"
+            echo "FACTORIO_MODS_DIR=$mods_dir"
+          } >>"$GITHUB_ENV"
+
+          echo "Factorio: $factorio_bin"
+          echo "Mods:     $mods_dir"
+          echo "Mod:      $mods_dir/$mod_name -> $PWD/src"
+
+      - name: Run validation
+        shell: bash
+        run: ./scripts/validate.sh

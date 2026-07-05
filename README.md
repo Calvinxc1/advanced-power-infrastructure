@@ -35,3 +35,13 @@ Work still needed for a full re-implementation of the original mod behavior:
 ## Current Release
 
 The current public release is pending under the Advanced Power Infrastructure name.
+
+## Continuous Integration
+
+Pull requests run `.gitea/workflows/validate.yml`, which executes the same `./scripts/validate.sh` check used locally.
+
+The Gitea runner must have:
+
+- Factorio installed and available on `PATH` as `factorio`, at `$HOME/Games/steam/steamapps/common/Factorio/bin/x64/factorio`, or through `FACTORIO_BIN`.
+- A Factorio mods directory at `$HOME/.factorio/mods` or through `FACTORIO_MODS_DIR`.
+- Required mod dependencies, including Advanced Fluid Infrastructure and Advanced Energy Grid, available in that mods directory.
