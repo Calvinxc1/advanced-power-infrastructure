@@ -1,0 +1,46 @@
+return {
+  iron = {
+    pipeline_extent = 24,
+  },
+  steel = {
+    pipeline_extent = 64,
+    icon_tint = { r = 0.5, g = 0.72, b = 1.0, a = 0.48 },
+  },
+  rubber_lined = {
+    pipeline_extent = 96,
+    icon_tint = { r = 0.08, g = 0.08, b = 0.08, a = 0.58 },
+    entity_tint = { r = 0.42, g = 0.42, b = 0.42, a = 1 },
+  },
+  reinforced = {
+    pipeline_extent = 192,
+    icon_tint = { r = 0.22, g = 0.74, b = 0.34, a = 0.22 },
+    entity_tint = { r = 0.72, g = 0.86, b = 0.74, a = 1 },
+    resistances = {
+      { type = "fire", percent = 100 },
+      { type = "cold", percent = 100 },
+      { type = "acid", percent = 80 },
+      { type = "poison", percent = 80 },
+      { type = "explosion", percent = 70 },
+      { type = "physical", percent = 60 },
+      { type = "impact", percent = 60 },
+      { type = "electric", percent = 50 },
+      { type = "laser", percent = 50 },
+    },
+  },
+  foundation = {
+    pipeline_extent = 512,
+    icon_tint = { r = 0.82, g = 0.94, b = 1.0, a = 0.28 },
+    entity_tint = { r = 0.86, g = 0.92, b = 0.96, a = 1 },
+    resistances = {
+      { type = "fire", percent = 100 },
+      { type = "cold", percent = 100 },
+      { type = "acid", percent = 85 },
+      { type = "poison", percent = 85 },
+      { type = "explosion", percent = 80 },
+      { type = "physical", percent = 70 },
+      { type = "impact", percent = 70 },
+      { type = "electric", percent = 60 },
+      { type = "laser", percent = 60 },
+    },
+  },
+}

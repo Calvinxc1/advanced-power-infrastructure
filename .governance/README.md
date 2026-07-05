@@ -1,18 +1,16 @@
-# .governance
+# Repo-Local Governance Copy
 
-This directory contains the active local governance copy for this workspace.
+This directory is this repository's active local governance copy.
 
-It was updated from Jason's `ai-governance` repository, `coding-agent` branch, source commit `e7312d8d33db228f89ce62af66f32b8e9b8ec7f5`.
+Agents working in this repository load and follow this directory the same way they would use `.governance/` in any other repository. `AGENTS.md` points here for the active local policy contract.
 
-Layout:
+Committed governance files under `.governance/` are ratified by existence. Status fields may still describe operational role, such as `active`, but they are not a separate ratification gate. Draft local-governance proposals must stay outside this active local governance tree until Jason ratifies them.
 
-- `branch-descriptor.yaml`: branch, kind, and canon-version descriptor.
-- `kind-routes.yaml`: coding-agent-specific route map.
-- `task-map.yaml`: task or session routing to additional policy files.
-- `policies/`: standing policy files.
-- `processes/`: meta-governance and operating process files.
-- `overrides/`: temporary exception log and schema.
-- `templates/`: reusable setup and update templates.
-- `local/`: local-only stamps, attestations, and preserved pre-update governance files.
+Use `task-map.yaml` as the explicit loading contract. It may define reusable route groups, but agents should still load only the groups and direct files named by selected routes instead of scanning policy folders.
 
-Previous local governance files were preserved under `.governance/local/pre-update-20260704T232133Z`.
+This directory intentionally duplicates governance rules that may also appear in `lab-governance/`. Drift is allowed when it is visible and intentional:
+
+- `.governance/` governs this repository's work.
+- `lab-governance/` is the generalized rule set maintained here for propagation to other agents and repositories.
+
+Use `local/` for explicit repo-local deviations from the generalized rule set. Use `records/` for repo-local alignment notes or operational metadata. If a local rule should become general lab governance, promote it through an explicit `lab-governance/` policy or process change.

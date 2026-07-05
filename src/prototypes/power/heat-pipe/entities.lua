@@ -1,5 +1,5 @@
-local fluid_helpers = require("prototypes.fluid.helpers")
-local constants = require("prototypes.fluid.constants")
+local fluid_helpers = require("prototypes.power.fluid-helpers")
+local constants = require("prototypes.power.fluid-constants")
 
 local base_heat_pipe = data.raw["heat-pipe"]["heat-pipe"]
 base_heat_pipe.fast_replaceable_group = "heat-pipe"

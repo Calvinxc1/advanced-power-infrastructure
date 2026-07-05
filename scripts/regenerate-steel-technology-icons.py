@@ -17,11 +17,8 @@ OUT = ROOT / "src/graphics/technology"
 
 STEEL_TINT = (0.5, 0.72, 1.0, 0.62)
 STEEL_BRIGHTNESS = 1.12
-LOW_PRESSURE_STEEL_TINT = (0.9, 0.94, 1.0, 0.58)
-LOW_PRESSURE_STEEL_BRIGHTNESS = 1.16
 RUBBER_LINED_BRIGHTNESS = 0.62
 RUBBER_LINED_CONTRAST = 1.2
-TUNGSTEN_TINT = (0.72, 0.32, 1.0, 0.34)
 REINFORCED_TINT = (0.22, 0.74, 0.34, 0.22)
 FOUNDATION_TINT = (0.82, 0.94, 1.0, 0.28)
 FOUNDATION_BRIGHTNESS = 1.08
@@ -58,35 +55,10 @@ def tint_overlay_icon(base, tint, brightness=1.0):
     return ImageEnhance.Brightness(composed).enhance(brightness)
 
 
-def low_pressure_steel_icon(name):
-    base = steel_icon(name)
-    coated = Image.new("RGBA", base.size)
-    src = base.load()
-    dst = coated.load()
-    for y in range(base.height):
-        for x in range(base.width):
-            r, g, b, a = src[x, y]
-            dst[x, y] = (
-                int(r * LOW_PRESSURE_STEEL_TINT[0]),
-                int(g * LOW_PRESSURE_STEEL_TINT[1]),
-                int(b * LOW_PRESSURE_STEEL_TINT[2]),
-                int(a * LOW_PRESSURE_STEEL_TINT[3]),
-            )
-    composed = Image.new("RGBA", base.size, (0, 0, 0, 0))
-    composed.alpha_composite(base)
-    composed.alpha_composite(coated)
-    return ImageEnhance.Brightness(composed).enhance(LOW_PRESSURE_STEEL_BRIGHTNESS)
-
-
 def rubber_lined_icon(name):
     base = load_icon(name)
     darkened = ImageEnhance.Brightness(base).enhance(RUBBER_LINED_BRIGHTNESS)
     return ImageEnhance.Contrast(darkened).enhance(RUBBER_LINED_CONTRAST)
-
-
-def tungsten_icon(name):
-    base = steel_icon(name)
-    return tint_overlay_icon(base, TUNGSTEN_TINT)
 
 
 def reinforced_icon(name):
@@ -137,20 +109,6 @@ def save_single_rubber_lined(name, source_icon, max_size=(210, 210), center=(128
     canvas.save(OUT / name)
 
 
-def save_single_low_pressure_steel(name, source_icon, max_size=(210, 210), center=(128, 128)):
-    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    icon = fit_icon(low_pressure_steel_icon(source_icon), max_size)
-    paste_center(canvas, icon, center)
-    canvas.save(OUT / name)
-
-
-def save_single_tungsten(name, source_icon, max_size=(210, 210), center=(128, 128)):
-    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    icon = fit_icon(tungsten_icon(source_icon), max_size)
-    paste_center(canvas, icon, center)
-    canvas.save(OUT / name)
-
-
 def save_single_reinforced(name, source_icon, max_size=(210, 210), center=(128, 128)):
     canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
     icon = fit_icon(reinforced_icon(source_icon), max_size)
@@ -172,86 +130,20 @@ def save_single_holmium(name, source_icon, max_size=(210, 210), center=(128, 128
     canvas.save(OUT / name)
 
 
-def save_pipe_technology():
-    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    pipe = fit_icon(steel_icon("pipe.png"), (116, 116))
-    underground = fit_icon(steel_icon("pipe-to-ground.png"), (116, 116))
-    paste_center(canvas, pipe, (78, 104))
-    paste_center(canvas, underground, (175, 152))
-    canvas.save(OUT / "steel-fluid-pipes.png")
-
-
-def save_low_pressure_steel_pipe_technology():
-    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    pipe = fit_icon(low_pressure_steel_icon("pipe.png"), (116, 116))
-    underground = fit_icon(low_pressure_steel_icon("pipe-to-ground.png"), (116, 116))
-    paste_center(canvas, pipe, (78, 104))
-    paste_center(canvas, underground, (175, 152))
-    canvas.save(OUT / "low-pressure-steel-fluid-pipes.png")
-
-
-def save_rubber_lined_pipe_technology():
-    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    pipe = fit_icon(rubber_lined_icon("pipe.png"), (116, 116))
-    underground = fit_icon(rubber_lined_icon("pipe-to-ground.png"), (116, 116))
-    paste_center(canvas, pipe, (78, 104))
-    paste_center(canvas, underground, (175, 152))
-    canvas.save(OUT / "rubber-lined-fluid-pipes.png")
-
-
-def save_tungsten_pipe_technology():
-    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    pipe = fit_icon(tungsten_icon("pipe.png"), (116, 116))
-    underground = fit_icon(tungsten_icon("pipe-to-ground.png"), (116, 116))
-    paste_center(canvas, pipe, (78, 104))
-    paste_center(canvas, underground, (175, 152))
-    canvas.save(OUT / "tungsten-fluid-pipes.png")
-
-
-def save_reinforced_pipe_technology():
-    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    pipe = fit_icon(reinforced_icon("pipe.png"), (116, 116))
-    underground = fit_icon(reinforced_icon("pipe-to-ground.png"), (116, 116))
-    paste_center(canvas, pipe, (78, 104))
-    paste_center(canvas, underground, (175, 152))
-    canvas.save(OUT / "reinforced-fluid-pipes.png")
-
-
-def save_foundation_pipe_technology():
-    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    pipe = fit_icon(foundation_icon("pipe.png"), (116, 116))
-    underground = fit_icon(foundation_icon("pipe-to-ground.png"), (116, 116))
-    paste_center(canvas, pipe, (78, 104))
-    paste_center(canvas, underground, (175, 152))
-    canvas.save(OUT / "foundation-fluid-pipes.png")
-
-
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    save_pipe_technology()
-    save_single("steel-fluid-pumps.png", "pump.png", max_size=(214, 214))
     save_single("steel-boilers.png", "boiler.png", max_size=(214, 214))
     save_single("steel-steam-engines.png", "steam-engine.png", max_size=(214, 214))
-    save_low_pressure_steel_pipe_technology()
-    save_single_low_pressure_steel("low-pressure-steel-fluid-pumps.png", "pump.png", max_size=(214, 214))
-    save_rubber_lined_pipe_technology()
-    save_single_rubber_lined("rubber-lined-fluid-pumps.png", "pump.png", max_size=(214, 214))
     save_single_rubber_lined("rubber-lined-boilers.png", "boiler.png", max_size=(214, 214))
     save_single_rubber_lined("rubber-lined-steam-engines.png", "steam-engine.png", max_size=(214, 214))
     save_single_rubber_lined("rubber-lined-steam-turbines.png", "steam-turbine.png", max_size=(214, 214))
     save_single_rubber_lined("rubber-lined-heat-exchangers.png", "heat-boiler.png", max_size=(214, 214))
     save_single_rubber_lined("rubber-lined-heat-pipes.png", "heat-pipe.png", max_size=(214, 214))
     save_single_rubber_lined("rubber-lined-nuclear-reactors.png", "nuclear-reactor.png", max_size=(214, 214))
-    save_tungsten_pipe_technology()
-    save_single_tungsten("tungsten-fluid-pumps.png", "pump.png", max_size=(214, 214))
-    save_reinforced_pipe_technology()
-    save_single_reinforced("reinforced-fluid-pumps.png", "pump.png", max_size=(214, 214))
     save_single_reinforced("reinforced-steam-turbines.png", "steam-turbine.png", max_size=(214, 214))
     save_single_reinforced("reinforced-heat-exchangers.png", "heat-boiler.png", max_size=(214, 214))
     save_single_reinforced("reinforced-heat-pipes.png", "heat-pipe.png", max_size=(214, 214))
     save_single_reinforced("reinforced-nuclear-reactors.png", "nuclear-reactor.png", max_size=(214, 214))
-    save_foundation_pipe_technology()
-    save_single_foundation("foundation-fluid-pumps.png", "pump.png", max_size=(214, 214))
     save_single_foundation("foundation-steam-turbines.png", "steam-turbine.png", max_size=(214, 214))
     save_single_foundation("foundation-heat-exchangers.png", "heat-boiler.png", max_size=(214, 214))
     save_single_foundation("foundation-heat-pipes.png", "heat-pipe.png", max_size=(214, 214))

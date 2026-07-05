@@ -1,4 +1,4 @@
-local fluid_helpers = require("prototypes.fluid.helpers")
+local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 data.raw.item["heat-pipe"].order = "b[steam-power]-a[heat-pipe-1]"
 data.raw.item["heat-pipe"].subgroup = "aer_heat-pipe"

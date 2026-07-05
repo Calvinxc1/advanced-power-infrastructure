@@ -1,5 +1,5 @@
-local constants = require("prototypes.fluid.constants")
-local fluid_helpers = require("prototypes.fluid.helpers")
+local constants = require("prototypes.power.fluid-constants")
+local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 local function tint_steam_turbine(turbine, tint)
   advanced_power_tint_sprite_layers(turbine.horizontal_animation.layers, tint)

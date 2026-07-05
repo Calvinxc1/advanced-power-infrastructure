@@ -5,11 +5,12 @@
   "title": "Advanced Power Infrastructure",
   "author": "Jason M. Cherry",
   "contact": "",
-  "description": "Adds expanded power infrastructure progression for boilers, steam engines, steam turbines, power poles, nuclear reactors, fusion power, solar power, accumulators, and related power systems.",
+  "description": "Adds expanded power generation and storage progression for boilers, steam engines, steam turbines, heat exchangers, heat pipes, nuclear reactors, fusion power, solar power, accumulators, and related systems.",
   "dependencies": [
     "base >= 2.0.0",
     "space-age >= 2.0.0",
-    "PowerOverload >= 1.6.0",
+    "advanced-fluid-infrastructure >= 0.0.1",
+    "advanced-energy-grid >= 0.0.1",
     "? RampantArsenalFork"
   ]
 }

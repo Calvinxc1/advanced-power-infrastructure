@@ -5,7 +5,7 @@ boiler_mk2.icon = "__advanced-power-infrastructure__/graphics/technology/steel-b
 boiler_mk2.icon_size = 256
 boiler_mk2.icons = nil
 boiler_mk2.prerequisites = {
-  "aer_steel-pipe-infrastructure",
+  "afi_steel-pipe-infrastructure",
   "flammables",
 }
 boiler_mk2.effects = {
@@ -27,7 +27,7 @@ boiler_mk3.icon = "__advanced-power-infrastructure__/graphics/technology/rubber-
 boiler_mk3.icon_size = 256
 boiler_mk3.icons = nil
 boiler_mk3.prerequisites = {
-  "aer_rubber-lined-pipe-infrastructure",
+  "afi_rubber-lined-pipe-infrastructure",
   "aer_steel-boiler",
   "lubricant",
   "chemical-science-pack",

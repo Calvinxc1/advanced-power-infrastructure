@@ -1,5 +1,5 @@
-local fluid_helpers = require("prototypes.fluid.helpers")
-local fluid_constants = require("prototypes.fluid.constants")
+local fluid_helpers = require("prototypes.power.fluid-helpers")
+local fluid_constants = require("prototypes.power.fluid-constants")
 
 data.raw.item["heat-exchanger"].order = "b[steam-power]-a[heat-exchanger-1]"
 data.raw.item["heat-exchanger"].subgroup = "aer_heat-exchanger"

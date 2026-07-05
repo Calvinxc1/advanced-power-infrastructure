@@ -1,0 +1,24 @@
+id: policy_maintenance
+status: ratified
+when: [policy_edit]
+rules:
+  - When governance structure changes, update AGENTS.md, README.md, and affected governance files in the same change.
+  - Keep policy in policies, process rules in processes, and temporary exception records in overrides.
+  - Keep lab-wide governance policy, process, routing, and override files under lab-governance.
+  - Keep active repo-local governance policy, process, routing, and override files under .governance.
+  - Treat committed files under active governance policy and process directories as ratified and operative by placement.
+  - Keep draft policy and process proposals outside active policy and process directories until Jason ratifies them.
+  - Remove obsolete operative policy from active governance rather than carrying deprecated active files; Git history is the archive.
+  - Treat drift between .governance and lab-governance as allowed only when it is visible and intentional.
+  - Prefer updating an existing domain file over creating a new one unless the policy surface is materially distinct.
+  - Keep file names stable and descriptive.
+  - Update path references in the same change when files move.
+  - Keep README.md, lab-governance/README.md, and .governance/README.md aligned with the actual structure.
+  - When changing operative wording, review nearby files for duplicated or conflicting rules.
+  - AGENTS.md remains the entrypoint and index, not the full policy body.
+  - Branch descriptors remain separate from AGENTS.md.
+  - A kind branch descriptor is not present on trunk.
+  - Agents do not push branches into this repository.
+  - When trunk governance policy changes, propagate the update into each governed child policy branch, including coding-agent and desktop-orchestrator, unless Jason explicitly scopes the change as trunk-local.
+  - Child policy propagation must include the changed governance files and any required branch descriptor or parent canon-version references.
+  - Generalizable changes travel upward as Gitea issues, not pull requests or upward merges.

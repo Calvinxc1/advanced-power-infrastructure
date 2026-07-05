@@ -1,4 +1,4 @@
-local fluid_helpers = require("prototypes.fluid.helpers")
+local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 data.raw.item["nuclear-reactor"].order = "c[nuclear-reactor-1]"
 data.raw.item["nuclear-reactor"].subgroup = "aer_nuclear-reactor"

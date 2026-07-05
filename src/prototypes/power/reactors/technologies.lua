@@ -1,4 +1,4 @@
-local fluid_helpers = require("prototypes.fluid.helpers")
+local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 local reactor_mk2 = util.table.deepcopy(data.raw.technology["nuclear-power"])
 reactor_mk2.name = "aer_nuclear-reactor-2"

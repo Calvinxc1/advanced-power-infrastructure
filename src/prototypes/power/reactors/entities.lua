@@ -1,4 +1,4 @@
-local fluid_helpers = require("prototypes.fluid.helpers")
+local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 data.raw["reactor"]["nuclear-reactor"].fast_replaceable_group = "nuclear-reactor"
 data.raw["reactor"]["nuclear-reactor"].next_upgrade = "aer_nuclear-reactor-2"
@@ -116,7 +116,7 @@ reactor_mk3.name = "aer_nuclear-reactor-3"
 reactor_mk3.minable.result = "aer_nuclear-reactor-3"
 reactor_mk3.fast_replaceable_group = "nuclear-reactor"
 reactor_mk3.next_upgrade = "aer_nuclear-reactor-4"
-fluid_helpers.set_resistances(reactor_mk3, require("prototypes.fluid.constants").reinforced.resistances)
+fluid_helpers.set_resistances(reactor_mk3, require("prototypes.power.fluid-constants").reinforced.resistances)
 reset_to_base_reactor_graphics(reactor_mk3)
 fluid_helpers.apply_reinforced_icon_tint(reactor_mk3)
 fluid_helpers.apply_reinforced_entity_tint(reactor_mk3)
@@ -131,7 +131,7 @@ reactor_mk4.name = "aer_nuclear-reactor-4"
 reactor_mk4.minable.result = "aer_nuclear-reactor-4"
 reactor_mk4.fast_replaceable_group = "nuclear-reactor"
 reactor_mk4.next_upgrade = nil
-fluid_helpers.set_resistances(reactor_mk4, require("prototypes.fluid.constants").foundation.resistances)
+fluid_helpers.set_resistances(reactor_mk4, require("prototypes.power.fluid-constants").foundation.resistances)
 reset_to_base_reactor_graphics(reactor_mk4)
 fluid_helpers.apply_foundation_icon_tint(reactor_mk4)
 fluid_helpers.apply_foundation_entity_tint(reactor_mk4)

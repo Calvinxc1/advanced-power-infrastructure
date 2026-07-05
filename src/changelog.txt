@@ -4,23 +4,16 @@ Date: 2026.06.11
   Bugfix
     - Added the Space Age dependency required by the Space Age science pack progression.
     - Fixed upgraded steam engine and steam turbine health values.
-    - Completed Power Overload huge electric pole MK2-MK4 prototype registration and localization.
-    - Adjusted Power Overload huge electric pole wire reach progression to 40, 48, 56, and 64.
     - Hardened primary steam turbine recipe migration handling.
-    - Fixed medium and big electric pole technology descriptions.
-    - Forced electric distribution technology display names and custom pole branch visibility.
   Changes
-    - Split electric pole upgrade progression into local distribution and long-range transmission branches.
-    - Added custom technology icons for the medium and big electric pole upgrade tracks.
-    - Renamed electric pole branch technologies around local distribution and distance transmission.
-    - Renamed the small pole MK2 technology to Improved electric poles.
-    - Renamed custom pole branch technology prototype IDs to locale-friendly semantic names.
-    - Added custom technology icons for the substation and huge electric pole upgrade tracks.
-    - Removed distance power transmission 2 as a prerequisite for improved distance power transmission 1.
+    - Moved electric grid infrastructure ownership to the Advanced Energy Grid dependency.
+    - Removed local electric pole, substation, huge-pole, electric-grid technology, locale, and technology graphic ownership.
+    - Moved fluid pipe and pump infrastructure ownership to the Advanced Fluid Infrastructure dependency.
+    - Removed local fluid infrastructure prototypes, technology graphics, locale entries, compatibility patches, and benchmark documentation.
+    - Updated power recipes and technology prerequisites to reference Advanced Fluid Infrastructure fluid item and technology prototype IDs.
+    - Kept power-generation pipeline extent tuning local to this mod through power-scoped fluid constants and helpers.
+    - Added pipeline extent descriptions to steam engine entity and item tooltips.
     - Retuned custom technology icons toward the stock Factorio technology style.
-    - Made custom pole branch technology icon backgrounds transparent.
-    - Aligned substation upgrade science costs with their one-tech-ahead medium pole gates.
-    - Reduced upgraded substation wire and supply range growth to smaller 2-tile coverage steps.
     - Added first-pass iron and steel fluid infrastructure progression for pipeline extent and pump speed.
     - Trimmed iron and steel pipe-to-ground underground reach for the new fluid progression.
     - Split steel fluid infrastructure into separate pipe and pump technology tracks with custom icons.
@@ -28,7 +21,6 @@ Date: 2026.06.11
     - Simplified steel fluid research icons around the unlocked infrastructure items.
     - Gated steel boiler and steam-engine upgrades behind the matching steel pipe and pump infrastructure tracks.
     - Applied the steel-blue sheen to Tier 2 boiler icons and entity graphics.
-    - Made Power Overload a required dependency.
     - Consolidated steam engines and steam turbines back to one item per tier.
     - Renamed the base steam engine to Iron Steam Engine and MK2 to Steel Steam Engine.
     - Applied the steel-blue sheen to Steel Steam Engine icons and entity graphics while reverting other steam engines and turbines to base graphics.

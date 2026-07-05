@@ -7,7 +7,7 @@ heat_exchanger_mk2.icon_size = 256
 heat_exchanger_mk2.icons = nil
 heat_exchanger_mk2.prerequisites = {
   "nuclear-power",
-  "aer_rubber-lined-pipe-infrastructure",
+  "afi_rubber-lined-pipe-infrastructure",
   "production-science-pack",
   "utility-science-pack",
 }
@@ -35,7 +35,7 @@ heat_exchanger_mk3.icon_size = 256
 heat_exchanger_mk3.icons = nil
 heat_exchanger_mk3.prerequisites = {
   "aer_heat-exchanger-2",
-  "aer_reinforced-pipe-infrastructure",
+  "afi_reinforced-pipe-infrastructure",
   "metallurgic-science-pack",
   "agricultural-science-pack",
 }
@@ -66,7 +66,7 @@ heat_exchanger_mk4.icon_size = 256
 heat_exchanger_mk4.icons = nil
 heat_exchanger_mk4.prerequisites = {
   "aer_heat-exchanger-3",
-  "aer_foundation-pipe-infrastructure",
+  "afi_foundation-pipe-infrastructure",
 }
 heat_exchanger_mk4.effects = {
   { type = "unlock-recipe", recipe = "aer_heat-exchanger-4" },

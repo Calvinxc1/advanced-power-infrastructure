@@ -8,7 +8,7 @@ local function add_prerequisite(technology, prerequisite)
   table.insert(technology.prerequisites, prerequisite)
 end
 
-add_prerequisite(data.raw.technology["nuclear-power"], "aer_steel-pipe-infrastructure")
+add_prerequisite(data.raw.technology["nuclear-power"], "afi_steel-pipe-infrastructure")
 
 local steam_turbine_mk2 = util.table.deepcopy(data.raw.technology["nuclear-power"])
 steam_turbine_mk2.name = "aer_rubber-lined-steam-turbine"
@@ -17,8 +17,8 @@ steam_turbine_mk2.icon_size = 256
 steam_turbine_mk2.icons = nil
 steam_turbine_mk2.prerequisites = {
   "nuclear-power",
-  "aer_rubber-lined-pipe-infrastructure",
-  "aer_rubber-lined-pump-infrastructure",
+  "afi_rubber-lined-pipe-infrastructure",
+  "afi_rubber-lined-pump-infrastructure",
   "production-science-pack",
   "utility-science-pack",
 }
@@ -45,8 +45,8 @@ steam_turbine_mk3.icon_size = 256
 steam_turbine_mk3.icons = nil
 steam_turbine_mk3.prerequisites = {
   "aer_rubber-lined-steam-turbine",
-  "aer_reinforced-pipe-infrastructure",
-  "aer_reinforced-pump-infrastructure",
+  "afi_reinforced-pipe-infrastructure",
+  "afi_reinforced-pump-infrastructure",
   "metallurgic-science-pack",
   "agricultural-science-pack",
 }
@@ -76,8 +76,8 @@ steam_turbine_mk4.icon_size = 256
 steam_turbine_mk4.icons = nil
 steam_turbine_mk4.prerequisites = {
   "aer_reinforced-steam-turbine",
-  "aer_foundation-pipe-infrastructure",
-  "aer_foundation-pump-infrastructure",
+  "afi_foundation-pipe-infrastructure",
+  "afi_foundation-pump-infrastructure",
 }
 steam_turbine_mk4.effects = {
   { type = "unlock-recipe", recipe = "aer_foundation-steam-turbine" },

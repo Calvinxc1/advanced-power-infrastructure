@@ -4,7 +4,7 @@ steam_engine_mk2.icon = "__advanced-power-infrastructure__/graphics/technology/s
 steam_engine_mk2.icon_size = 256
 steam_engine_mk2.icons = nil
 steam_engine_mk2.prerequisites = {
-  "aer_steel-pump-infrastructure",
+  "afi_steel-pump-infrastructure",
   "flammables",
 }
 steam_engine_mk2.effects ={
@@ -26,7 +26,7 @@ steam_engine_mk3.icon = "__advanced-power-infrastructure__/graphics/technology/r
 steam_engine_mk3.icon_size = 256
 steam_engine_mk3.icons = nil
 steam_engine_mk3.prerequisites = {
-  "aer_rubber-lined-pump-infrastructure",
+  "afi_rubber-lined-pump-infrastructure",
   "aer_steel-steam-engine",
   "lubricant",
   "chemical-science-pack",

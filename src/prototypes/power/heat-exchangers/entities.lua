@@ -1,5 +1,5 @@
-local constants = require("prototypes.fluid.constants")
-local fluid_helpers = require("prototypes.fluid.helpers")
+local constants = require("prototypes.power.fluid-constants")
+local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 data.raw["boiler"]["heat-exchanger"].fast_replaceable_group = "heat-exchanger"
 data.raw["boiler"]["heat-exchanger"].next_upgrade = "aer_heat-exchanger-2"

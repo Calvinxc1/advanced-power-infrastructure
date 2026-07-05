@@ -2,10 +2,10 @@ id: branch_descriptor
 status: active
 branch: coding-agent
 kind: coding_agent
-canon_version: coding-agent/1.0.0
+canon_version: coding-agent/1.1.0
 parent:
   branch: trunk
-  canon_version: trunk/2.7.0
+  canon_version: trunk/2.8.0
   summary: General contract true of every agent kind, coding or not.
 narrative_blurb: Coding agents inherit the full universal contract and add software engineering, GitFlow, review, documentation drift, and commit discipline.
 orientation:

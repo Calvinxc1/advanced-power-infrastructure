@@ -1,5 +1,5 @@
-local fluid_helpers = require("prototypes.fluid.helpers")
-local fluid_constants = require("prototypes.fluid.constants")
+local fluid_helpers = require("prototypes.power.fluid-helpers")
+local fluid_constants = require("prototypes.power.fluid-constants")
 
 local function reset_steam_turbine_icon(item)
   item.icon = "__base__/graphics/icons/steam-turbine.png"

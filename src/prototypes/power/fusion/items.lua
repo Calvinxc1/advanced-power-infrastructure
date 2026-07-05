@@ -1,5 +1,5 @@
-local constants = require("prototypes.fluid.constants")
-local fluid_helpers = require("prototypes.fluid.helpers")
+local constants = require("prototypes.power.fluid-constants")
+local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 local fusion_reactor = data.raw.item["fusion-reactor"]
 fusion_reactor.subgroup = "aer_fusion-power"
