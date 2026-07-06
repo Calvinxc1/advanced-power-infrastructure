@@ -9,15 +9,9 @@ branch_roles:
   hotfix: Urgent correction branch from the production baseline when the project uses hotfix branches.
 rules:
   - Follow the repository's declared GitFlow model when one exists.
-  - If a new coding-agent repository has no declared branch model, default to GitFlow unless Jason declares a different model.
-  - Document the default integration branch and branch roles in repo-local governance or project documentation when initializing branch semantics.
-  - Ask Jason before applying the default when repository state, existing remote branches, deployment consequences, or project history conflict with the default.
+  - If the repository has no declared model, ask before inventing branch semantics.
   - Use conventional commits when committing is explicitly requested and the repository has no conflicting convention.
   - Keep commits scoped to one coherent change.
-  - Follow the repository's declared versioning scheme.
-  - When the repository uses Semantic Versioning, classify release impact as major, minor, or patch before changing version numbers.
-  - Do not change version numbers outside release scope or without explicit release or versioning authorization.
-  - Ask Jason when release impact or versioning level is unclear.
   - Update changelog material when the repository convention requires it or when user-facing release behavior changes.
   - Do not manufacture changelog churn for internal-only or trivial changes.
   - Treat CI as the validation gate for proposed integration.

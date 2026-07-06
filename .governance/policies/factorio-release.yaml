@@ -1,0 +1,12 @@
+id: factorio_release
+status: ratified
+scope: factorio_modding_agents
+summary: Factorio changelog, packaging, release, and mod portal boundary rules.
+rules:
+  - Update changelog or release notes when user-visible gameplay, dependency, metadata, compatibility, locale, migration, or release-relevant behavior changes.
+  - Follow the workspace's changelog format, including Factorio mod portal `changelog.txt` format when that is the repo convention.
+  - Do not publish, tag, package, upload to the mod portal, or create release artifacts unless Jason explicitly requests release work.
+  - Treat release packaging, mod portal publication, deployment to installed mods, and changes that can affect user saves as externally consequential.
+  - Preserve upstream or fork changelog and README tone when the workspace local overlay identifies an upstream style source.
+  - Do not change dependency lower bounds, supported Factorio version, mod name, prototype names, or migration behavior without checking compatibility intent and release impact.
+  - Report whether release-impacting files such as `info.json`, changelog, README, locale, migrations, and packaging scripts were touched.

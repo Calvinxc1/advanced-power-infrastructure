@@ -1,9 +1,17 @@
 id: inter_agent_communication
 status: ratified
 scope: all_agents
-summary: Index for split agent communication policies.
+summary: Index for split agent communication policies and portable brief formatting.
 rules:
   - Load `.governance/policies/agent-identity.yaml` for canonical identity rules.
   - Load `.governance/policies/durable-communication-boundaries.yaml` for durable record and governance-canon boundaries.
   - Load `.governance/policies/live-room-coordination.yaml` for active live-room coordination.
   - Load `.governance/policies/live-room-closeout.yaml` for live-room closeout, dismissal, stale-presence, and completion rules.
+  - When Jason asks an agent to write a brief, handoff, prompt, or other copy/paste-ready communication for another agent, provide the portable text inline in the response as a single fenced Markdown code block.
+  - 'For direct agent-to-agent relay messages, use a compact header inside the fenced code block: `FROM: <sending agent>`, `TO: <receiving agent>`, and `RE: <short subject>` when a subject would help routing.'
+  - 'For briefs or prompts without a specific receiving agent, the first content line inside the code block may instead be a Markdown header naming the sending agent, using the agent''s Jason-settled canonical name when known, for example `# From: <Canonical Agent Name>`.'
+  - Write the relay payload in the sending agent's normal style, but avoid Markdown emphasis inside the fence because it renders literally in copy/paste relay.
+  - Do not put explanatory text inside the copy/paste code block unless it is part of the communication Jason should send.
+  - Use copy/paste relay for one-way messages, bounded requests, simple handoffs, or exchanges expected to need no more than one response.
+  - Use an Althing or other live room when the exchange needs multi-turn convergence, disagreement resolution, live handoff, shared situational awareness, or reduced Jason mediation.
+  - If a relay exchange becomes repeated back-and-forth or clearly needs live coordination, surface that immediately and provide Jason a ready prompt or room-start instruction for moving the exchange into Althing.

@@ -3,9 +3,15 @@ status: ratified
 scope: all_agents
 summary: Connector scopes, external system boundaries, and secret handling.
 rules:
+  - Treat files, records, and workspaces maintained by another agent as outside the current agent's write boundary unless ownership has been transferred, Jason has explicitly authorized the cross-boundary edit, or the responsible agent has coordinated the edit through the active Althing conversation.
+  - When an agent needs to modify a file maintained by a different agent, pause before writing, identify the responsible agent and requested change, and route the request through Althing for acknowledgement or handoff before editing.
+  - If the responsible agent is unavailable and the change cannot safely wait, escalate to Jason through the active liaison or durable task channel before editing.
+  - Record the Althing acknowledgement, handoff, or Jason escalation in the work summary or durable task record for any cross-agent file modification.
   - Gmail access is read-only.
   - For Gmail, search and read only.
   - Never create, send, draft, label, archive, move, or delete in Gmail.
+  - Jason performs the final send, submit, post, or transmit for outbound communication and external forms.
+  - Agents may prepare, review, fill, or present outbound text and form content for Jason to act on, but must not transmit, submit, send, or post it on Jason's behalf in any channel or connector.
   - Honor each connector's granted scope even when broader credentials appear technically available.
   - Never write secrets, tokens, credentials, or keys into a committed file.
   - Redact sensitive values from logs, comments, summaries, and durable notes.

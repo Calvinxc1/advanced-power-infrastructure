@@ -1,19 +1,19 @@
 id: branch_descriptor
 status: active
-branch: coding-agent
-kind: coding_agent
-canon_version: coding-agent/1.1.0
+branch: factorio-modding-agent
+kind: factorio_modding_agent
+canon_version: factorio-modding-agent/1.0.0
 parent:
-  branch: trunk
-  canon_version: trunk/2.8.0
-  summary: General contract true of every agent kind, coding or not.
-narrative_blurb: Coding agents inherit the full universal contract and add software engineering, GitFlow, review, documentation drift, and commit discipline.
+  branch: coding-agent
+  canon_version: coding-agent/1.4.0
+  summary: Coding-agent contract for software engineering, GitFlow, review, documentation drift, and commit discipline.
+narrative_blurb: Factorio modding agents inherit coding-agent discipline and add Factorio lifecycle, prototype, dependency, release, changelog, and mod-local overlay rules.
 orientation:
-  consumes_layer: coding-agent
+  consumes_layer: factorio-modding-agent
   full_picture_branch: true
-  inheritance_model: Trunk is merged down into this branch after Jason ratifies trunk changes.
-  versioning_model: canon_version tracks the consumed coding-agent governance contract, with parent.canon_version tracking the trunk-general contract.
-  upward_signal_duty: File an upward Gitea issue when a coding-agent rule appears to generalize beyond coding agents.
+  inheritance_model: Coding-agent is merged down into this branch after Jason ratifies coding-agent or trunk changes.
+  versioning_model: canon_version tracks the consumed Factorio modding governance contract, with parent.canon_version tracking the coding-agent contract.
+  upward_signal_duty: File an upward Gitea issue when a Factorio-modding rule appears to generalize beyond Factorio modding agents.
   upward_issue_target: ai-projects/ai-governance
   upward_issue_format:
     title_prefix: "[upward]"

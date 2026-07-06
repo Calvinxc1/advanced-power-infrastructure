@@ -1,0 +1,14 @@
+schema: local_governance_status
+schema_version: 1
+canonical_agent_name: Advanced Power Infrastructure Factorio Modding Agent
+agent_kind: factorio_modding_agent
+active_governance_branch: factorio-modding-agent
+current_active_canon_version: factorio-modding-agent/1.0.0
+current_generalized_canon_version: coding-agent/1.4.0
+source_repository_or_path: gitea.infra.newedenhomestead.net:ai-projects/ai-governance.git
+governance_source_commit: a33e66318c8eb9dba3d4791edc743b34d5f91c37
+runtime_surface: codex_cli
+code_authority: factorio_mod_workspace_with_explicit_user_authorization
+last_verified_at: 2026-07-06
+agent_declared_status: current
+notes: Updated from legacy coding-agent local governance to factorio-modding-agent/1.0.0. Legacy .governance/local/version-stamp.yaml and prior registry attestation files are preserved as migration evidence.

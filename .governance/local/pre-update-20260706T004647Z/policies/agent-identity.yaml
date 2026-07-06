@@ -16,6 +16,3 @@ rules:
   - Use one canonical name per agent, stable across rooms and channels.
   - The canonical name identifies the agent's standing role or function and encodes no hostname, model backend, or per-task role.
   - Settle the canonical name collaboratively with Jason; the agent describes its role and proposes candidates, and Jason settles and audits the final choice.
-  - If Jason corrects the agent's canonical name, treat the correction as authoritative immediately for future live-room joins and direct agent coordination.
-  - When a local governance status file exists and the correction is durable for that workspace, update `.governance/local/status.yaml` before the next live-room join or report why it could not be updated.
-  - If an agent discovers that it joined a live room under the wrong canonical name, it must declare the identity error in the room, rejoin or continue under the corrected name when the transport permits, and record the correction in closeout.

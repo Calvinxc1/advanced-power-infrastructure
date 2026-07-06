@@ -6,9 +6,6 @@ rules:
   - Keep policy in policies, process rules in processes, and temporary exception records in overrides.
   - Keep active repo-local governance policy, process, routing, and override files under .governance.
   - Keep the generalized lab-wide governance copy under lab-governance.
-  - Treat lab/canon governance as the base layer, loaded local governance as the workspace layer above it, and explicit task overrides as the top layer for the declared one-shot operation.
-  - Prescribe `.governance/local/index.yaml` as the universal entrypoint into local governance policy and `.governance/local/status.yaml` as the universal local governance status report; do not prescribe the rest of `.governance/local/` from lab governance.
-  - Use `.governance/local/index.yaml` as a pointer file, not as the local policy body.
   - Treat committed files under .governance and lab-governance as ratified by existence.
   - Treat status fields as operational metadata when present; do not use status labels as a separate ratification gate for committed active governance content.
   - Treat committed files under active governance policy and process directories as ratified and operative by placement.
@@ -19,19 +16,6 @@ rules:
   - Treat drift between .governance and lab-governance as allowed only when it is visible and intentional.
   - Record repo-local deviations from lab-governance under .governance/local.
   - During governance alignment work, classify differences between .governance and lab-governance as path-only, documentation-only, local exception, or candidate general policy change.
-  - Before adding, moving, or versioning a governance policy change, evaluate the narrowest existing scope that can correctly own the change.
-  - Prefer the narrowest existing applicable scope, including repo-local deviation, active local governance, kind branch, or trunk-general governance.
-  - Use trunk only when the rule is intended to apply across agent kinds or when Jason explicitly ratifies trunk scope.
-  - Policy-change reportback must state the selected scope, why narrower existing scopes were insufficient or sufficient, and whether the change affects trunk, a kind branch, repo-local governance, or generalized lab governance.
-  - Before editing governance files, identify the owning governance layer for the requested change as trunk-general, kind-specific, repo-local, registry/bookkeeping, or propagation-only.
-  - Before editing governance files, compare the owning layer against the current Git branch, `.governance/branch-descriptor.yaml`, and `lab-governance/branch-descriptor.yaml` when present.
-  - If the current branch does not match the owning layer, switch to the owning branch before editing rather than making the change on the current branch.
-  - General all-agent rules, live-room rules, governance initialization guides, generalized templates, local-status bootstrap prompts, and lab-wide process changes belong on trunk first unless Jason explicitly scopes them to a kind branch or repo-local deviation.
-  - Kind-specific rules belong on that kind branch and must not be treated as trunk policy unless separately promoted through an explicit trunk change.
-  - Do not satisfy propagation by editing `lab-governance` on a child branch while the trunk-owned source remains stale.
-  - Before committing governance changes, state the owning layer, current branch, changed paths, canon-version target, and downstream branches that must receive propagation.
-  - Before pushing governance changes, confirm that the remote target branch is the owning branch for the change or a named propagation branch.
-  - If a governance change is discovered on the wrong branch, do not stack additional fixes on that branch; port the change to the owning branch, then propagate by merge or explicitly recorded branch-local replay.
   - Prefer updating an existing domain file over creating a new one unless the policy surface is materially distinct.
   - Keep file names stable and descriptive.
   - Update path references in the same change when files move.
@@ -42,13 +26,13 @@ rules:
   - Treat only the explicit canon_version label specified in the repository as the governance version.
   - Do not use commit SHA, branch tip, merge status, file timestamp, or deployment state as a substitute for canon_version.
   - Do not bump canon_version for repo-local process, deviation, record, registry, or bookkeeping changes unless they alter the ratified governance contract consumed by agents.
-  - When a canon_version is bumped, update branch descriptors, canon-version-log, local status templates or records, and affected legacy registry target versions in the same change.
+  - When a canon_version is bumped, update branch descriptors, canon-version-log, and affected registry target versions in the same change.
   - Validate YAML syntax for every changed YAML governance file before committing.
   - Scan changed governance files for merge conflict markers before committing.
   - Validate task-map and kind-route references so every routed file exists and every active policy file is reachable through an intended route or documented as intentionally unrouted.
   - Validate branch descriptors after every canon-version or propagation change, including active branch identity, active canon_version, and parent canon_version on kind branches.
   - Validate canon-version-log entries when canon_version changes, including previous_canon_version, parent_canon_version when applicable, bump level, date, summary, and introduced_by_commit provenance.
-  - Validate local status records and affected legacy agent-registry target versions when a governance version target changes.
+  - Validate agent-registry target versions when a governance version target changes.
   - Validate that active policy and process files under .governance and lab-governance use ratified placement semantics rather than draft status.
   - AGENTS.md remains the entrypoint and index, not the full policy body.
   - Branch descriptors remain separate from AGENTS.md.

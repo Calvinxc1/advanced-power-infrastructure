@@ -5,7 +5,6 @@ rules:
   - Override-governance rules are non-overridable.
   - Overrides are temporary.
   - Overrides are valid only for one explicitly declared operation.
-  - Overrides may temporarily override both base lab/canon governance and loaded local governance for the declared operation.
   - Overrides may not override override-governance itself.
   - Mid-stream changes amend the same override case instead of creating a new layered one.
   - Overrides last only for the supported operation and cease when that operation completes.
