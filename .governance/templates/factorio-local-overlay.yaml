@@ -19,4 +19,8 @@ validation_available:
   factorio_load: null
 workspace_specific_rules: []
 migration_notes: []
-notes: Fill with local facts. Do not put secrets or credentials here.
+notes: >-
+  Fill with local facts. Do not put secrets or credentials here. If this
+  workspace intentionally keeps governance local-only for an upstream fork,
+  record that fact here and keep the actual fork-specific rules in the
+  workspace's local governance files.

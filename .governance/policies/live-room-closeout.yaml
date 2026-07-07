@@ -27,5 +27,9 @@ rules:
   - A missing connector for a closeout update is a named follow-up, not a protocol violation.
   - Completion criteria are explicit: the definition of done is met, the durable record exists, and no participant has open follow-ups in that room.
   - Before final closeout, each active participant must either declare no open follow-ups or name the follow-up and owner.
+  - For repository or workspace work, participant closeout reports must name the repo or path, canonical agent name used, branch or local source of truth, commit SHA or explicit no-commit reason, changed files or artifact summary, validation performed, and remaining uncertainty.
+  - The closer must independently verify reported completion against the appropriate source of truth before room closeout when connector or filesystem access allows it.
+  - Use Gitea or the configured remote as the verification source for pushed repository work, and use the local filesystem for intentionally local-only governance or workspaces that are not pushed.
+  - If independent verification is unavailable, the closer must state that limitation in the room closeout and name the remaining verification owner.
   - If completion criteria are not met, suspend rather than close out.
   - Do not leave a live coordination room in a state where remaining participants cannot tell whether the room is active, suspended, or closed.

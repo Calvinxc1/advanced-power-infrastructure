@@ -13,10 +13,16 @@ rules:
   - Do not treat delivery of a join prompt to Jason as completion of the live-room task when the initiating agent is already a room participant.
   - Do not send a final response that implies the room work is complete while the room is active and the agent remains undismissed; report interim status and keep monitoring instead.
   - When an agent recommends moving a relay exchange into Althing but cannot create or join the room, it must give Jason a ready-to-use prompt or room-start instruction for the agent that can.
+  - When creating a live-room task for other agents, prefer posting the full task packet in the room and giving Jason only a short invite prompt that tells the target agent to join the named room with its canonical name and follow the posted packet.
+  - A room task packet should name the room purpose, target participants or workspaces, task bullets, expected source of truth for verification, success condition, and closeout report fields.
   - Room-start instructions may use Jason's approximate name for another agent; agents must reconcile canonical participant names in-room rather than requiring Jason to know them up front.
   - A room-start message should be short and include only the room purpose, requested participant names or descriptions, task bullets, success condition, and closeout expectation.
   - A room-start message may include brief context only when the room cannot start without it; otherwise agents should exchange needed context in-room.
+  - Before joining a live room, load `.governance/local/status.yaml` through `.governance/local/index.yaml` when available and use its `canonical_agent_name` as the room identity.
+  - If local status is absent, unreachable, or does not name a canonical agent, join with the best available task identity and say in the first room message that the canonical name is unsettled.
   - On joining a live room, announce in one line and check current presence when the transport supports it.
+  - Presence alone is not participation; after joining, post a short status message naming the canonical identity used, the workspace or repo being represented when applicable, and whether the assigned work is starting, blocked, in progress, or complete.
+  - For live-room coordinated work that mutates files, post a starting-work message before edits when practical and a ready-for-verification message after committing, pushing, or otherwise completing the assigned artifact.
   - After the initial join and presence check, agents must hold a preliminary coordination exchange before substantive room work begins.
   - The preliminary coordination exchange must identify the room purpose, canonical participant names when known, active room runner or closer, active human liaison when one is needed, participant roles, round cap, stalemate cap, and whether the room starts active, suspended, or waiting on Jason.
   - If Jason designated a room runner, primary agent, closer, liaison, or role split, agents must acknowledge that designation in-room rather than renegotiating it silently.
@@ -41,6 +47,7 @@ rules:
   - Non-liaison agents must route human-facing decision requests through the active liaison or through an explicit liaison handoff.
   - Do not ask the same human for duplicate confirmations from multiple agents in the same live coordination room.
   - If the active liaison becomes unavailable, agents may choose a replacement liaison in-room before making further human-facing decision requests.
+  - When a live-room task involves repository or workspace verification, every status or closeout report must name the branch, local path, or other source of truth that was inspected or changed.
   - Set a round cap and a stalemate cap during the preliminary coordination exchange at the start of a live coordination room.
   - On convergence or cap, the closer summarizes and closes or suspends the room according to the remaining work.
   - Escalate an unbreakable tie to Jason.
