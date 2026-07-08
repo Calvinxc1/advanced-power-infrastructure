@@ -1,8 +1,0 @@
-id: changelog
-status: active
-summary: Changelog policy for user-visible mod changes.
-rules:
-  - Maintain `src/changelog.txt` when release-relevant gameplay, dependency, metadata, or governance changes occur.
-  - Follow the Factorio mod portal changelog format already used by the repository.
-  - Keep entries user-visible and concise; avoid listing internal refactors unless they affect maintenance or behavior.
-  - Move staged or draft entries into a versioned section when preparing a release.

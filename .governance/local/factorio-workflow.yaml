@@ -1,0 +1,76 @@
+schema: factorio_local_workflow
+schema_version: 1
+mod_name: advanced-power-infrastructure
+canonical_agent_name: Advanced Power Infrastructure Factorio Modding Agent
+workspace_path: /home/jcherry/Documents/git/factorio-mods/advanced-power-infrastructure
+metadata_path: src/info.json
+ownership_model: custom
+upstream_or_fork_source: DanielWinks/Factorio-Advanced-Electric
+namespace_prefixes:
+  - aer_
+dependency_stack:
+  - base >= 2.0.0
+  - space-age >= 2.0.0
+  - advanced-fluid-infrastructure >= 0.0.1
+  - advanced-energy-grid >= 0.0.1
+optional_dependencies:
+  - RampantArsenalFork
+scope_boundaries:
+  - Owns expanded power generation and storage progression for Factorio 2.0 and Space Age.
+  - Does not own electric grid infrastructure; Advanced Energy Grid owns that scope.
+  - Does not own fluid pipe and pump infrastructure; Advanced Fluid Infrastructure owns that scope.
+release_target: Pending public release under the Advanced Power Infrastructure name.
+internal_gitflow_stage: dev_promotion
+branch_roles:
+  main: Integration and pending-release authority after promotion from dev; branch protection is intentionally not enabled yet.
+  dev: Primary working branch for ordinary implementation and validation.
+  feature: Not active by default during dev-introduced/dev_promotion stage.
+  release: Not active; do not create release branches at this stage.
+  hotfix: Not active; use explicit Jason direction if urgent main-line correction is needed.
+release_promotion_path: Direct local merge from dev to main until Jason approves a PR-based or release-branching process.
+feature_branching_enabled: false
+release_branching_enabled: false
+main_branch_protection:
+  enabled: false
+  notes: Jason explicitly declared no main branch protection during the dev-introduced phase.
+hotfix_flow:
+  enabled: false
+  branch_pattern: null
+  sync_requirements:
+    - If a direct main correction is made, merge main back into dev before ordinary dev work resumes.
+post_release_main_to_dev_sync:
+  required: false
+  mechanism: Manual merge only when main receives a direct change during this stage.
+  automation_validated: false
+  failure_owner: Jason
+ci_cd_release_gates:
+  validation: Pull requests run .gitea/workflows/validate.yml.
+  packaging: Not implemented.
+  publishing: Not implemented.
+  post_release_sync: Not implemented.
+changelog_process:
+  format: Factorio mod portal changelog.txt format at src/changelog.txt.
+  pending_notes_mechanism: Direct top-entry edits until a separate pending-notes convention is declared.
+  top_version_must_match_metadata: true
+validation_available:
+  json: true
+  lua_syntax: true
+  lint: false
+  format: false
+  factorio_load: conditional_on_local_factorio_binary_mods_dir_and_required_dependencies
+declared_deviations:
+  - Jason described the current stage as dev-introduced; the governing branch policy stage name for this mode is dev_promotion.
+  - This continuation from an upstream source uses a custom local workflow declaration rather than assuming the generic internal-mod workflow.
+workspace_specific_rules:
+  - Treat dev as the main working area for ordinary implementation.
+  - Do not create release branches until Jason approves the release_branching stage.
+  - Do not enable main branch protection until Jason approves that stage transition.
+  - Keep src/info.json and the top src/changelog.txt entry version aligned.
+migration_notes:
+  - Version pinned to 0.1.0 on 2026-07-08 during dev-introduced workflow declaration.
+last_stage_reviewed_at: 2026-07-08
+known_gaps:
+  - Main is currently receiving this governance and version pin commit before being merged into dev.
+  - CI workflow exists, but recent run status and runner health were not verifiable through the available Gitea connector.
+  - Packaging and publishing automation are not implemented.
+notes: Do not put secrets or credentials here.

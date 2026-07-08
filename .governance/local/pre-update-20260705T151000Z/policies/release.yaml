@@ -1,9 +1,0 @@
-id: release
-status: active
-summary: Release and packaging policy.
-rules:
-  - "`src/info.json` is the source of truth for mod name, title, Factorio version, dependency bounds, and mod version."
-  - Version bumps should follow semantic intent: patch for fixes, minor for new features or compatibility work, major for incompatible save or dependency shifts.
-  - Release packaging should preserve the Factorio mod directory shape expected by the mod portal.
-  - Do not publish, tag, or package a release without an explicit request.
-  - Confirm changelog entries and dependency bounds before release packaging.

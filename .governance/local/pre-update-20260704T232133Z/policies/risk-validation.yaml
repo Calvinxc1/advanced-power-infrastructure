@@ -1,9 +1,0 @@
-id: risk_validation
-status: active
-summary: Risk-based validation expectations.
-rules:
-  - Low-risk docs-only changes require markdown review.
-  - Metadata changes require JSON validation.
-  - Prototype changes require Lua syntax review and, when feasible, a Factorio load test.
-  - Recipe and technology changes require checking unlock relationships and ingredient/result consistency.
-  - Dependency changes require confirming the target mod names and version constraints.

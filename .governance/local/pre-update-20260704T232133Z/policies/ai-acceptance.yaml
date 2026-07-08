@@ -1,9 +1,0 @@
-id: ai_acceptance
-status: active
-summary: Acceptance criteria for AI-authored changes.
-rules:
-  - AI-authored changes must be easy for the maintainer to audit.
-  - Prefer direct edits over broad rewrites.
-  - Explain assumptions that affect gameplay behavior or compatibility.
-  - Do not invent undocumented Factorio or mod APIs; inspect local code or source references first.
-  - Report validation performed and validation not performed.

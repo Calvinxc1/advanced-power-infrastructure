@@ -1,11 +1,17 @@
 id: factorio_modding
 status: ratified
 scope: factorio_modding_agents
-summary: Factorio mod structure, lifecycle, prototype, dependency, and validation rules.
+summary: Factorio mod structure, lifecycle, prototype, dependency, local workflow, and validation rules.
 rules:
   - Factorio modding agents inherit coding-agent policy and add these Factorio-specific rules.
   - Treat `info.json` or `src/info.json` as the workspace's mod metadata and dependency source of truth, depending on repo layout.
-  - Keep mod-local overlay facts for namespace, dependency stack, upstream or fork source, scope boundaries, release target, validation availability, and migration notes.
+  - Keep repo-local Factorio workflow and status facts under `.governance/local/`, loaded through `.governance/local/index.yaml`; governed templates are scaffolds only and are not the repo-specific source of truth.
+  - Distinguish locally developed internal mods from upstream forks or continuations before applying branch, release, or changelog workflow policy.
+  - Apply the internal staged release workflow only to locally developed internal mods unless the workspace's loaded local governance explicitly opts another ownership model into that workflow.
+  - For upstream forks, continuations, or externally sourced mods, require a repo-local process that records upstream source, local authority, branch strategy, changelog policy, release target, and divergence rules before assuming the internal-mod path.
+  - Record long-running deviations from Factorio kind policy in loaded local governance, preferably `.governance/local/deviations.yaml` for durable deviations and a local Factorio workflow/status file for current stage facts.
+  - Local deviation records should state what differs, why it differs, authoritative branches, active and inactive workflow pieces, review timing, and the condition that would retire the deviation.
+  - Keep local Factorio workflow facts for ownership model, namespace, dependency stack, upstream or fork source, scope boundaries, release target, validation availability, Gitflow stage, CI/CD status, branch protection status, hotfix status, changelog process, and migration notes.
   - Do not hard-code another mod workspace's namespace, dependency stack, balance scope, or upstream URL into branch-level reasoning.
   - Respect Factorio lifecycle stage boundaries, including settings, data, data-updates, data-final-fixes, control/runtime, and migrations.
   - Keep lifecycle entrypoints shallow and stage-appropriate; place substantive prototype, compatibility, or runtime logic in modules.

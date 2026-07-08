@@ -13,7 +13,9 @@ rules:
   - Treat project completion closeout as distinct from a pause and from a single session ending.
   - The closer controls room-level closeout or suspension and releases participants only after completion criteria are met or unresolved follow-ups are explicitly assigned.
   - The closer is responsible for dismissing every participant by name once that participant's contribution is authentically finished, including non-primary agents whose assigned slice is complete.
+  - The closer must not close a live-room task solely because the technical work succeeded; the closer must also verify room lifecycle completion, including durable record or unresolved follow-up, participant follow-ups resolved or assigned, and every active participant released by name.
   - Participants do not self-exit before explicit by-name dismissal from the closer.
+  - Sending Jason an out-of-band status, handoff, or final response does not release a participant from live-room monitoring, closer duties, or dismissal requirements.
   - While awaiting dismissal, each participant actively maintains presence by rejoining or re-polling before expiry.
   - Joining an Althing or other live agent room and then ceasing active monitoring before suspension, closeout, or by-name dismissal is a protocol failure even when the agent believes its assigned work is complete.
   - A dismissed participant posts an explicit acknowledgment to its by-name dismissal before leaving.
@@ -33,3 +35,4 @@ rules:
   - If independent verification is unavailable, the closer must state that limitation in the room closeout and name the remaining verification owner.
   - If completion criteria are not met, suspend rather than close out.
   - Do not leave a live coordination room in a state where remaining participants cannot tell whether the room is active, suspended, or closed.
+  - "Final answer checklist for multi-agent live-room work: room id and final state; canonical name used and whether the reporting agent is still joined, dismissed, or standing down as closer; latest seq or cursor reached; participants present, released by name, acknowledged dismissal, unconfirmed exit, or stale presence; runner or closer and liaison; source of truth inspected or explicit verification limitation; work completed and validation performed; durable record written or unresolved follow-up with owner; remaining uncertainty; confirmation that live-room monitoring responsibility ended through closeout, suspension, Jason pause or cancel, or by-name dismissal."

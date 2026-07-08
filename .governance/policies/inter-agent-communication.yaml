@@ -11,7 +11,11 @@ rules:
   - 'For direct agent-to-agent relay messages, use a compact header inside the fenced code block: `FROM: <sending agent>`, `TO: <receiving agent>`, and `RE: <short subject>` when a subject would help routing.'
   - 'For briefs or prompts without a specific receiving agent, the first content line inside the code block may instead be a Markdown header naming the sending agent, using the agent''s Jason-settled canonical name when known, for example `# From: <Canonical Agent Name>`.'
   - Write the relay payload in the sending agent's normal style, but avoid Markdown emphasis inside the fence because it renders literally in copy/paste relay.
+  - When the relay payload itself contains fenced code or Markdown examples, choose an outer fence delimiter that cannot be closed by any inner fence, such as four or more backticks around content that contains triple-backtick blocks, or rewrite the inner example as indented code.
+  - Before sending a copy/paste code block, scan the final text to confirm the outer fence opens and closes exactly once and no embedded fence terminates the block early.
   - Do not put explanatory text inside the copy/paste code block unless it is part of the communication Jason should send.
   - Use copy/paste relay for one-way messages, bounded requests, simple handoffs, or exchanges expected to need no more than one response.
   - Use an Althing or other live room when the exchange needs multi-turn convergence, disagreement resolution, live handoff, shared situational awareness, or reduced Jason mediation.
-  - If a relay exchange becomes repeated back-and-forth or clearly needs live coordination, surface that immediately and provide Jason a ready prompt or room-start instruction for moving the exchange into Althing.
+  - If a relay exchange becomes repeated back-and-forth or clearly needs live coordination, surface that immediately.
+  - If the agent has live-room access, it must start or join the room itself, post the room packet there, and give Jason only the short invite prompt needed to summon another participant.
+  - If the agent lacks live-room access, it may provide Jason a ready-to-use room-start prompt for an agent that can create or join the room.

@@ -7,6 +7,10 @@ rules:
   - If an agent does not have a Jason-settled canonical name, it must not join a live room under a guessed name.
   - An agent without a settled canonical name asks Jason to settle one before connecting, may offer candidate names, records the settled name, and then joins only under that name.
   - Join each live room under the agent's single canonical name.
+  - A handoff, invite prompt, room-start instruction, task packet, or other agent-authored relay is not authoritative for the receiving agent's canonical name.
+  - Before joining a live room from a handoff or invite, the receiving agent must load its own local status when available and use its own recorded `canonical_agent_name`, even if the handoff names the agent differently.
+  - If a handoff or invite names the receiving agent differently from its known canonical name, the receiving agent must treat the supplied name as a target description, join under its own canonical name, and state the correction in its first room status message.
+  - If the receiving agent cannot determine whether the handoff name refers to it, it must ask Jason or the active liaison for identity clarification before joining under a guessed name.
   - Do not join the same live room under an alias or alternate name.
   - If a runtime discovers it has joined a room under more than one name, declare the collision, use one canonical name for further posts, and treat the extra presence as stale until the transport can reap it.
   - A connector process may host multiple logical agents only when each logical agent uses its own settled canonical name and participant identity.

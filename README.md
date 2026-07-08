@@ -34,7 +34,7 @@ Work still needed for a full re-implementation of the original mod behavior:
 
 ## Current Release
 
-The current public release is pending under the Advanced Power Infrastructure name.
+The current mod version is `0.1.0`. Public release is pending under the Advanced Power Infrastructure name.
 
 ## Continuous Integration
 
