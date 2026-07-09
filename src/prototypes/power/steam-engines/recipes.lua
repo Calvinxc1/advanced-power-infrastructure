@@ -24,7 +24,7 @@ data:extend({steam_engine_mk2})
 local steam_engine_mk3 = util.table.deepcopy(data.raw.recipe["steam-engine"])
 steam_engine_mk3.name = "aer_rubber-lined-steam-engine"
 steam_engine_mk3.enabled = false
-steam_engine_mk3.category = "crafting-with-fluid"
+steam_engine_mk3.categories = { "crafting-with-fluid" }
 steam_engine_mk3.ingredients = {
   { type = "item", name = "aer_steel-steam-engine", amount = 1 },
   { type = "item", name = "advanced-circuit", amount = 5 },

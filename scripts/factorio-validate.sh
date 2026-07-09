@@ -11,8 +11,23 @@ with open(sys.argv[1], encoding="utf-8") as f:
     print(json.load(f)["name"])
 PY
 )"
-mods_dir="${FACTORIO_MODS_DIR:-$HOME/.factorio/mods}"
+mods_dir="${FACTORIO_MODS_DIR:-}"
 factorio_bin="${FACTORIO_BIN:-}"
+require_factorio="${API_REQUIRE_FACTORIO:-0}"
+
+skip_or_fail() {
+  local status="$1"
+  shift
+
+  if [[ "$require_factorio" == "1" ]]; then
+    printf '%s\n' "$@" >&2
+    exit "$status"
+  fi
+
+  printf 'Skipping Factorio validation: %s\n' "$*" >&2
+  printf 'Set API_REQUIRE_FACTORIO=1 to make this a hard failure.\n' >&2
+  exit 0
+}
 
 if [[ -z "$factorio_bin" ]]; then
   if command -v factorio >/dev/null 2>&1; then
@@ -20,13 +35,11 @@ if [[ -z "$factorio_bin" ]]; then
   elif [[ -x "$HOME/Games/steam/steamapps/common/Factorio/bin/x64/factorio" ]]; then
     factorio_bin="$HOME/Games/steam/steamapps/common/Factorio/bin/x64/factorio"
   else
-    cat >&2 <<MSG
-Factorio executable not found.
-
-Set FACTORIO_BIN to your Factorio executable, for example:
-  FACTORIO_BIN="/path/to/factorio/bin/x64/factorio" ./scripts/factorio-validate.sh
-MSG
-    exit 127
+    skip_or_fail 127 \
+      "Factorio executable not found." \
+      "" \
+      "Set FACTORIO_BIN to your Factorio executable, for example:" \
+      '  FACTORIO_BIN="/path/to/factorio/bin/x64/factorio" ./scripts/factorio-validate.sh'
   fi
 fi
 
@@ -35,17 +48,23 @@ if [[ ! -x "$factorio_bin" ]]; then
   exit 127
 fi
 
-if [[ ! -d "$mods_dir" ]]; then
-  echo "Factorio mods directory not found: $mods_dir" >&2
-  exit 1
+tmp_dir="$(mktemp -d)"
+trap 'rm -rf "$tmp_dir"' EXIT
+
+if [[ -z "$mods_dir" ]]; then
+  mods_dir="$tmp_dir/mods"
+  mkdir -p "$mods_dir"
+  ln -s "$repo_root/src" "$mods_dir/$mod_name"
+elif [[ ! -d "$mods_dir" ]]; then
+  skip_or_fail 1 "Factorio mods directory not found: $mods_dir"
 fi
 
 expected_link="$mods_dir/$mod_name"
 if [[ ! -e "$expected_link" ]]; then
-  echo "Expected mod entry does not exist: $expected_link" >&2
-  echo "Create it with:" >&2
-  echo "  ln -s \"$repo_root/src\" \"$expected_link\"" >&2
-  exit 1
+  skip_or_fail 1 \
+    "Expected mod entry does not exist: $expected_link" \
+    "Create it with:" \
+    "  ln -s \"$repo_root/src\" \"$expected_link\""
 fi
 
 resolved="$(readlink -f "$expected_link")"
@@ -55,8 +74,6 @@ if [[ "$resolved" != "$repo_root/src" ]]; then
   exit 1
 fi
 
-tmp_dir="$(mktemp -d)"
-trap 'rm -rf "$tmp_dir"' EXIT
 config_dir="$tmp_dir/config"
 write_dir="$tmp_dir/write"
 mkdir -p "$config_dir" "$write_dir"

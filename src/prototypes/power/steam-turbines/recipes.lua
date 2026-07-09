@@ -9,7 +9,7 @@ data.raw.recipe["steam-turbine"].ingredients = optional_dependencies.ingredients
 local steam_turbine_mk2 = util.table.deepcopy(data.raw.recipe["steam-turbine"])
 steam_turbine_mk2.name = "aer_rubber-lined-steam-turbine"
 steam_turbine_mk2.enabled = false
-steam_turbine_mk2.category = "crafting-with-fluid"
+steam_turbine_mk2.categories = { "crafting-with-fluid" }
 steam_turbine_mk2.ingredients = optional_dependencies.ingredients(
   optional_dependencies.item("steam-turbine", 1),
   optional_dependencies.pipe_ingredients("rubber-lined", 20),

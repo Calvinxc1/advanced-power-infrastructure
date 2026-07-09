@@ -65,3 +65,38 @@ function advanced_power_tint_sprite_layers(layers, tint)
     end
   end
 end
+
+local function advanced_power_tint_sprite_table(sprite_table, tint)
+  if not sprite_table then
+    return
+  end
+
+  if sprite_table.draw_as_shadow then
+    return
+  end
+
+  if sprite_table.layers then
+    advanced_power_tint_sprite_layers(sprite_table.layers, tint)
+  elseif sprite_table.filename or sprite_table.filenames or sprite_table.stripes then
+    sprite_table.tint = tint
+  end
+
+  for _, value in pairs(sprite_table) do
+    if type(value) == "table" then
+      advanced_power_tint_sprite_table(value, tint)
+    end
+  end
+end
+
+function advanced_power_apply_entity_tint(prototype, tint)
+  if not prototype then
+    return
+  end
+
+  advanced_power_tint_sprite_table(prototype.pictures, tint)
+  advanced_power_tint_sprite_table(prototype.picture, tint)
+  advanced_power_tint_sprite_table(prototype.graphics_set, tint)
+  advanced_power_tint_sprite_table(prototype.animations, tint)
+  advanced_power_tint_sprite_table(prototype.horizontal_animation, tint)
+  advanced_power_tint_sprite_table(prototype.vertical_animation, tint)
+end

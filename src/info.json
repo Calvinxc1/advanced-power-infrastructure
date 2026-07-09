@@ -1,14 +1,14 @@
 {
   "name": "advanced-power-infrastructure",
-  "version": "0.1.0",
-  "factorio_version": "2.0",
+  "version": "0.2.0",
+  "factorio_version": "2.1",
   "title": "Advanced Power Infrastructure",
   "author": "Jason M. Cherry",
   "contact": "",
-  "description": "Adds expanded power generation and storage progression for boilers, steam engines, steam turbines, heat exchangers, heat pipes, nuclear reactors, fusion power, solar power, accumulators, and related systems.",
+  "description": "Expands Factorio 2.1 + Space Age power generation and storage progression with additional steam, nuclear, fusion, solar, and accumulator tiers.",
   "dependencies": [
-    "base >= 2.0.0",
-    "space-age >= 2.0.0",
+    "base >= 2.1.0",
+    "space-age >= 2.1.0",
     "? advanced-fluid-infrastructure >= 0.0.1",
     "? advanced-energy-grid >= 0.0.1",
     "? RampantArsenalFork"

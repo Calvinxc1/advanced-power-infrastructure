@@ -6,9 +6,23 @@ cd "$repo_root"
 
 python3 - <<'PY'
 import json
+import re
 from pathlib import Path
 
-json.load(open("src/info.json", encoding="utf-8"))
+info = json.load(open("src/info.json", encoding="utf-8"))
+version = info["version"]
+
+if not re.fullmatch(r"\d+\.\d+\.\d+", version):
+    raise SystemExit(f"src/info.json version must be MAJOR.MINOR.PATCH: {version}")
+
+changelog = Path("src/changelog.txt").read_text(encoding="utf-8")
+match = re.search(r"(?m)^Version:\s*(\d+\.\d+\.\d+)\s*$", changelog)
+if not match:
+    raise SystemExit("src/changelog.txt must contain a Factorio changelog Version entry")
+if match.group(1) != version:
+    raise SystemExit(
+        f"src/changelog.txt top version {match.group(1)} does not match src/info.json {version}"
+    )
 
 try:
     import yaml
@@ -19,8 +33,8 @@ else:
         yaml.safe_load(path.read_text(encoding="utf-8"))
 PY
 
-for file in $(rg --files -g '*.lua' src); do
+while IFS= read -r file; do
   luac -p "$file"
-done
+done < <(rg --files -g '*.lua' src)
 
 ./scripts/factorio-validate.sh

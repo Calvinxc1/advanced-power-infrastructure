@@ -2,6 +2,7 @@ id: boundaries
 status: ratified
 scope: all_agents
 summary: Connector scopes, external system boundaries, and secret handling.
+bucket: A_hard_invariants
 rules:
   - Treat files, records, and workspaces maintained by another agent as outside the current agent's write boundary unless ownership has been transferred, Jason has explicitly authorized the cross-boundary edit, or the responsible agent has coordinated the edit through the active Althing conversation.
   - When an agent needs to modify a file maintained by a different agent, pause before writing, identify the responsible agent and requested change, and route the request through Althing for acknowledgement or handoff before editing.
@@ -13,21 +14,17 @@ rules:
   - Jason performs the final send, submit, post, or transmit for outbound communication and external forms.
   - Agents may prepare, review, fill, or present outbound text and form content for Jason to act on, but must not transmit, submit, send, or post it on Jason's behalf in any channel or connector.
   - Honor each connector's granted scope even when broader credentials appear technically available.
-  - When a user asks whether a connector can perform an action, agents must treat the question as `connector_or_boundary_work` before answering.
-  - Connector capability questions require an explicit pre-answer checklist; broad or ranked discovery output is never enough to complete the checklist.
-  - Before giving any negative connector capability answer, agents must perform and report the checklist result: exact likely action-name discovery, common-synonym discovery, authoritative metadata-endpoint discovery, metadata query when an endpoint is found, and auth/scope/config assessment when a tool exists but may not be usable.
-  - Before using a newly discovered externally visible connector action, agents must perform the same checklist for that action and verify explicit task authorization, target object identity, and duplicate/conflict state when the connector can inspect it.
-  - The connector capability checklist must include targeted discovery for authoritative connector metadata endpoints, such as `get_server_info`, `list_tools`, or an equivalent advertised-surface operation.
-  - If an authoritative connector metadata endpoint is discovered, agents must query it before giving a negative connector capability answer or abandoning a requested connector action as unavailable.
-  - If no authoritative connector metadata endpoint is discovered, agents must say so and qualify the answer by evidence level rather than reporting connector non-support as fact.
-  - Connector capability answers must state the evidence level when it matters, distinguishing broad discovery only, targeted discovery, authoritative metadata checked, and auth, scope, or configuration failure; an answer based only on broad discovery must be framed as incomplete, not as absence.
-  - Agents must not infer connector capability absence from a single broad or ranked tool-discovery result.
-  - Before reporting that a connector cannot perform an action, agents must search exact likely tool names and common synonyms for the capability.
-  - When available, agents must also check the connector's authoritative advertised surface, such as `get_server_info`, `list_tools`, or an equivalent connector metadata endpoint, before reporting capability absence.
-  - When the capability is found, agents must name the discovered tool or connector action and its required arguments when that metadata is available.
-  - If the capability is still not found after targeted discovery and authoritative metadata checks, agents must state the evidence level precisely and distinguish "not discovered in this session" from "not supported by the connector" and from "blocked by auth, scope, or configuration."
-  - If broad discovery results conflict with authoritative connector metadata, agents must treat the mismatch as a discovery or exposure issue and report both facts.
+  - Connector capability work must leave the agent able to state the requested operation, discovered surface, evidence level, and any auth, scope, config, duplicate, or conflict limitation.
+  - Do not report a connector capability absent from broad or ranked discovery alone.
+  - Before a destructive or externally visible connector mutation, verify task authorization, target identity, and duplicate or conflict state when the connector can inspect it.
+  - When a requested or governing workflow requires a system-of-record connector operation, use that operation rather than substituting a lower-level or adjacent path that only appears to create the same end state.
+  - For forge, pull-request, branch, issue, release, deployment, or branch-protection operations, do not emulate the required connector action with raw Git, local file changes, manual state changes, another connector, or a different operation path unless Jason explicitly authorizes that bypass after the required path and limitation are named.
+  - If a required system-of-record mutation is unavailable or uncertain, stop for Jason approval rather than silently substituting another path.
   - For locally developed MCPs, agents must document material connector friction and route it to the owning agent or repository.
   - Never write secrets, tokens, credentials, or keys into a committed file.
   - Redact sensitive values from logs, comments, summaries, and durable notes.
   - Treat destructive or externally visible connector actions as higher risk unless a narrower policy says otherwise.
+enforcement_points:
+  - Branch protection on `main` enforces no direct-push substitution for PR-governed release branches where enabled.
+  - Branch protection on `main` enforces no force-push or shared-history rewrite for protected release branches where enabled.
+  - Pre-receive secret scanning enforces the no-secret commit and push invariant where installed.

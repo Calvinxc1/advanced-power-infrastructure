@@ -9,7 +9,7 @@ data.raw.recipe["heat-exchanger"].ingredients = optional_dependencies.ingredient
 local heat_exchanger_mk2 = util.table.deepcopy(data.raw.recipe["heat-exchanger"])
 heat_exchanger_mk2.name = "aer_heat-exchanger-2"
 heat_exchanger_mk2.enabled = false
-heat_exchanger_mk2.category = "crafting-with-fluid"
+heat_exchanger_mk2.categories = { "crafting-with-fluid" }
 heat_exchanger_mk2.ingredients = optional_dependencies.ingredients(
   optional_dependencies.item("heat-exchanger", 1),
   optional_dependencies.pipe_ingredients("rubber-lined", 10),

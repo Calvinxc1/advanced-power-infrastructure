@@ -1,18 +1,18 @@
 id: branch_descriptor
 status: active
-branch: factorio-modding-agent
+branch: enforcement-redesign/factorio-modding-agent
 kind: factorio_modding_agent
-canon_version: factorio-modding-agent/1.1.0
+canon_version: enforcement-redesign-factorio-modding-agent/1.2.0
 parent:
-  branch: coding-agent
-  canon_version: coding-agent/1.4.0
-  summary: Coding-agent contract for software engineering, GitFlow, review, documentation drift, and commit discipline.
-narrative_blurb: Factorio modding agents inherit coding-agent discipline and add Factorio lifecycle, prototype, dependency, release, changelog, and local workflow/status rules.
+  branch: enforcement-redesign/coding-agent
+  canon_version: enforcement-redesign-coding-agent/1.2.0
+  summary: Secondary enforcement-redesign coding-agent contract for software engineering, GitFlow, review, documentation drift, and commit discipline.
+narrative_blurb: Secondary enforcement-redesign Factorio modding agents inherit coding-agent discipline and add Factorio lifecycle, prototype, dependency, release, changelog, and local workflow/status rules.
 orientation:
-  consumes_layer: factorio-modding-agent
+  consumes_layer: enforcement-redesign-factorio-modding-agent
   full_picture_branch: true
-  inheritance_model: Coding-agent is merged down into this branch after Jason ratifies coding-agent or trunk changes.
-  versioning_model: canon_version tracks the consumed Factorio modding governance contract, with parent.canon_version tracking the coding-agent contract.
+  inheritance_model: enforcement-redesign/coding-agent is merged down into this branch after Jason ratifies secondary-channel coding-agent or trunk changes.
+  versioning_model: canon_version tracks the consumed secondary Factorio modding governance contract, with parent.canon_version tracking the secondary coding-agent contract.
   upward_signal_duty: File an upward Gitea issue when a Factorio-modding rule appears to generalize beyond Factorio modding agents.
   upward_issue_target: ai-projects/ai-governance
   upward_issue_format:

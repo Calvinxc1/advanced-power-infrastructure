@@ -9,6 +9,7 @@ rules:
   - Agents must use `lab-governance/templates/governance-bootstrap-prompt.md` from the ai-governance Gitea repository when the canonical bootstrap/update prompt is available.
   - Agents must not improvise governance initialization or update mechanics when the canonical bootstrap/update prompt is available.
   - The prompt path is the source of truth for initialization and update instructions, including branch selection, local status updates, and reconciliation reporting.
+  - The prompt's source branch channel is part of the source of truth. If the prompt came from an `enforcement-redesign/*` branch, bootstrap or update from the matching `enforcement-redesign/*` branch unless Jason explicitly redirects to the normal branch family.
   - The bootstrap/update process must preserve `.governance/local/status.yaml` as the portable local governance status report.
   - Completing the prompt does not imply that the legacy central registry has been updated.
   - The prompt must require live feedback about local status changes, branch selection, canon-version changes, and any reconciliation that remains unresolved.
@@ -19,7 +20,9 @@ rules:
 prompt_contract:
   - Require or confirm canonical agent name.
   - Require or confirm agent kind.
+  - Identify the prompt source branch or source channel when known.
   - Resolve the active governance branch for that agent.
+  - Preserve the prompt source branch channel during branch selection unless Jason explicitly redirects it.
   - Fetch or inspect the ai-governance Gitea repository.
   - Copy or merge the correct governance source into the local agent workspace.
   - Preserve local-only governance files unless the prompt explicitly instructs reconciliation.

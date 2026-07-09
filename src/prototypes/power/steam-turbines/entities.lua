@@ -2,8 +2,7 @@ local constants = require("prototypes.power.fluid-constants")
 local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 local function tint_steam_turbine(turbine, tint)
-  advanced_power_tint_sprite_layers(turbine.horizontal_animation.layers, tint)
-  advanced_power_tint_sprite_layers(turbine.vertical_animation.layers, tint)
+  advanced_power_apply_entity_tint(turbine, tint)
 end
 
 local function reset_steam_turbine_icon(turbine)
