@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.1
+Date: 2026.07.09
+  Bugfix
+    - Fixed automated Factorio validation in headless CI by removing a desktop-only launch flag.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.2.0
 Date: 2026.07.09
   Bugfix

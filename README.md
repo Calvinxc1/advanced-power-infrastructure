@@ -24,7 +24,7 @@ Electric poles, substations, and long-distance transmission belong in Advanced E
 
 ## Status
 
-The current mod version is `0.2.0`. This is an early public release for Factorio 2.1. The mod loads successfully in standalone mode, and the core progression is implemented. Balance values, long-running save upgrade paths, and broad compatibility with other power mods should still be treated as experimental during the 0.2.x series.
+The current mod version is `0.2.1`. This is an early public release for Factorio 2.1. The mod loads successfully in standalone mode, and the core progression is implemented. Balance values, long-running save upgrade paths, and broad compatibility with other power mods should still be treated as experimental during the 0.2.x series.
 
 The current power footprint balance benchmark is documented in [docs/power-footprint-benchmark.md](docs/power-footprint-benchmark.md).
 

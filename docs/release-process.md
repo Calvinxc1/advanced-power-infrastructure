@@ -38,7 +38,7 @@ Example release branch names:
 
 ```text
 release/0.1.1
-release/0.2.0
+release/x.y.z
 release/public-readiness
 release/docs-refresh
 release/ci-maintenance
