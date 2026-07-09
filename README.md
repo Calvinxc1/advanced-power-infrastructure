@@ -4,13 +4,12 @@
 
 This project expands Factorio 2.0 and Space Age power generation and storage infrastructure with additional progression for boilers, steam engines, steam turbines, heat exchangers, heat pipes, nuclear reactors, fusion power, solar panels, and accumulators.
 
-## What Works
+## Features
 
-Implemented so far:
-
-- Basic functionality for upgraded power infrastructure is in place, including additional tiers for boilers, steam engines, steam turbines, heat exchangers, heat pipes, nuclear reactors, solar panels, and accumulators.
-- Steam engine and steam turbine progression uses one item per tier.
-- Core mod structure has been refactored into system-oriented prototype folders with shallow lifecycle entrypoints in `data.lua`, `data-updates.lua`, and `data-final-fixes.lua`.
+- Additional tiers for boilers, steam engines, steam turbines, heat exchangers, heat pipes, nuclear reactors, solar panels, and accumulators.
+- Promethium-tier fusion reactor and fusion generator upgrades.
+- One item per steam engine and steam turbine tier.
+- System-oriented prototype folders with shallow lifecycle entrypoints in `data.lua`, `data-updates.lua`, and `data-final-fixes.lua`.
 - The current power footprint balance benchmark is documented in [docs/power-footprint-benchmark.md](docs/power-footprint-benchmark.md).
 - Fluid pipe and pump infrastructure is owned by the optional Advanced Fluid Infrastructure dependency. When it is present, this mod keeps power-generation fluidbox tuning in parity with that dependency; when it is absent, this mod uses standalone power recipes and technology gates without adding AFI-style pipe-length progression.
 - Electric grid infrastructure is owned by the optional Advanced Energy Grid dependency.
@@ -22,19 +21,11 @@ Specific changes compared to the original repository (`DanielWinks/Factorio-Adva
 - Updated recipe definitions to newer typed ingredient/result entries (`{ type = "item", name = "...", amount = N }`) instead of older positional tuple/result patterns.
 - Split electric grid infrastructure into Advanced Energy Grid.
 
-## Remaining Work
+## Release Status
 
-Work still needed for a full re-implementation of the original mod behavior:
+The current mod version is `0.1.0`. This is an early public release candidate under the Advanced Power Infrastructure name.
 
-- Complete feature-parity verification against the original content for every entity/item/recipe/technology tier and ensure no legacy behavior was dropped during the 2.0 port.
-- Rebalance all costs, stats, and unlock timing for Factorio 2.0 + Space Age progression (current values are functional but still experimental).
-- Validate all upgrade paths and replace groups in long-running saves, including migration behavior between versions.
-- Expand compatibility testing with common power-related mod combinations.
-- Perform full in-game QA across early, mid, and late game to confirm expected power network behavior, technology flow, and recipe availability.
-
-## Current Release
-
-The current mod version is `0.1.0`. Public release is pending under the Advanced Power Infrastructure name.
+The mod loads successfully in standalone mode and with its optional Advanced Fluid Infrastructure and Advanced Energy Grid integrations. Balance values, long-running save upgrade paths, and broad compatibility with other power mods are still being validated during the 0.1.x series.
 
 ## Continuous Integration
 

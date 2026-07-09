@@ -2,10 +2,12 @@
 Version: 0.1.0
 Date: 2026.07.08
   Bugfix
+    - Removed standalone item tooltips that advertised AFI pipeline extent when Advanced Fluid Infrastructure is not installed.
     - Added the Space Age dependency required by the Space Age science pack progression.
     - Fixed upgraded steam engine and steam turbine health values.
     - Hardened primary steam turbine recipe migration handling.
   Changes
+    - Updated the packaged README for the Advanced Power Infrastructure public release candidate.
     - Made Advanced Fluid Infrastructure and Advanced Energy Grid optional dependencies.
     - Added standalone recipe and technology fallback paths when Advanced Fluid Infrastructure is not installed.
     - Limited power-generation pipeline extent parity to games where Advanced Fluid Infrastructure is installed.
