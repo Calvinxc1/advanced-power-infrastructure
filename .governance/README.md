@@ -1,26 +1,18 @@
-# Lab Governance Layout
+# Repo-Local Governance Copy
 
-This directory contains the lab-wide governance rule set maintained by this repository.
+This directory is this repository's active local governance copy.
 
-These files are the general policy and process contract intended to propagate to the rest of the lab and to specialized agent branches.
+Agents working in this repository load and follow this directory the same way they would use `.governance/` in any other repository. `AGENTS.md` points here for the active local policy contract.
 
-This directory is not the active local governance entrypoint for agents working in this repository. That role belongs to `.governance/`. The two trees intentionally duplicate governance rules and may drift when the distinction is visible and intentional.
+Committed governance files under `.governance/` are ratified by existence. Status fields may still describe operational role, such as `active`, but they are not a separate ratification gate. Draft local-governance proposals must stay outside this active local governance tree until Jason ratifies them.
 
-The trunk branch carries the general contract for every agent kind. Kind branches carry complete branch-local pictures after trunk is merged down into them. Core content is intentionally duplicated across kind branches so an agent can read one branch and have the complete contract.
+Use `task-map.yaml` as the explicit loading contract. It may define reusable route groups, but agents should still load only the groups and direct files named by selected routes instead of scanning policy folders.
 
-Layout:
+This directory intentionally duplicates governance rules that may also appear in `lab-governance/`. Drift is allowed when it is visible and intentional:
 
-- `AGENTS.md`: thin entrypoint with precedence, always-load policy, and routing pointer.
-- `.governance/governance-init.md`: setup guide for initializing governance in a new or unverified agent workspace.
-- `.governance/task-map.yaml`: task or session routing to the additional policy files that should be loaded. Route groups provide reusable subroutes; selected routes, not folder names, remain the explicit loading contract.
-- `.governance/policies/`: standing domain policies in YAML.
-- `.governance/processes/`: meta-governance and operating processes.
-- `.governance/overrides/`: temporary exception log and its schema.
-- `.governance/templates/`: reusable setup templates, including the local governance status template, loose local index template, legacy self-stamp template, and canonical governance bootstrap prompt.
-- `.governance/templates/governance-bootstrap-prompt.md`: canonical prompt for first-time governance initialization and governed-agent updates.
-- `.governance/templates/kind-branch-migration-checklist.md`: version-agnostic checklist for adopting a target kind branch without hard-coding a particular canon version.
-- `.governance/templates/local-index.yaml`: loose pointer template for `.governance/local/index.yaml`; the local directory's internal structure remains workspace-owned.
-- `.governance/templates/local-status.yaml`: local status template for `.governance/local/status.yaml`; this is metadata, not a local policy body.
-- Kind branches may add branch-specific templates; the Factorio modding branch includes `.governance/templates/factorio-local-workflow.yaml` to scaffold workspace-local Factorio workflow/status facts.
+- `.governance/` governs this repository's work.
+- `lab-governance/` is the generalized rule set maintained here for propagation to other agents and repositories.
 
-Kind branches add `.governance/branch-descriptor.yaml` and `.governance/kind-routes.yaml`. Trunk does not carry those files, so trunk merge-downs do not overwrite kind orientation or kind-specific routing.
+This secondary branch channel uses the enforcement-first redesign. Rules should be sorted into hard invariants, outcome-plus-bounds policies, or deliberately ungoverned cheap reversible work.
+
+Use `local/` for explicit repo-local deviations from the generalized rule set. The universal local policy pointer is `local/index.yaml`; the universal local governance status report is `local/status.yaml`. Everything else under `local/` is workspace-owned unless explicitly routed by that local pointer. Use `records/` for repo-local alignment notes or operational metadata. If a local rule should become general lab governance, promote it through an explicit `lab-governance/` policy or process change.

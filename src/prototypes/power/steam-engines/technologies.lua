@@ -1,12 +1,20 @@
+local optional_dependencies = require("prototypes.power.optional-dependencies")
+
 local steam_engine_mk2 = util.table.deepcopy(data.raw.technology["steel-processing"])
 steam_engine_mk2.name = "aer_steel-steam-engine"
 steam_engine_mk2.icon = "__advanced-power-infrastructure__/graphics/technology/steel-steam-engines.png"
 steam_engine_mk2.icon_size = 256
 steam_engine_mk2.icons = nil
-steam_engine_mk2.prerequisites = {
-  "afi_steel-pump-infrastructure",
-  "flammables",
-}
+steam_engine_mk2.prerequisites = optional_dependencies.prerequisites(
+  {
+    "afi_steel-pump-infrastructure",
+    "flammables",
+  },
+  {
+    "steel-processing",
+    "flammables",
+  }
+)
 steam_engine_mk2.effects ={
   {type = "unlock-recipe", recipe = "aer_steel-steam-engine"},
 }
@@ -25,13 +33,20 @@ steam_engine_mk3.name = "aer_rubber-lined-steam-engine"
 steam_engine_mk3.icon = "__advanced-power-infrastructure__/graphics/technology/rubber-lined-steam-engines.png"
 steam_engine_mk3.icon_size = 256
 steam_engine_mk3.icons = nil
-steam_engine_mk3.prerequisites = {
-  "afi_rubber-lined-pump-infrastructure",
-  "aer_steel-steam-engine",
-  "lubricant",
-  "chemical-science-pack",
-  "production-science-pack",
-}
+steam_engine_mk3.prerequisites = optional_dependencies.prerequisites(
+  {
+    "afi_rubber-lined-pump-infrastructure",
+    "aer_steel-steam-engine",
+    "lubricant",
+    "chemical-science-pack",
+    "production-science-pack",
+  },
+  {
+    "aer_steel-steam-engine",
+    "lubricant",
+    "production-science-pack",
+  }
+)
 steam_engine_mk3.effects = {
   {type = "unlock-recipe", recipe = "aer_rubber-lined-steam-engine"},
 }

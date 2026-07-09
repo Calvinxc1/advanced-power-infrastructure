@@ -17,8 +17,7 @@ steam_engine_mk2.next_upgrade = "aer_rubber-lined-steam-engine"
 fluid_helpers.set_prototype_fluid_boxes_extent(steam_engine_mk2, fluid_constants.steel.pipeline_extent)
 fluid_helpers.set_description(steam_engine_mk2, fluid_helpers.boiler_description(fluid_constants.steel.pipeline_extent))
 advanced_power_apply_steel_icon_tint(steam_engine_mk2)
-advanced_power_tint_sprite_layers(steam_engine_mk2.horizontal_animation.layers, steel_tier_entity_tint)
-advanced_power_tint_sprite_layers(steam_engine_mk2.vertical_animation.layers, steel_tier_entity_tint)
+advanced_power_apply_entity_tint(steam_engine_mk2, steel_tier_entity_tint)
 data:extend({steam_engine_mk2})
 
 local steam_engine_mk3 = util.table.deepcopy(data.raw["generator"]["steam-engine"])
@@ -31,8 +30,7 @@ steam_engine_mk3.next_upgrade = "aer_holmium-steam-engine"
 fluid_helpers.set_prototype_fluid_boxes_extent(steam_engine_mk3, fluid_constants.rubber_lined.pipeline_extent)
 fluid_helpers.set_description(steam_engine_mk3, fluid_helpers.boiler_description(fluid_constants.rubber_lined.pipeline_extent))
 advanced_power_apply_rubber_lined_icon_tint(steam_engine_mk3)
-advanced_power_tint_sprite_layers(steam_engine_mk3.horizontal_animation.layers, rubber_lined_tier_entity_tint)
-advanced_power_tint_sprite_layers(steam_engine_mk3.vertical_animation.layers, rubber_lined_tier_entity_tint)
+advanced_power_apply_entity_tint(steam_engine_mk3, rubber_lined_tier_entity_tint)
 data:extend({steam_engine_mk3})
 
 local steam_engine_mk4 = util.table.deepcopy(data.raw["generator"]["steam-engine"])
@@ -45,6 +43,5 @@ steam_engine_mk4.next_upgrade = nil
 fluid_helpers.set_prototype_fluid_boxes_extent(steam_engine_mk4, fluid_constants.reinforced.pipeline_extent)
 fluid_helpers.set_description(steam_engine_mk4, fluid_helpers.boiler_description(fluid_constants.reinforced.pipeline_extent))
 advanced_power_apply_holmium_icon_tint(steam_engine_mk4)
-advanced_power_tint_sprite_layers(steam_engine_mk4.horizontal_animation.layers, holmium_tier_entity_tint)
-advanced_power_tint_sprite_layers(steam_engine_mk4.vertical_animation.layers, holmium_tier_entity_tint)
+advanced_power_apply_entity_tint(steam_engine_mk4, holmium_tier_entity_tint)
 data:extend({steam_engine_mk4})

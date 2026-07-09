@@ -13,7 +13,7 @@ data:extend({boiler_mk2})
 local boiler_mk3 = util.table.deepcopy(data.raw.recipe["boiler"])
 boiler_mk3.name = "aer_rubber-lined-boiler"
 boiler_mk3.enabled = false
-boiler_mk3.category = "crafting-with-fluid"
+boiler_mk3.categories = { "crafting-with-fluid" }
 boiler_mk3.ingredients = {
   { type = "item", name = "aer_steel-boiler", amount = 1 },
   { type = "item", name = "plastic-bar", amount = 10 },
@@ -27,7 +27,7 @@ data:extend({boiler_mk3})
 local boiler_mk4 = util.table.deepcopy(data.raw.recipe["boiler"])
 boiler_mk4.name = "aer_holmium-reinforced-boiler"
 boiler_mk4.enabled = false
-boiler_mk4.category = "crafting-with-fluid"
+boiler_mk4.categories = { "crafting-with-fluid" }
 boiler_mk4.ingredients = {
   { type = "item", name = "aer_rubber-lined-boiler", amount = 1 },
   { type = "item", name = "electric-furnace", amount = 5 },

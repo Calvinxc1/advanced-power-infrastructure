@@ -2,6 +2,11 @@ id: inter_agent_communication
 status: ratified
 scope: all_agents
 summary: Index for split agent communication policies and portable brief formatting.
+collaboration_levels:
+  read_another_agent_files: Inspect another agent's durable files within read permission and cite or summarize the relevant facts.
+  one_shot_position: Ask another agent for one bounded position or factual check; Jason or the requesting agent continues without live convergence.
+  positions_plus_decider: Collect bounded positions from multiple agents and route the decision to the named decider without requiring the agents to converge live.
+  iterative_live_room: Convene a live room only when agents must exchange multiple turns, resolve disagreement, coordinate active handoff, or maintain shared live state.
 rules:
   - Load `.governance/policies/agent-identity.yaml` for canonical identity rules.
   - Load `.governance/policies/durable-communication-boundaries.yaml` for durable record and governance-canon boundaries.
@@ -15,7 +20,8 @@ rules:
   - Before sending a copy/paste code block, scan the final text to confirm the outer fence opens and closes exactly once and no embedded fence terminates the block early.
   - Do not put explanatory text inside the copy/paste code block unless it is part of the communication Jason should send.
   - Use copy/paste relay for one-way messages, bounded requests, simple handoffs, or exchanges expected to need no more than one response.
-  - Use an Althing or other live room when the exchange needs multi-turn convergence, disagreement resolution, live handoff, shared situational awareness, or reduced Jason mediation.
+  - Use an Althing or other live room only for iterative live-room collaboration.
   - If a relay exchange becomes repeated back-and-forth or clearly needs live coordination, surface that immediately.
   - If the agent has live-room access, it must start or join the room itself, post the room packet there, and give Jason only the short invite prompt needed to summon another participant.
   - If the agent lacks live-room access, it may provide Jason a ready-to-use room-start prompt for an agent that can create or join the room.
+  - Insight can travel through reads, summaries, bounded position requests, or live rooms; one agent still must not write in another agent's domain without authorization.

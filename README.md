@@ -1,47 +1,63 @@
 # Advanced Power Infrastructure
 
-## Purpose
+Advanced Power Infrastructure is a Factorio 2.1 + Space Age mod that expands power generation and storage progression from early steam through late-game nuclear, fusion, solar, and accumulator upgrades.
 
-This project expands Factorio 2.0 and Space Age power generation and storage infrastructure with additional progression for boilers, steam engines, steam turbines, heat exchangers, heat pipes, nuclear reactors, fusion power, solar panels, and accumulators.
+## Requirements
 
-## What Works
+- Factorio 2.1.
+- Space Age.
 
-Implemented so far:
+## Features
 
-- Basic functionality for upgraded power infrastructure is in place, including additional tiers for boilers, steam engines, steam turbines, heat exchangers, heat pipes, nuclear reactors, solar panels, and accumulators.
-- Steam engine and steam turbine progression uses one item per tier.
-- Core mod structure has been refactored into system-oriented prototype folders with shallow lifecycle entrypoints in `data.lua`, `data-updates.lua`, and `data-final-fixes.lua`.
-- The current power footprint balance benchmark is documented in [docs/power-footprint-benchmark.md](docs/power-footprint-benchmark.md).
-- Fluid pipe and pump infrastructure is owned by the required Advanced Fluid Infrastructure dependency; this mod only keeps the power-generation fluidbox tuning that belongs to boilers, steam engines, steam turbines, heat exchangers, reactors, and fusion power.
-- Electric grid infrastructure is owned by the required Advanced Energy Grid dependency.
+- Additional boiler, steam engine, steam turbine, heat exchanger, heat pipe, and nuclear reactor tiers.
+- Promethium-tier fusion reactor and fusion generator upgrades.
+- Holmium and cryogenic solar panel and accumulator upgrades.
+- Power-focused progression that uses Space Age materials and science packs.
+- Optional integration with Advanced Fluid Infrastructure for power-machine pipeline extent descriptions.
+- Optional companion scope split with Advanced Energy Grid for electric grid infrastructure.
 
-Specific changes compared to the original repository (`DanielWinks/Factorio-Advanced-Electric`):
+## Scope
 
-- Ported mod metadata to Factorio 2.0 (`factorio_version` updated from `0.16` to `2.0`).
-- Updated technologies toward 2.0/Space Age progression by using newer science pack dependencies (for example `electromagnetic-science-pack`, `cryogenic-science-pack`, and other modern pack chains) instead of the original 0.16-era pack requirements.
-- Updated recipe definitions to newer typed ingredient/result entries (`{ type = "item", name = "...", amount = N }`) instead of older positional tuple/result patterns.
-- Split electric grid infrastructure into Advanced Energy Grid.
+This mod owns power generation and storage: boilers, steam engines, steam turbines, heat exchangers, heat pipes, nuclear reactors, fusion power, solar panels, accumulators, recipes, technologies, and related balance data.
 
-## Remaining Work
+Electric poles, substations, and long-distance transmission belong in Advanced Energy Grid. Pipes, pipe-to-ground entities, pumps, offshore pumps, and general fluid infrastructure belong in Advanced Fluid Infrastructure. Those companion mods are optional; Advanced Power Infrastructure remains loadable on its own with Space Age.
 
-Work still needed for a full re-implementation of the original mod behavior:
+## Status
 
-- Complete feature-parity verification against the original content for every entity/item/recipe/technology tier and ensure no legacy behavior was dropped during the 2.0 port.
-- Rebalance all costs, stats, and unlock timing for Factorio 2.0 + Space Age progression (current values are functional but still experimental).
-- Validate all upgrade paths and replace groups in long-running saves, including migration behavior between versions.
-- Expand compatibility testing with common power-related mod combinations.
-- Perform full in-game QA across early, mid, and late game to confirm expected power network behavior, technology flow, and recipe availability.
+The current mod version is `0.2.0`. This is an early public release for Factorio 2.1. The mod loads successfully in standalone mode, and the core progression is implemented. Balance values, long-running save upgrade paths, and broad compatibility with other power mods should still be treated as experimental during the 0.2.x series.
 
-## Current Release
+The current power footprint balance benchmark is documented in [docs/power-footprint-benchmark.md](docs/power-footprint-benchmark.md).
 
-The current mod version is `0.1.0`. Public release is pending under the Advanced Power Infrastructure name.
+## Installation
 
-## Continuous Integration
+Install the released mod through the Factorio Mod Portal when available. Release packages are also attached to repository releases as `{mod-name}_{version}.zip`.
 
-Pull requests run `.gitea/workflows/validate.yml`, which executes the same `./scripts/validate.sh` check used locally.
+For local development, keep the repository layout intact and run validation from the repository root:
 
-The Gitea runner must have:
+```sh
+./scripts/validate.sh
+```
 
-- Factorio installed and available on `PATH` as `factorio`, at `$HOME/Games/steam/steamapps/common/Factorio/bin/x64/factorio`, or through `FACTORIO_BIN`.
-- A Factorio mods directory at `$HOME/.factorio/mods` or through `FACTORIO_MODS_DIR`.
-- Required mod dependencies, including Advanced Fluid Infrastructure and Advanced Energy Grid, available in that mods directory.
+Build a local release package with:
+
+```sh
+./scripts/package.sh
+```
+
+The package is written to `dist/` as `{mod-name}_{version}.zip`.
+
+Release packaging and automated deployment are documented in [docs/release-process.md](docs/release-process.md). Versioning policy is documented in [docs/semantic-versioning.md](docs/semantic-versioning.md).
+
+## Provenance
+
+Advanced Power Infrastructure is a renamed and substantially updated continuation of `DanielWinks/Factorio-Advanced-Electric`, which was released under GPLv3. Local changes include the Factorio 2.1 and Space Age port, the `aer_` prototype namespace, the split into optional companion infrastructure mods, and expanded power-generation progression.
+
+## License
+
+Advanced Power Infrastructure is distributed under the GNU General Public License version 3. See [LICENSE](LICENSE).
+
+## AI Disclosure
+
+This mod is developed with substantial AI assistance. AI tools have contributed to code implementation, documentation, validation workflow setup, release automation, compatibility review, and generated artwork.
+
+AI-assisted work in this repository is governed through the policy files under `.governance/`. Those policies are intended to keep AI contributions reviewable, scoped to the task at hand, and aligned with the repository's validation and release process.

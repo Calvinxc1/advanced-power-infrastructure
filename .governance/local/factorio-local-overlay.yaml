@@ -7,35 +7,35 @@ metadata_path: src/info.json
 namespace_prefixes:
   - aer_
 dependency_stack:
-  - base >= 2.0.0
-  - space-age >= 2.0.0
+  - base >= 2.1.0
+  - space-age >= 2.1.0
+optional_dependencies:
   - advanced-fluid-infrastructure >= 0.0.1
   - advanced-energy-grid >= 0.0.1
-optional_dependencies:
   - RampantArsenalFork
 upstream_or_fork_source: DanielWinks/Factorio-Advanced-Electric
 scope_boundaries:
-  - Owns expanded power generation and storage progression for Factorio 2.0 and Space Age.
-  - Owns boilers, steam engines, steam turbines, heat exchangers, heat pipes, nuclear reactors, fusion power, solar panels, accumulators, and power-scoped fluidbox tuning.
+  - Owns expanded power generation and storage progression for Factorio 2.1 and Space Age.
+  - Owns boilers, steam engines, steam turbines, heat exchangers, heat pipes, nuclear reactors, fusion power, solar panels, accumulators, and optional power-scoped fluidbox tuning when Advanced Fluid Infrastructure is installed.
   - Does not own electric grid infrastructure; Advanced Energy Grid owns that scope.
   - Does not own fluid pipe and pump infrastructure; Advanced Fluid Infrastructure owns that scope.
-release_target: Pending public release under the Advanced Power Infrastructure name.
+release_target: Factorio 2.1 and Space Age mod releases under the Advanced Power Infrastructure name.
 changelog_format: Factorio mod portal changelog.txt format at src/changelog.txt.
 validation_available:
   json: true
   lua_syntax: true
   lint: false
   format: false
-  factorio_load: conditional_on_local_factorio_binary_mods_dir_and_required_dependencies
+  factorio_load: true
 workspace_specific_rules:
   - Preserve the repo-local aer_ custom prototype ID namespace unless an intentional migration plan is part of the task.
   - Keep lifecycle entrypoints shallow in src/data.lua, src/data-updates.lua, and src/data-final-fixes.lua.
   - Keep power prototype logic organized under src/prototypes/power by system.
   - Do not move electric-grid or fluid-pipe ownership back into this mod without explicit scope approval.
 migration_notes:
-  - Ported from the original 0.16-era source toward Factorio 2.0 and Space Age progression.
+  - Ported from the original 0.16-era source toward Factorio 2.1 and Space Age progression.
   - Electric grid infrastructure was split into Advanced Energy Grid.
-  - Fluid pipe and pump infrastructure was moved to Advanced Fluid Infrastructure.
+  - Fluid pipe and pump infrastructure was moved to optional Advanced Fluid Infrastructure integration.
   - Current balance values are functional but experimental.
   - Long-running save upgrade paths and replace groups still need validation.
 notes: Filled from src/info.json, README.md, src/changelog.txt, and local validation scripts. Do not put secrets or credentials here.

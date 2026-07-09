@@ -1,49 +1,31 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.1.0
-Date: 2026.07.08
+Version: 0.2.0
+Date: 2026.07.09
   Bugfix
+    - Updated metadata and prototype definitions for Factorio 2.1 compatibility.
+    - Migrated fluid-using recipes from the removed `category` field to the Factorio 2.1 `categories` field.
+    - Updated steam engine and steam turbine entity tinting for the Factorio 2.1 generator `pictures` layout.
+    - Removed standalone item tooltips that advertised Advanced Fluid Infrastructure pipeline extent when Advanced Fluid Infrastructure is not installed.
     - Added the Space Age dependency required by the Space Age science pack progression.
     - Fixed upgraded steam engine and steam turbine health values.
     - Hardened primary steam turbine recipe migration handling.
   Changes
-    - Moved electric grid infrastructure ownership to the Advanced Energy Grid dependency.
-    - Removed local electric pole, substation, huge-pole, electric-grid technology, locale, and technology graphic ownership.
-    - Moved fluid pipe and pump infrastructure ownership to the Advanced Fluid Infrastructure dependency.
-    - Removed local fluid infrastructure prototypes, technology graphics, locale entries, compatibility patches, and benchmark documentation.
-    - Updated power recipes and technology prerequisites to reference Advanced Fluid Infrastructure fluid item and technology prototype IDs.
-    - Kept power-generation pipeline extent tuning local to this mod through power-scoped fluid constants and helpers.
-    - Added pipeline extent descriptions to steam engine entity and item tooltips.
-    - Retuned custom technology icons toward the stock Factorio technology style.
-    - Added first-pass iron and steel fluid infrastructure progression for pipeline extent and pump speed.
-    - Trimmed iron and steel pipe-to-ground underground reach for the new fluid progression.
-    - Split steel fluid infrastructure into separate pipe and pump technology tracks with custom icons.
-    - Added a subtle steel-blue icon tint to steel fluid infrastructure items.
-    - Simplified steel fluid research icons around the unlocked infrastructure items.
-    - Gated steel boiler and steam-engine upgrades behind the matching steel pipe and pump infrastructure tracks.
-    - Applied the steel-blue sheen to Tier 2 boiler icons and entity graphics.
+    - Added the first Advanced Power Infrastructure public release candidate for Factorio 2.1 and Space Age.
+    - Added release packaging, CI validation, deployment automation, and public release documentation.
+    - Updated the repository README and packaged README for public presentation.
+    - Clarified GPLv3 licensing, AI-assisted development disclosure, and upstream provenance.
+    - Made Advanced Fluid Infrastructure and Advanced Energy Grid optional dependencies.
+    - Added standalone recipe and technology fallback paths when Advanced Fluid Infrastructure is not installed.
+    - Limited power-generation pipeline extent parity to games where Advanced Fluid Infrastructure is installed.
+    - Split electric grid infrastructure into the optional Advanced Energy Grid companion mod.
+    - Split fluid pipe and pump infrastructure into the optional Advanced Fluid Infrastructure companion mod.
+    - Added pipeline extent descriptions to relevant power entity and item tooltips when supported.
     - Consolidated steam engines and steam turbines back to one item per tier.
     - Renamed the base steam engine to Iron Steam Engine and MK2 to Steel Steam Engine.
-    - Applied the steel-blue sheen to Steel Steam Engine icons and entity graphics while reverting other steam engines and turbines to base graphics.
-    - Simplified steel fluid infrastructure technology icons to one large visual instance per unlocked item.
-    - Renamed steel boiler and steel steam engine backend prototype IDs for material-tier consistency.
-    - Added the repo-local `aer_` custom prototype ID policy and migrated custom prototype IDs to that namespace.
-    - Enlarged steel fluid infrastructure technology icons and aligned their steel-blue sheen with the unlocked item icons.
-    - Renamed the first boiler and steam engine upgrade technologies to Steel Boilers and Steel Steam Engines with steel-tier research icons.
-    - Renamed the steel boiler and steel steam engine technology prototype IDs to match material-tier naming.
-    - Reorganized prototype definitions into system folders and split fluid infrastructure definitions by prototype responsibility.
-    - Regenerated steel-tier technology icons from base item icons with the same steel-blue overlay used by in-game item icons.
-    - Added rubber-lined fluid infrastructure, boilers, and steam engines as a blue-science stepping-stone tier using plastic and lubricant.
-    - Adjusted steel pipe-to-ground crafting to consume a full underground pair for a full upgraded pair.
-    - Removed duplicated pumping speed text from custom pump and offshore pump descriptions.
-    - Retuned steel and rubber-lined fluid infrastructure research costs and moved steel boiler and steam-engine upgrades back out of chemical science.
-    - Gated steel boiler and steam-engine upgrades behind flammables and raised their research costs.
-    - Moved rubber-lined boiler and steam-engine upgrades into production science while keeping rubber-lined fluid infrastructure in chemical science.
-    - Added advanced circuits to the rubber-lined steam engine recipe.
-    - Added low-pressure steel pipe and pump infrastructure for space platforms, branching from steel fluid infrastructure.
-    - Added heat-resistant pipe and pump infrastructure for Vulcanus, unlocked by calcite processing.
-    - Added tungsten fluid piping and pumping tracks for Vulcanus with steel-tier pipe and pump stats.
-    - Added low-pressure space-platform, reinforced, foundation, and high-pressure foundation fluid infrastructure tiers.
-    - Added fluid infrastructure benchmark documentation.
+    - Applied tier-specific icon and entity tinting to upgraded power machines.
+    - Migrated custom prototype IDs to the repo-local `aer_` namespace.
+    - Reorganized prototype definitions into power-system folders with shallow lifecycle entrypoints.
+    - Added rubber-lined boilers and steam engines as a production-science stepping-stone tier using plastic and lubricant.
     - Added tiered solar panels and accumulators with late-game Fulgora and Aquilo progression.
     - Added the power footprint benchmark covering solar, steam, nuclear, and fusion power lines.
     - Expanded nuclear progression with named reactor, heat exchanger, heat pipe, and steam turbine upgrade lines.

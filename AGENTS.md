@@ -10,6 +10,7 @@ If ambiguity remains, ask before acting. Override-governance rules are non-overr
 
 Always load:
 - `.governance/policies/universal.yaml`
+- `.governance/policies/enforcement-model.yaml`
 
 Load additional policy only via:
 - `.governance/task-map.yaml`
