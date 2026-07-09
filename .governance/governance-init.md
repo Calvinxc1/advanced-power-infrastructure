@@ -12,11 +12,11 @@ This document is a setup guide, not a replacement for policy. The operative cont
 
 2. Load the always-load policy.
 
-   Follow the entrypoint exactly. In this governance system, the normal always-load file is `.governance/policies/universal.yaml` for an active workspace copy, or `.governance/policies/universal.yaml` when initializing from the generalized lab governance source.
+   Follow the entrypoint exactly. In this governance system, the normal always-load file is `.governance/policies/universal.yaml` for an active workspace copy, or `lab-governance/policies/universal.yaml` when initializing from the generalized lab governance source.
 
 3. Load task-specific policy through the task map.
 
-   Use `.governance/task-map.yaml` in an active workspace copy. Use `.governance/task-map.yaml` only when bootstrapping from the generalized source or maintaining generalized governance itself.
+   Use `.governance/task-map.yaml` in an active workspace copy. Use `lab-governance/task-map.yaml` only when bootstrapping from the generalized source or maintaining generalized governance itself.
 
    If the task asks the agent to join, monitor, coordinate in, or close an Althing or other live agent room, select the `live_agent_coordination` route before joining the room.
 
@@ -44,7 +44,7 @@ This document is a setup guide, not a replacement for policy. The operative cont
 
    Read `.governance/local/status.yaml` when present. This is the universal local status path for a governed workspace. It records the agent's canonical name, kind, active governance branch, current active canon version, current generalized canon version, source, and locally attested status.
 
-   If the file is missing during initialization or update, create it from `.governance/templates/local-status.yaml`. Fill only locally attested values and use `null` for unknowns. Legacy self-stamps such as `.governance/local/version-stamp.yaml` may be used as input, but the local status file is the authoritative portable report.
+   If the file is missing during initialization or update, create it from `lab-governance/templates/local-status.yaml`. Fill only locally attested values and use `null` for unknowns. Legacy self-stamps such as `.governance/local/version-stamp.yaml` may be used as input, but the local status file is the authoritative portable report.
 
 8. Apply the startup version rule.
 
@@ -58,7 +58,7 @@ This document is a setup guide, not a replacement for policy. The operative cont
 
    Then wait for Jason's answer before substantive work.
 
-   If Jason answers yes, use `.governance/templates/governance-bootstrap-prompt.md` from the ai-governance repository as the canonical bootstrap/update prompt. Follow that prompt for source branch selection, local governance update, local status update, and reconciliation reporting.
+   If Jason answers yes, use `lab-governance/templates/governance-bootstrap-prompt.md` from the ai-governance repository as the canonical bootstrap/update prompt. Follow that prompt for source branch selection, local governance update, local status update, and reconciliation reporting.
 
 9. Declare loaded governance if action will follow.
 
@@ -94,11 +94,11 @@ Use this sequence when an agent workspace does not yet have a local governance c
 
 4. Create or update the local status file.
 
-   Ensure `.governance/local/status.yaml` exists. Start from `.governance/templates/local-status.yaml`. Fill only locally attested values. Use `null` rather than invented data.
+   Ensure `.governance/local/status.yaml` exists. Start from `lab-governance/templates/local-status.yaml`. Fill only locally attested values. Use `null` rather than invented data.
 
 5. Create or preserve the local governance index.
 
-   Ensure `.governance/local/index.yaml` exists. Start from `.governance/templates/local-index.yaml` if needed. The index is a loose pointer into local governance; do not prescribe the rest of `.governance/local/` from lab governance.
+   Ensure `.governance/local/index.yaml` exists. Start from `lab-governance/templates/local-index.yaml` if needed. The index is a loose pointer into local governance; do not prescribe the rest of `.governance/local/` from lab governance.
 
 6. Reconcile local status with source governance state.
 
@@ -134,7 +134,7 @@ Kind branches may add:
 This `ai-governance` repository also maintains:
 
 ```text
-.governance/
+lab-governance/
 agent-registry/
 canon-version-log/
 ```

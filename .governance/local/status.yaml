@@ -11,4 +11,4 @@ runtime_surface: codex_cli
 code_authority: factorio_mod_workspace_with_explicit_user_authorization
 last_verified_at: 2026-07-08
 agent_declared_status: current
-notes: Refreshed from ai-governance factorio-modding-agent commit 4c806a6cad8c776cd59021b5abb11afc5d0f5f33 after Jason confirmed canonical identity. Legacy local self-stamp, registry attestation files, and pre-update governance snapshots were purged at Jason's request on 2026-07-08.
+notes: Refreshed from ai-governance factorio-modding-agent commit 4c806a6cad8c776cd59021b5abb11afc5d0f5f33 after Jason reconfirmed canonical identity for this governed-agent update. Legacy local self-stamp, registry attestation files, and pre-update governance snapshots were previously purged at Jason's request on 2026-07-08.
