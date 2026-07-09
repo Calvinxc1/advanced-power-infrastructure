@@ -102,7 +102,6 @@ set +e
   --config "$config_dir/config.ini" \
   --mod-directory "$mods_dir" \
   --create "$save_path" \
-  --disable-audio \
   >"$log_path" 2>&1
 status=$?
 set -e
