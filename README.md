@@ -27,6 +27,12 @@ The current mod version is `0.1.0`. This is an early public release candidate un
 
 The mod loads successfully in standalone mode and with its optional Advanced Fluid Infrastructure and Advanced Energy Grid integrations. Balance values, long-running save upgrade paths, and broad compatibility with other power mods are still being validated during the 0.1.x series.
 
+## License
+
+Advanced Power Infrastructure is distributed under the GNU General Public License version 3. See [LICENSE](LICENSE).
+
+This project is a renamed and substantially updated continuation of `DanielWinks/Factorio-Advanced-Electric`, which was also released under GPLv3. Local changes include the Factorio 2.0 and Space Age port, renamed prototype namespace, dependency split, optional Advanced Fluid Infrastructure and Advanced Energy Grid integrations, and expanded power-generation progression.
+
 ## Continuous Integration
 
 Pull requests run `.gitea/workflows/validate.yml`, which executes the same `./scripts/validate.sh` check used locally.

@@ -8,6 +8,7 @@ Date: 2026.07.08
     - Hardened primary steam turbine recipe migration handling.
   Changes
     - Updated the packaged README for the Advanced Power Infrastructure public release candidate.
+    - Clarified GPLv3 licensing and upstream provenance in the public README files.
     - Made Advanced Fluid Infrastructure and Advanced Energy Grid optional dependencies.
     - Added standalone recipe and technology fallback paths when Advanced Fluid Infrastructure is not installed.
     - Limited power-generation pipeline extent parity to games where Advanced Fluid Infrastructure is installed.
