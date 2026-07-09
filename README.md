@@ -12,8 +12,8 @@ Implemented so far:
 - Steam engine and steam turbine progression uses one item per tier.
 - Core mod structure has been refactored into system-oriented prototype folders with shallow lifecycle entrypoints in `data.lua`, `data-updates.lua`, and `data-final-fixes.lua`.
 - The current power footprint balance benchmark is documented in [docs/power-footprint-benchmark.md](docs/power-footprint-benchmark.md).
-- Fluid pipe and pump infrastructure is owned by the required Advanced Fluid Infrastructure dependency; this mod only keeps the power-generation fluidbox tuning that belongs to boilers, steam engines, steam turbines, heat exchangers, reactors, and fusion power.
-- Electric grid infrastructure is owned by the required Advanced Energy Grid dependency.
+- Fluid pipe and pump infrastructure is owned by the optional Advanced Fluid Infrastructure dependency. When it is present, this mod keeps power-generation fluidbox tuning in parity with that dependency; when it is absent, this mod uses standalone power recipes and technology gates without adding AFI-style pipe-length progression.
+- Electric grid infrastructure is owned by the optional Advanced Energy Grid dependency.
 
 Specific changes compared to the original repository (`DanielWinks/Factorio-Advanced-Electric`):
 
@@ -44,4 +44,4 @@ The Gitea runner must have:
 
 - Factorio installed and available on `PATH` as `factorio`, at `$HOME/Games/steam/steamapps/common/Factorio/bin/x64/factorio`, or through `FACTORIO_BIN`.
 - A Factorio mods directory at `$HOME/.factorio/mods` or through `FACTORIO_MODS_DIR`.
-- Required mod dependencies, including Advanced Fluid Infrastructure and Advanced Energy Grid, available in that mods directory.
+- Optional mod dependencies, including Advanced Fluid Infrastructure and Advanced Energy Grid, available in that mods directory when validating optional integration behavior.

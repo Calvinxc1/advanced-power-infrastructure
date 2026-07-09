@@ -1,4 +1,5 @@
 local constants = require("prototypes.power.fluid-constants")
+local optional_dependencies = require("prototypes.power.optional-dependencies")
 
 local helpers = {}
 
@@ -75,7 +76,7 @@ function helpers.apply_foundation_entity_tint(prototype)
 end
 
 function helpers.set_fluid_box_extent(fluid_box, extent)
-  if fluid_box then
+  if optional_dependencies.has_advanced_fluid_infrastructure and fluid_box then
     fluid_box.max_pipeline_extent = extent
   end
 end
@@ -100,18 +101,31 @@ function helpers.set_prototype_fluid_boxes_extent(prototype, extent)
 end
 
 function helpers.set_description(prototype, description)
-  if prototype then
+  if prototype and description then
     prototype.localised_description = description
   end
 end
 
 function helpers.set_resistances(prototype, resistances)
-  if prototype then
-    prototype.resistances = util.table.deepcopy(resistances)
+  if not prototype or not resistances then
+    return
   end
+
+  local filtered = {}
+  for _, resistance in ipairs(resistances) do
+    if data.raw["damage-type"][resistance.type] then
+      table.insert(filtered, util.table.deepcopy(resistance))
+    end
+  end
+
+  prototype.resistances = filtered
 end
 
 function helpers.boiler_description(extent)
+  if not optional_dependencies.has_advanced_fluid_infrastructure then
+    return nil
+  end
+
   return { "description.aer_boiler-fluid-stats", tostring(extent) }
 end
 

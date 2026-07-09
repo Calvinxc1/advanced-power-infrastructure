@@ -11,9 +11,9 @@ namespace_prefixes:
 dependency_stack:
   - base >= 2.0.0
   - space-age >= 2.0.0
+optional_dependencies:
   - advanced-fluid-infrastructure >= 0.0.1
   - advanced-energy-grid >= 0.0.1
-optional_dependencies:
   - RampantArsenalFork
 scope_boundaries:
   - Owns expanded power generation and storage progression for Factorio 2.0 and Space Age.
@@ -57,7 +57,7 @@ validation_available:
   lua_syntax: true
   lint: false
   format: false
-  factorio_load: conditional_on_local_factorio_binary_mods_dir_and_required_dependencies
+  factorio_load: conditional_on_local_factorio_binary_mods_dir_and_selected_optional_dependencies
 declared_deviations:
   - Jason described the current stage as dev-introduced; the governing branch policy stage name for this mode is dev_promotion.
   - This continuation from an upstream source uses a custom local workflow declaration rather than assuming the generic internal-mod workflow.

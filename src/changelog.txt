@@ -6,11 +6,14 @@ Date: 2026.07.08
     - Fixed upgraded steam engine and steam turbine health values.
     - Hardened primary steam turbine recipe migration handling.
   Changes
-    - Moved electric grid infrastructure ownership to the Advanced Energy Grid dependency.
+    - Made Advanced Fluid Infrastructure and Advanced Energy Grid optional dependencies.
+    - Added standalone recipe and technology fallback paths when Advanced Fluid Infrastructure is not installed.
+    - Limited power-generation pipeline extent parity to games where Advanced Fluid Infrastructure is installed.
+    - Moved electric grid infrastructure ownership to the optional Advanced Energy Grid integration.
     - Removed local electric pole, substation, huge-pole, electric-grid technology, locale, and technology graphic ownership.
-    - Moved fluid pipe and pump infrastructure ownership to the Advanced Fluid Infrastructure dependency.
+    - Moved fluid pipe and pump infrastructure ownership to the optional Advanced Fluid Infrastructure integration.
     - Removed local fluid infrastructure prototypes, technology graphics, locale entries, compatibility patches, and benchmark documentation.
-    - Updated power recipes and technology prerequisites to reference Advanced Fluid Infrastructure fluid item and technology prototype IDs.
+    - Updated power recipes and technology prerequisites to use Advanced Fluid Infrastructure item and technology prototype IDs when that mod is installed.
     - Kept power-generation pipeline extent tuning local to this mod through power-scoped fluid constants and helpers.
     - Added pipeline extent descriptions to steam engine entity and item tooltips.
     - Retuned custom technology icons toward the stock Factorio technology style.
