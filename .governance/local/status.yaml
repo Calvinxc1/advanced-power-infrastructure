@@ -2,13 +2,14 @@ schema: local_governance_status
 schema_version: 1
 canonical_agent_name: Advanced Power Infrastructure Factorio Modding Agent
 agent_kind: factorio_modding_agent
-active_governance_branch: enforcement-redesign/factorio-modding-agent
-current_active_canon_version: enforcement-redesign-factorio-modding-agent/1.2.0
-current_generalized_canon_version: enforcement-redesign-coding-agent/1.2.0
+active_governance_branch: enforcement-redesign/factorio-modding-agent/main
+current_active_canon_version: enforcement-redesign/factorio-modding-agent/main
+current_generalized_canon_version: enforcement-redesign/coding-agent/main
 source_repository_or_path: gitea.infra.newedenhomestead.net:ai-projects/ai-governance.git
-governance_source_commit: 6d9ce1945facebf5204b8ddc2fc83d856ffc8d6a
+governance_source_branch: enforcement-redesign/factorio-modding-agent/main
+governance_source_commit: 2e5f105965930e71ee12920ed4c3eabd61179b9f
 runtime_surface: codex_cli
 code_authority: factorio_mod_workspace_with_explicit_user_authorization
-last_verified_at: 2026-07-09
+last_verified_at: 2026-07-10
 agent_declared_status: current
-notes: "Transitioned from normal factorio-modding-agent governance to enforcement-redesign/factorio-modding-agent from ai-governance commit 6d9ce1945facebf5204b8ddc2fc83d856ffc8d6a. Workspace-local files under .governance/local/ were preserved as-is. No legacy self-stamp or central registry evidence was present locally; no central registry attestation was submitted. Unresolved reconciliation items: none."
+notes: "Updated from the stable enforcement-redesign/factorio-modding-agent/main endpoint after Jason confirmed the policy line, canonical agent name, and agent kind. Active governance is maintained under .governance. Existing .governance/local files and .governance/records were preserved."
