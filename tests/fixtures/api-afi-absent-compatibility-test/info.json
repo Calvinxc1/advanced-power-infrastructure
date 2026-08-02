@@ -1,0 +1,11 @@
+{
+  "name": "api-afi-absent-compatibility-test",
+  "version": "0.0.1",
+  "title": "API standalone fallback-ingredient assertions",
+  "author": "Advanced Power Infrastructure",
+  "factorio_version": "2.1",
+  "dependencies": [
+    "advanced-power-infrastructure >= 0.2.1",
+    "! advanced-fluid-infrastructure"
+  ]
+}
