@@ -22,6 +22,8 @@ This mod owns power generation and storage: boilers, steam engines, steam turbin
 
 Electric poles, substations, and long-distance transmission belong in Advanced Energy Grid. Pipes, pipe-to-ground entities, pumps, offshore pumps, and general fluid infrastructure belong in Advanced Fluid Infrastructure. Those companion mods are optional; Advanced Power Infrastructure remains loadable on its own with Space Age.
 
+Advanced Power Infrastructure, Advanced Energy Grid, and Advanced Fluid Infrastructure are designed to be played together as a set. Each mod loads and works fine on its own, but the staged progression is designed with all three installed together.
+
 ## Status
 
 The current mod version is `0.2.1`. This is an early public release for Factorio 2.1. The mod loads successfully in standalone mode, and the core progression is implemented. Balance values, long-running save upgrade paths, and broad compatibility with other power mods should still be treated as experimental during the 0.2.x series.

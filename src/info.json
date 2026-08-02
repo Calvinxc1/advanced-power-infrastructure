@@ -9,8 +9,8 @@
   "dependencies": [
     "base >= 2.1.0",
     "space-age >= 2.1.0",
-    "+ advanced-fluid-infrastructure >= 0.0.1",
-    "+ advanced-energy-grid >= 0.0.1",
+    "? advanced-fluid-infrastructure >= 0.0.1",
+    "? advanced-energy-grid >= 0.0.1",
     "? RampantArsenalFork"
   ]
 }
