@@ -9,7 +9,8 @@ import sys
 from pathlib import Path
 
 SEPARATOR = "-" * 99
-VERSION_PATTERN = re.compile(r"^Version: (\d+\.\d+\.\d+)$")
+VERSION_PATTERN = re.compile(r"^Version: (\d+)\.(\d+)\.(\d+)$")
+VERSION_COMPONENT_MAX = 65535
 CATEGORY_PATTERN = re.compile(r"^  ([A-Za-z ]+):$")
 ENTRY_PATTERN = re.compile(r"^    - (.*)$")
 CONTINUATION_PATTERN = re.compile(r"^      (.*)$")
@@ -56,9 +57,16 @@ def validate(text: str) -> list[str]:
         if not match:
             errors.append(f"line {i + 1}: expected 'Version: X.Y.Z', got {lines[i]!r}")
         else:
-            version = match.group(1)
+            version = match.group(0)[len("Version: "):]
+            components = [int(match.group(g)) for g in (1, 2, 3)]
             if version == "0.0.0":
                 errors.append(f"line {i + 1}: version 0.0.0 is not valid")
+            out_of_range = [c for c in components if c > VERSION_COMPONENT_MAX]
+            if out_of_range:
+                errors.append(
+                    f"line {i + 1}: version {version!r} has a component over "
+                    f"{VERSION_COMPONENT_MAX} (max per the spec)"
+                )
             if version in versions_seen:
                 errors.append(
                     f"line {i + 1}: duplicate version {version!r} "
@@ -76,7 +84,13 @@ def validate(text: str) -> list[str]:
             errors.append(f"line {i}: more than one Date line in this version section")
 
         current_category: str | None = None
-        seen_entries: set[str] = set()
+        # Per the spec: "Individual lines in a multiline entry will be considered
+        # duplicates of other individual lines from other multiline entries in the
+        # same category if they are identical" -- so dedup happens per line (entry
+        # line or continuation line), not per whole entry, and only against lines
+        # belonging to a *different* entry.
+        seen_lines: dict[str, int] = {}
+        entry_id = 0
         while i < n and lines[i] != SEPARATOR:
             line = lines[i]
             if line == "":
@@ -91,7 +105,8 @@ def validate(text: str) -> list[str]:
                         f"line {i + 1}: category {current_category!r} is not a recognized "
                         f"Factorio changelog category"
                     )
-                seen_entries = set()
+                seen_lines = {}
+                entry_id = 0
                 i += 1
                 continue
 
@@ -99,16 +114,21 @@ def validate(text: str) -> list[str]:
             if entry_match:
                 if current_category is None:
                     errors.append(f"line {i + 1}: entry appears before any category line")
-                entry_text = entry_match.group(1)
-                if entry_text in seen_entries:
-                    errors.append(
-                        f"line {i + 1}: duplicate entry within category "
-                        f"{current_category!r}: {entry_text!r}"
-                    )
-                seen_entries.add(entry_text)
+                entry_id += 1
+                entry_lines = [(i + 1, entry_match.group(1))]
                 i += 1
                 while i < n and CONTINUATION_PATTERN.match(lines[i]):
+                    entry_lines.append((i + 1, CONTINUATION_PATTERN.match(lines[i]).group(1)))
                     i += 1
+                for line_no, text in entry_lines:
+                    owner = seen_lines.get(text)
+                    if owner is not None and owner != entry_id:
+                        errors.append(
+                            f"line {line_no}: duplicate line within category "
+                            f"{current_category!r}: {text!r} (matches another entry)"
+                        )
+                    else:
+                        seen_lines[text] = entry_id
                 continue
 
             if line.startswith("  ") and not line.startswith("    "):
