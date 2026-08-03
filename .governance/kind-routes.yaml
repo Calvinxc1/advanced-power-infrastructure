@@ -12,11 +12,14 @@ route_groups:
   coding.planning:
     - .governance/policies/plan-mode.yaml
   coding.substantive:
-    - .governance/policies/code-skepticism.yaml
-    - .governance/policies/documentation-drift.yaml
+    - .governance/policies/coding-work.yaml
   coding.git:
     - .governance/policies/gitflow.yaml
     - .governance/policies/commit-push-discipline.yaml
+  coding.gitflow_deployment:
+    - .governance/runbooks/gitflow-deployment.yaml
+  coding.gitflow_hotfix:
+    - .governance/runbooks/gitflow-hotfix.yaml
   coding.review:
     - .governance/policies/code-review.yaml
   factorio.mod_work:
@@ -35,6 +38,16 @@ routes:
   git_work:
     groups:
       - coding.git
+    files: []
+  gitflow_deployment:
+    groups:
+      - coding.git
+      - coding.gitflow_deployment
+    files: []
+  gitflow_hotfix:
+    groups:
+      - coding.git
+      - coding.gitflow_hotfix
     files: []
   code_review:
     groups:

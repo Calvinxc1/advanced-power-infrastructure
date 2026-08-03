@@ -1,18 +1,25 @@
-# Repo-Local Governance Copy
+# Workspace Governance Layout
 
-This directory is this repository's active local governance copy.
+This directory contains this workspace's active governance rule set.
 
-Agents working in this repository load and follow this directory the same way they would use `.governance/` in any other repository. `AGENTS.md` points here for the active local policy contract.
+These files are the policy and process contract loaded by agents working in this repository.
 
-Committed governance files under `.governance/` are ratified by existence. Status fields may still describe operational role, such as `active`, but they are not a separate ratification gate. Draft local-governance proposals must stay outside this active local governance tree until Jason ratifies them.
+This stable `/main` endpoint branch uses an enforcement-first governance model. High-stakes recurring failures should map to hard gates, cheap default paths, or detectors; prose-only fixes are tracked debt unless Jason accepts the residual risk. Bootstrap and update instructions live on literal branch `main` and require an explicit target policy line before selecting the mapped `/main` endpoint for the target agent kind.
 
-Use `task-map.yaml` as the explicit loading contract. It may define reusable route groups, but agents should still load only the groups and direct files named by selected routes instead of scanning policy folders.
+All governance in this repository lives under `.governance/`, including canonical policy, processes, templates, and local metadata.
 
-This directory intentionally duplicates governance rules that may also appear in `lab-governance/`. Drift is allowed when it is visible and intentional:
+The `enforcement-redesign/trunk/main` branch carries the experimental general contract for every agent kind. Secondary kind branches carry complete branch-local pictures after `enforcement-redesign/trunk/main` is merged down into them. Core content is intentionally duplicated across kind branches so an agent can read one branch and have the complete contract.
 
-- `.governance/` governs this repository's work.
-- `lab-governance/` is the generalized rule set maintained here for propagation to other agents and repositories.
+Layout:
 
-This secondary branch channel uses the enforcement-first redesign. Rules should be sorted into hard invariants, outcome-plus-bounds policies, or deliberately ungoverned cheap reversible work.
+- `AGENTS.md`: thin entrypoint with precedence, always-load policy, and routing pointer.
+- `.governance/governance-init.md`: setup guide for initializing governance in a new or unverified agent workspace.
+- `.governance/task-map.yaml`: task or session routing to additional policy files.
+- `.governance/policies/`: standing domain policies in YAML.
+- `.governance/processes/`: meta-governance and operating processes.
+- `.governance/skills/`: loadable skill sources.
+- `.governance/overrides/`: temporary exception log and its schema.
+- `.governance/templates/`: reusable setup templates.
+- `.governance/local/`: workspace-owned status, workflow facts, and local overrides.
 
-Use `local/` for explicit repo-local deviations from the generalized rule set. The universal local policy pointer is `local/index.yaml`; the universal local governance status report is `local/status.yaml`. Everything else under `local/` is workspace-owned unless explicitly routed by that local pointer. Use `records/` for repo-local alignment notes or operational metadata. If a local rule should become general lab governance, promote it through an explicit `lab-governance/` policy or process change.
+Kind branches add `.governance/branch-descriptor.yaml` and `.governance/kind-routes.yaml`. The policy-line trunk does not carry those files, so policy-line trunk merge-downs do not overwrite kind orientation or kind-specific routing.
