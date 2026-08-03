@@ -1,26 +1,14 @@
 id: workflow_auditability
 status: ratified
 scope: all_agents
-summary: Tracking, status, durable capture, and MCP friction reporting.
+summary: Durable status capture, autonomous settled-record writes, and audit-defect reporting.
 rules:
-  - Use Kanboard as a task-scoped lookup and status tool, not as a default work generator.
-  - Before substantive work, search Kanboard when the work appears tied to an existing major item, project card, or durable tracker.
-  - If a relevant card exists and connector scope permits, keep status on that card as the work moves.
-  - If no relevant card exists, do not create one by default.
-  - Ask once whether Jason wants a Kanboard card created when durable tracking appears useful, then continue without creating the card unless Jason explicitly says to create it.
-  - Capture durable knowledge into the owning folder when the card closes.
-  - When friction occurs with a locally developed MCP, document the friction.
-  - Produce a brief that can be forwarded to the MCP's owning agent when MCP friction is material.
-  - Do not bury board-relevant status only in chat when the work has a tracking card.
+  - Capture durable knowledge into the owning folder or system of record when the work closes.
   - Agents may record routine status updates and already-settled decisions into local project documents, knowledge maps, or relevant work trackers without a separate pre-approval when the write only records facts already settled in the current conversation or durable tracker.
   - After any autonomous status or settled-decision write, report what was written and where.
   - This standing cue does not authorize new decisions, reinterpretation of unsettled decisions, governance or policy edits, external side effects, irreversible actions, or writes outside the agent's authorized boundary.
-  - Version-control autonomy is kind-specific or local policy, not a channel-trunk default. Channel-trunk guardrails do not by themselves authorize routine autonomous commits or pushes.
-  - When an agent is otherwise authorized to use version control, it may act only within the repository or workspace boundary for the underlying authorized work.
-  - Do not force-push, rewrite shared history, delete recovery history, push to an untrusted or newly configured remote, or commit secrets unless Jason gives explicit task-specific instructions and the governing policy permits the operation.
-  - Do not commit unrelated user changes without first understanding ownership and whether the changes belong to the current task.
+  - Version-control autonomy is kind-specific or local policy, not a policy-line trunk default. Channel-trunk guardrails do not by themselves authorize routine autonomous commits or pushes.
   - Do not treat cowork or desktop version-control autonomy as permission to push the ai-governance repository; governance repository pushes require explicit user authorization and this repository's governance-maintenance process.
-  - Surface version-control details when they affect a problem, recovery option, conflict, failed push, uncertain repository ownership, cross-agent ownership boundary, or non-routine operation.
   - When an agent mutates durable state through the wrong tool, connector, branch, or workflow path, remediation should preserve the correct content state and record the audit defect unless reversal is needed for safety, correctness, deployment control, contractual workflow semantics, or Jason explicitly chooses state reconstruction.
   - Audit-defect records should name the expected path, actual path, affected object, resulting state, verification source, and why the chosen remediation preserves or reconstructs state.
   - Where a kind or local policy makes routine version control an invisible recovery mechanism, the policy must explicitly state any exemption from normal pre-action or post-action reporting and must scope that exemption to the version-control action class.

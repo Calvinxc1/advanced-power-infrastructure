@@ -1,7 +1,8 @@
 # AGENTS.md
 
 Repository policy entrypoint. Active repo-local governance lives under `.governance/`.
-This mod workspace must not contain a top-level `lab-governance/` tree; that tree belongs only in the source `ai-governance` repository.
+Local governance status lives at `.governance/local/status.yaml`.
+Do not maintain governance outside `.governance/` in this workspace.
 
 Precedence:
 `AGENTS.md` is the entrypoint. Loaded canon governance under `.governance/` is the base layer. Loaded local governance from `.governance/local/index.yaml` overrides the base layer for this repository. Explicit task overrides in `.governance/overrides/*` override both base and local governance for the declared one-shot operation only.
@@ -11,6 +12,7 @@ If ambiguity remains, ask before acting. Override-governance rules are non-overr
 Always load:
 - `.governance/policies/universal.yaml`
 - `.governance/policies/enforcement-model.yaml`
+- `.governance/policies/hard-invariant-index.yaml`
 
 Load additional policy only via:
 - `.governance/task-map.yaml`
