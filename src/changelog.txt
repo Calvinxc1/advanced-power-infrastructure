@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.2
+Date: 2026.08.03
+  Changes:
+    - Corrected changelog.txt formatting to match the standard Factorio changelog schema (missing category colons, non-recognized "Bugfix" category, and a freeform entry).
+
+---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 2026.07.09
   Bugfixes:
