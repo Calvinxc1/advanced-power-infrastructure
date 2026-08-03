@@ -167,7 +167,6 @@ class DependencyResolver:
         self.builtin_mods = builtin_mods
         self.constraints: dict[str, list[Dependency]] = defaultdict(list)
         self.releases: dict[str, Release] = {}
-        self.active: list[str] = []
 
     def resolve(self, root_info: Mapping[str, object]) -> list[Release]:
         name = root_info.get("name")
@@ -177,26 +176,22 @@ class DependencyResolver:
         if not isinstance(dependencies, list) or not all(isinstance(item, str) for item in dependencies):
             raise DownloadError("--from-info has invalid dependencies")
 
-        self.active.append(name)
-        try:
-            self._resolve_dependencies(dependencies)
-        finally:
-            self.active.pop()
-        return [self.releases[name] for name in sorted(self.releases)]
-
-    def _resolve_dependencies(self, declarations: Iterable[str]) -> None:
-        for declaration in declarations:
+        # Only the dependencies declared directly on the mod under test are
+        # resolved. Deliberately not recursive: a downloaded dependency's own
+        # optional/recommended/hidden-optional dependencies are not pulled
+        # in, since that can reach arbitrarily far into the Mod Portal graph
+        # (e.g. a hidden-optional compatibility shim for a mod nobody has,
+        # several hops away, with no Factorio-version-compatible release).
+        for declaration in dependencies:
             dependency = parse_dependency(declaration)
             if dependency is None or dependency.name in self.builtin_mods:
                 continue
             self.constraints[dependency.name].append(dependency)
             self._resolve_mod(dependency.name)
 
-    def _resolve_mod(self, name: str) -> None:
-        if name in self.active:
-            cycle = " -> ".join([*self.active, name])
-            raise DownloadError(f"Circular Factorio mod dependency: {cycle}")
+        return [self.releases[name] for name in sorted(self.releases)]
 
+    def _resolve_mod(self, name: str) -> None:
         metadata = self.fetch_metadata(name)
         release = select_release(
             name,
@@ -204,16 +199,7 @@ class DependencyResolver:
             self.factorio_version,
             self.constraints[name],
         )
-        previous = self.releases.get(name)
-        if previous == release:
-            return
-
         self.releases[name] = release
-        self.active.append(name)
-        try:
-            self._resolve_dependencies(release.dependencies)
-        finally:
-            self.active.pop()
 
 
 class ModPortalClient:

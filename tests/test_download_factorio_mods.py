@@ -48,13 +48,12 @@ class DependencyParsingTests(unittest.TestCase):
 
 
 class DependencyResolverTests(unittest.TestCase):
-    def test_recursively_resolves_every_supported_dependency_kind(self) -> None:
+    def test_resolves_every_directly_declared_dependency_kind(self) -> None:
         catalog = {
             "required": metadata("required", [release("required", "1.0.0", ["transitive"])]),
             "recommended": metadata("recommended", [release("recommended", "1.0.0")]),
             "optional": metadata("optional", [release("optional", "1.0.0")]),
             "hidden": metadata("hidden", [release("hidden", "1.0.0")]),
-            "transitive": metadata("transitive", [release("transitive", "1.0.0")]),
         }
         resolver = MODULE.DependencyResolver("2.1", catalog.__getitem__)
 
@@ -73,8 +72,25 @@ class DependencyResolverTests(unittest.TestCase):
 
         self.assertEqual(
             [item.name for item in resolved],
-            ["hidden", "optional", "recommended", "required", "transitive"],
+            ["hidden", "optional", "recommended", "required"],
         )
+
+    def test_does_not_recurse_into_a_dependencys_own_dependencies(self) -> None:
+        # Only what the mod under test declares directly gets resolved. A
+        # downloaded dependency's own optional/recommended/hidden-optional
+        # dependencies are deliberately not pulled in, since that graph can
+        # reach arbitrarily far across the Mod Portal (e.g. a hidden-optional
+        # compatibility shim several hops away with no compatible release).
+        # "second" is intentionally absent from the catalog: if the resolver
+        # tried to recurse into it, this test would fail with a KeyError.
+        catalog = {
+            "first": metadata("first", [release("first", "1.0.0", ["? second"])]),
+        }
+        resolver = MODULE.DependencyResolver("2.1", catalog.__getitem__)
+
+        resolved = resolver.resolve({"name": "local-mod", "dependencies": ["? first"]})
+
+        self.assertEqual([item.name for item in resolved], ["first"])
 
     def test_selects_latest_release_matching_dependency_constraint(self) -> None:
         catalog = {
@@ -89,16 +105,6 @@ class DependencyResolverTests(unittest.TestCase):
         )
 
         self.assertEqual(resolved[0].version, "1.0.0")
-
-    def test_circular_dependency_is_an_error_even_when_optional(self) -> None:
-        catalog = {
-            "first": metadata("first", [release("first", "1.0.0", ["? second"])]),
-            "second": metadata("second", [release("second", "1.0.0", ["(?) first"])]),
-        }
-        resolver = MODULE.DependencyResolver("2.1", catalog.__getitem__)
-
-        with self.assertRaisesRegex(MODULE.DownloadError, "Circular Factorio mod dependency"):
-            resolver.resolve({"name": "local-mod", "dependencies": ["? first"]})
 
 
 class DownloadTests(unittest.TestCase):

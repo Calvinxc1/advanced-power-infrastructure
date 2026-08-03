@@ -104,10 +104,19 @@ jobs:
 
           own_info = json.load(open("src/info.json", encoding="utf-8"))
 
+          # download-factorio-mods.py no longer recurses past a mod's own
+          # directly-declared dependencies (recursing into hidden-optional
+          # dependencies-of-dependencies once reached an unrelated, unmaintained
+          # mod several hops away with no compatible release). So Power Overload
+          # and Rampant Arsenal Fork need to end up in this list one way or
+          # another; RampantArsenalFork is drawn from API's own info.json, which
+          # already declares it, since that data exists locally. PowerOverload
+          # is not declared anywhere in API's own info.json (API has no code
+          # coupling with it), so it stays a plain hard-coded name below.
           dependency_pattern = re.compile(
               r"^\s*(?:\(\?\)|\?|\+|!|~)?\s*(?P<name>[A-Za-z0-9_-]+)(?P<constraint>\s*(?:>=|<=|=|>|<)\s*[0-9][0-9.]*)?\s*$"
           )
-          companion_names = {"advanced-energy-grid", "advanced-fluid-infrastructure"}
+          companion_names = {"advanced-energy-grid", "advanced-fluid-infrastructure", "RampantArsenalFork"}
           companions = {}
           for declaration in own_info["dependencies"]:
               match = dependency_pattern.match(declaration)
@@ -126,7 +135,7 @@ jobs:
                   "name": "advanced-infrastructure-family-validation",
                   "version": "0.0.1",
                   "factorio_version": own_info["factorio_version"],
-                  "dependencies": [companions[name] for name in sorted(companion_names)],
+                  "dependencies": [companions[name] for name in sorted(companion_names)] + ["PowerOverload"],
               },
               open(sys.argv[1], "w", encoding="utf-8"),
           )
