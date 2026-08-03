@@ -13,6 +13,12 @@ from pathlib import Path
 
 INIT_UPLOAD_URL = "https://mods.factorio.com/api/v2/mods/releases/init_upload"
 
+# This is the v2 Mod Portal API, authenticated with a scoped API key
+# (factorio.com/profile, "ModPortal: Upload Mods" permission), sent as
+# "Authorization: Bearer <key>". This is a different credential from the
+# username+token pair download-factorio-mods.py uses for downloads -- do not
+# reuse FACTORIO_MOD_PORTAL_TOKEN here, it will not authenticate this API.
+
 
 class ApiError(RuntimeError):
     def __init__(self, status: int, body: str):
@@ -117,9 +123,9 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    token = os.environ.get("FACTORIO_MOD_PORTAL_TOKEN")
+    token = os.environ.get("FACTORIO_MOD_PORTAL_API_KEY")
     if not token:
-        fail("FACTORIO_MOD_PORTAL_TOKEN is required.")
+        fail("FACTORIO_MOD_PORTAL_API_KEY is required.")
     if not args.asset.is_file():
         fail(f"Release asset not found: {args.asset}")
 

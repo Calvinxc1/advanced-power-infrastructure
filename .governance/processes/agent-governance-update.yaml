@@ -3,32 +3,37 @@ status: ratified
 scope: all_agents
 summary: Canonical prompt-driven process for initializing or updating an agent's local governance copy and local status report.
 canonical_prompt:
-  path: lab-governance/templates/governance-bootstrap-prompt.md
+  path: governance-bootstrap-prompt.md
   source_repository: gitea.infra.newedenhomestead.net:ai-projects/ai-governance.git
+  source_branch: main
 rules:
-  - Agents must use `lab-governance/templates/governance-bootstrap-prompt.md` from the ai-governance Gitea repository when the canonical bootstrap/update prompt is available.
+  - Agents must use `governance-bootstrap-prompt.md` from the root of literal branch `main` of the ai-governance Gitea repository when the canonical bootstrap/update prompt is available.
   - Agents must not improvise governance initialization or update mechanics when the canonical bootstrap/update prompt is available.
   - The prompt path is the source of truth for initialization and update instructions, including branch selection, local status updates, and reconciliation reporting.
-  - The prompt's source branch channel is part of the source of truth. If the prompt came from an `enforcement-redesign/*` branch, bootstrap or update from the matching `enforcement-redesign/*` branch unless Jason explicitly redirects to the normal branch family.
-  - The bootstrap/update process must preserve `.governance/local/status.yaml` as the portable local governance status report.
-  - Completing the prompt does not imply that the legacy central registry has been updated.
+  - The canonical prompt on literal branch `main` is policy-line neutral and must not be treated as selecting `baseline` or `enforcement-redesign`.
+  - Agents must identify or ask for the target policy line before mutating local governance.
+  - Agents must bootstrap or update from the current mapped `/main` endpoint branch for the confirmed target policy line and target agent kind unless Jason explicitly redirects to another branch.
+  - The bootstrap/update process must seed and update the downstream workspace's active `.governance/` tree from the selected branch's `.governance/` source product.
+  - The bootstrap/update process must preserve workspace-local governance and create or update downstream status at `.governance/local/status.yaml` from `.governance/templates/local-status.yaml`.
+  - The bootstrap/update process must treat obsolete branch names, old canon/version labels, missing modern status fields, and previous governance source paths as migration evidence rather than authoritative blockers unless they create a real policy-line, identity, or local-governance conflict.
+  - The bootstrap/update process must review local governance reachable from `.governance/local/index.yaml` after updating canonical governance and surface conflicts, duplicated rules, obsolete local overrides, and local rules that now overlap with canonical rules.
+  - Local governance wins operationally over canonical governance unless Jason or explicit local policy says otherwise, but conflicts and redundancies must still be surfaced.
   - The prompt must require live feedback about local status changes, branch selection, canon-version changes, and any reconciliation that remains unresolved.
-  - The central registry loop is decommissioned as the default live status mechanism; agents must not submit registry attestations unless Jason explicitly requests legacy registry maintenance.
   - Agents must report the ai-governance source commit used for initialization or update.
   - Agents must report the local status path and declared status after initialization or update.
-  - Agents must not directly edit the central registry unless Jason explicitly asks for legacy registry maintenance.
 prompt_contract:
   - Require or confirm canonical agent name.
   - Require or confirm agent kind.
-  - Identify the prompt source branch or source channel when known.
+  - Identify or ask for the target policy line.
   - Resolve the active governance branch for that agent.
-  - Preserve the prompt source branch channel during branch selection unless Jason explicitly redirects it.
+  - Use the confirmed policy line and agent kind during branch selection unless Jason explicitly redirects it.
   - Fetch or inspect the ai-governance Gitea repository.
-  - Copy or merge the correct governance source into the local agent workspace.
+  - Copy or merge the correct selected-branch `.governance/` source product into the downstream workspace's active `.governance/` tree, preserving workspace-local governance.
   - Preserve local-only governance files unless the prompt explicitly instructs reconciliation.
-  - Create or update `.governance/local/status.yaml`.
+  - Create or update `.governance/local/status.yaml` from `.governance/templates/local-status.yaml`.
   - Validate loaded canon versions after update.
-  - Compare the new policy state against the local status file and any legacy self-stamp or registry evidence.
+  - Compare the new policy state against the local status file and old branch, version, or source-path evidence.
+  - Compare local governance against the updated canonical governance and report conflicts, redundancies, and obsolete overrides.
   - Provide live reconciliation feedback before and after local mutation.
   - Print a concise closeout summary for the agent to report.
 local_status_fields:
@@ -48,7 +53,7 @@ failure_rules:
   - If agent identity is not settled, the bootstrap/update must stop before mutating local governance.
   - If a branch or canon-version mismatch is detected, the agent must report the mismatch before local mutation.
   - If local status cannot be created or updated, the agent must report the exact file or permission failure.
-  - If local status conflicts with a legacy self-stamp, legacy registry row, or source governance state, the conflict must be reported rather than silently reconciled.
+  - If local status conflicts with source governance state or old branch, version, or source-path evidence, the conflict must be reported rather than silently reconciled.
+  - If local governance conflicts with updated canonical governance, preserve the local governance operationally, report the conflict or redundancy, and ask Jason or the orchestrating agent before weakening or removing the local rule.
 acceptance:
-  - The bootstrap/update is locally complete when the local governance copy and `.governance/local/status.yaml` reflect the selected source commit as far as locally attested values allow.
-  - Legacy registry maintenance is complete only when Jason explicitly requested it and the requested registry action has been performed or declined with rationale.
+  - The bootstrap/update is locally complete when the local governance copy and `.governance/local/status.yaml` reflect the selected source commit as far as locally attested values allow, and local governance conflicts or redundancies have been reported.

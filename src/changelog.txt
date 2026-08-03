@@ -1,13 +1,19 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.2
+Date: 2026.08.03
+  Changes:
+    - Corrected changelog.txt formatting to match the standard Factorio changelog schema (missing category colons, non-recognized "Bugfix" category, and a freeform entry).
+
+---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 2026.07.09
-  Bugfix
+  Bugfixes:
     - Fixed automated Factorio validation in headless CI by removing a desktop-only launch flag.
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.0
 Date: 2026.07.09
-  Bugfix
+  Bugfixes:
     - Updated metadata and prototype definitions for Factorio 2.1 compatibility.
     - Migrated fluid-using recipes from the removed `category` field to the Factorio 2.1 `categories` field.
     - Updated steam engine and steam turbine entity tinting for the Factorio 2.1 generator `pictures` layout.
@@ -15,7 +21,7 @@ Date: 2026.07.09
     - Added the Space Age dependency required by the Space Age science pack progression.
     - Fixed upgraded steam engine and steam turbine health values.
     - Hardened primary steam turbine recipe migration handling.
-  Changes
+  Changes:
     - Added the first Advanced Power Infrastructure public release candidate for Factorio 2.1 and Space Age.
     - Added release packaging, CI validation, deployment automation, and public release documentation.
     - Updated the repository README and packaged README for public presentation.
@@ -40,10 +46,11 @@ Date: 2026.07.09
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.2
 Date: 2025.04.17
-  Bugfix
+  Bugfixes:
     - Fixed a launch bug when the Power Overload mod wasn't present.
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.1
 Date: 2025.04.14
-  Initial Release.
+  Features:
+    - Initial release.

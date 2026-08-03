@@ -33,6 +33,8 @@ else:
         yaml.safe_load(path.read_text(encoding="utf-8"))
 PY
 
+python3 -m unittest tests/test_download_factorio_mods.py
+
 while IFS= read -r file; do
   luac -p "$file"
 done < <(rg --files -g '*.lua' src)
