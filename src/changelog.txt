@@ -4,8 +4,7 @@ Date: 2026.08.23
   Bugfixes:
     - Raised the maximum temperature of steam so the rubber-lined, reinforced, and foundation heat exchangers can feed steam turbines. Their output previously exceeded the steam fluid's temperature ceiling, so pipes carrying it reported "Cannot connect pipelines with different fluids" and no turbine would accept it.
     - Fixed upgraded steam turbines reaching full rated output on 500 degree steam. The same temperature ceiling clamped every turbine tier's power calculation, leaving the rubber-lined, reinforced, and foundation maximum temperatures with no effect.
-  Balancing:
-    - Rubber-lined, reinforced, and foundation steam turbines now reach 9.1 MW, 13.2 MW, and 18.9 MW when fed steam at their rated temperature, up from a shared 7.0 MW, 8.1 MW, and 9.3 MW ceiling. Output on cooler steam scales down accordingly.
+    - Restored documented power output for the rubber-lined, reinforced, and foundation steam turbines: 9.1 MW, 13.2 MW, and 18.9 MW at their rated steam temperature. All three were capped at 7.0 MW, 8.1 MW, and 9.3 MW regardless of tier, well under the output their designs called for.
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.2
