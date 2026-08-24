@@ -39,7 +39,10 @@ steam_turbine_mk3.fluid_usage_per_tick = 1.4
 steam_turbine_mk3.maximum_temperature = 800
 steam_turbine_mk3.max_health = 800
 steam_turbine_mk3.minable.result = "aer_reinforced-steam-turbine"
-steam_turbine_mk3.next_upgrade = "aer_foundation-steam-turbine"
+-- Terminates the base-game ladder. prototypes/power/space-age/steam-turbines/entities.lua
+-- re-points this at its Space Age tier when that tier exists, so the chain is
+-- correct in both loads without depending on load order.
+steam_turbine_mk3.next_upgrade = nil
 fluid_helpers.set_prototype_fluid_boxes_extent(steam_turbine_mk3, constants.reinforced.pipeline_extent)
 fluid_helpers.set_description(steam_turbine_mk3, fluid_helpers.boiler_description(constants.reinforced.pipeline_extent))
 fluid_helpers.set_resistances(steam_turbine_mk3, constants.reinforced.resistances)
@@ -47,18 +50,3 @@ reset_steam_turbine_icon(steam_turbine_mk3)
 fluid_helpers.apply_reinforced_icon_tint(steam_turbine_mk3)
 fluid_helpers.apply_reinforced_entity_tint(steam_turbine_mk3)
 data:extend({steam_turbine_mk3})
-
-local steam_turbine_mk4 = util.table.deepcopy(data.raw["generator"]["steam-turbine"])
-steam_turbine_mk4.name = "aer_foundation-steam-turbine"
-steam_turbine_mk4.fluid_usage_per_tick = 1.6
-steam_turbine_mk4.maximum_temperature = 1000
-steam_turbine_mk4.max_health = 1000
-steam_turbine_mk4.minable.result = "aer_foundation-steam-turbine"
-steam_turbine_mk4.next_upgrade = nil
-fluid_helpers.set_prototype_fluid_boxes_extent(steam_turbine_mk4, constants.foundation.pipeline_extent)
-fluid_helpers.set_description(steam_turbine_mk4, fluid_helpers.boiler_description(constants.foundation.pipeline_extent))
-fluid_helpers.set_resistances(steam_turbine_mk4, constants.foundation.resistances)
-reset_steam_turbine_icon(steam_turbine_mk4)
-fluid_helpers.apply_foundation_icon_tint(steam_turbine_mk4)
-fluid_helpers.apply_foundation_entity_tint(steam_turbine_mk4)
-data:extend({steam_turbine_mk4})
