@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.0
+Date: 2026.08.23
+  Compatibility:
+    - Made Space Age an optional dependency, so the mod now loads on base Factorio 2.1.
+  Changes:
+    - Kept the steel and rubber-lined boiler and steam engine tiers, the rubber-lined and reinforced steam turbine and heat exchanger tiers, the mk2 heat pipe, and the mk2 nuclear reactor available without Space Age.
+    - Restricted the holmium boiler, holmium steam engine, foundation steam turbine, mk4 heat exchanger, mk3 and mk4 heat pipes, and mk3 and mk4 nuclear reactors to Space Age, since their recipes need holmium plate, lithium plate, foundation, or superconductor.
+    - Restricted the solar panel, accumulator, and fusion tiers to Space Age, since every one of them is built from holmium, lithium, quantum processors, or Space Age's own fusion buildings.
+    - Substituted refined concrete and low-density structure for tungsten plate and carbon fiber in the reinforced tiers when Space Age is absent, matching the substitution Advanced Fluid Infrastructure already makes for its own reinforced tier.
+    - Gated the reinforced tiers on production and utility science instead of metallurgic and agricultural science when Space Age is absent.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.3
 Date: 2026.08.23
   Bugfixes:

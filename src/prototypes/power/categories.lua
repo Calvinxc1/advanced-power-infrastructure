@@ -1,3 +1,5 @@
+local optional_dependencies = require("prototypes.power.optional-dependencies")
+
 data:extend({
   {
     type = "item-subgroup",
@@ -35,10 +37,17 @@ data:extend({
     group = "production",
     order = "d-a",
   },
-  {
-    type = "item-subgroup",
-    name = "aer_fusion-power",
-    group = "production",
-    order = "d-b",
-  },
 })
+
+-- Every member of this subgroup is a fusion tier, and those exist only under
+-- Space Age, so in a base-game load the subgroup would have nothing in it.
+if optional_dependencies.has_space_age then
+  data:extend({
+    {
+      type = "item-subgroup",
+      name = "aer_fusion-power",
+      group = "production",
+      order = "d-b",
+    },
+  })
+end

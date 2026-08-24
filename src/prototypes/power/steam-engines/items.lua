@@ -22,12 +22,3 @@ steam_engine_mk3.place_result = "aer_rubber-lined-steam-engine"
 fluid_helpers.set_description(steam_engine_mk3, fluid_helpers.boiler_description(fluid_constants.rubber_lined.pipeline_extent))
 advanced_power_apply_rubber_lined_icon_tint(steam_engine_mk3)
 data:extend({steam_engine_mk3})
-
-local steam_engine_mk4 = util.table.deepcopy(data.raw.item["steam-engine"])
-steam_engine_mk4.name = "aer_holmium-steam-engine"
-steam_engine_mk4.subgroup = "aer_steam-engine"
-steam_engine_mk4.order = "b[steam-power]-b[steam-engine-4]"
-steam_engine_mk4.place_result = "aer_holmium-steam-engine"
-fluid_helpers.set_description(steam_engine_mk4, fluid_helpers.boiler_description(fluid_constants.reinforced.pipeline_extent))
-advanced_power_apply_holmium_icon_tint(steam_engine_mk4)
-data:extend({steam_engine_mk4})

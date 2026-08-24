@@ -31,13 +31,3 @@ fluid_helpers.set_description(steam_turbine_mk3, fluid_helpers.boiler_descriptio
 reset_steam_turbine_icon(steam_turbine_mk3)
 fluid_helpers.apply_reinforced_icon_tint(steam_turbine_mk3)
 data:extend({steam_turbine_mk3})
-
-local steam_turbine_mk4 = util.table.deepcopy(data.raw.item["steam-turbine"])
-steam_turbine_mk4.name = "aer_foundation-steam-turbine"
-steam_turbine_mk4.subgroup = "aer_steam-turbine"
-steam_turbine_mk4.order = "b[steam-power]-b[steam-turbine-4]"
-steam_turbine_mk4.place_result = "aer_foundation-steam-turbine"
-fluid_helpers.set_description(steam_turbine_mk4, fluid_helpers.boiler_description(fluid_constants.foundation.pipeline_extent))
-reset_steam_turbine_icon(steam_turbine_mk4)
-fluid_helpers.apply_foundation_icon_tint(steam_turbine_mk4)
-data:extend({steam_turbine_mk4})
