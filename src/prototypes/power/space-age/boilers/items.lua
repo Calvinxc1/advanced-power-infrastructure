@@ -6,8 +6,8 @@ local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 local boiler_mk4 = util.table.deepcopy(data.raw.item["boiler"])
 boiler_mk4.name = "aer_holmium-reinforced-boiler"
-boiler_mk4.subgroup = "aer_steam-boiler"
-boiler_mk4.order= "b[steam-power]-a[boiler-4]"
+boiler_mk4.subgroup = "aer_steam-power"
+boiler_mk4.order = "a[boiler-4]"
 boiler_mk4.place_result = "aer_holmium-reinforced-boiler"
 fluid_helpers.set_description(boiler_mk4, fluid_helpers.boiler_description(fluid_constants.reinforced.pipeline_extent))
 advanced_power_apply_holmium_icon_tint(boiler_mk4)

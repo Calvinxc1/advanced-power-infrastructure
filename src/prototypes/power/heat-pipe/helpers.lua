@@ -28,7 +28,7 @@ end
 function helpers.make_heat_pipe_item(name, order, place_result, tint)
   local item = util.table.deepcopy(data.raw.item["heat-pipe"])
   item.name = name
-  item.subgroup = "aer_heat-pipe"
+  item.subgroup = "aer_nuclear-power"
   item.order = order
   item.place_result = place_result
   if tint then
