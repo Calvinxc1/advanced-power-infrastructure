@@ -60,26 +60,17 @@ local constants = {
   -- flowing through -- measured at roughly +2.7 degrees/tile per 80 MW on a
   -- tier 1 pipe. Heavier spokes reach less far.
   --
-  -- Eased from 25/16/12/9 after play-testing. The steel tier is unchanged at 5
-  -- degrees a tile, which was right; the top of the ladder was not. mk4 shedding
-  -- 27.8 a tile made a nine tile arm the practical limit, which read as
-  -- punishing rather than as a design problem to solve. It now finishes at 20.8.
-  --
-  -- The slope was eased rather than scaled: halving everything moved the steel
-  -- tier too, and a uniform 50/32/24/18 pushed the whole ladder out to where
-  -- nothing bit until very long runs. Holding mk1 and easing the tiers above it
-  -- keeps the difficulty where it was meant to arrive.
-  --
-  -- The property the ladder exists for still holds. On a 13 tile spoke the
-  -- margin above optimal shrinks with every tier and goes negative at the top --
-  -- +60, +57, +27, -21 -- so a spoke that worked at one tier does not simply
-  -- keep working at the next. It now fails at mk4 rather than at mk3, which is
-  -- the easing.
+  -- Two easings were tried in play and both reverted. Halving every tier
+  -- (50/32/24/18) moved the steel tier as well and pushed the whole ladder out
+  -- to where nothing bit until very long runs. Easing only the upper tiers
+  -- (25/20/15/12, finishing at 20.8 a tile) held mk1 correctly but moved the
+  -- point of failure from mk3 to mk4, which softened the thing the ladder
+  -- exists to do. This profile is the one that plays best.
   heat_tier_optimal_reach = {
     mk1 = 25,
-    mk2 = 20,
-    mk3 = 15,
-    mk4 = 12,
+    mk2 = 16,
+    mk3 = 12,
+    mk4 = 9,
   },
 
   -- Throughput deliberately grows more slowly than exchanger draw, which runs

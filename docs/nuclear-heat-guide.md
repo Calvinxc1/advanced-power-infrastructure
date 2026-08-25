@@ -58,9 +58,9 @@ pipe tier and on how hard the run is working.
 | Pipe tier | Loss per tile | Reach before steam drops below optimal |
 | --- | ---: | ---: |
 | Steel (mk1) | 5.0 | 25 tiles |
-| mk2 | 8.1 | 20 tiles |
-| mk3 | 13.3 | 15 tiles |
-| mk4 | 20.8 | 12 tiles |
+| mk2 | 10.2 | 16 tiles |
+| mk3 | 16.7 | 12 tiles |
+| mk4 | 27.8 | 9 tiles |
 
 Yes, higher tiers reach *less* far. A bigger reactor is meant to be a harder
 design problem, not just a bigger number. It still produces far more power.
@@ -250,8 +250,8 @@ the pole tier carrying it.
 | Exchanger optimal | 500 | 650 | 800 | 1000 |
 | Exchanger stops below | 300 | 300 | 300 | 300 |
 | Exchanger draw | 10 MW | 16.5 MW | 21.5 MW | 26.5 MW |
-| Pipe loss per tile, light load | 5.0 | 8.1 | 13.3 | 20.8 |
-| Pipe reach at light load | 25t | 20t | 15t | 12t |
+| Pipe loss per tile, light load | 5.0 | 10.2 | 16.7 | 27.8 |
+| Pipe reach at light load | 25t | 16t | 12t | 9t |
 | Pipe throughput | 1 GW | 1.4 GW | 1.7 GW | 1.9 GW |
 | Turbine optimal | 500 | 650 | 800 | 1000 |
 | Turbines per 2x2 block | 86 | 105 | 121 | 130 |
