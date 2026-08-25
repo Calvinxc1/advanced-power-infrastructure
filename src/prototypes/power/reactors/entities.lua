@@ -1,7 +1,12 @@
+local constants = require("prototypes.power.fluid-constants")
 local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 data.raw["reactor"]["nuclear-reactor"].fast_replaceable_group = "nuclear-reactor"
 data.raw["reactor"]["nuclear-reactor"].next_upgrade = "aer_nuclear-reactor-2"
+-- Ceiling sits just above the steel exchanger's 500 optimal, rather than at
+-- double it. Set before the tiers below deepcopy this prototype.
+data.raw["reactor"]["nuclear-reactor"].heat_buffer.max_temperature =
+  500 / constants.reactor_optimal_fraction
 
 local function reset_to_base_reactor_graphics(reactor)
   reactor.lower_layer_picture = {
@@ -96,7 +101,8 @@ end
 local reactor_mk2 = util.table.deepcopy(data.raw["reactor"]["nuclear-reactor"])
 reactor_mk2.consumption = "80MW"
 reactor_mk2.max_health = 1500
-reactor_mk2.heat_buffer.max_temperature = 1300
+-- Matches aer_heat-exchanger-2's 650 optimal.
+reactor_mk2.heat_buffer.max_temperature = 650 / constants.reactor_optimal_fraction
 reactor_mk2.heat_buffer.specific_heat = "30MJ"
 reactor_mk2.name = "aer_nuclear-reactor-2"
 reactor_mk2.minable.result =  "aer_nuclear-reactor-2"

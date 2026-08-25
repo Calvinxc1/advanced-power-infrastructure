@@ -129,6 +129,40 @@ function helpers.boiler_description(extent)
   return { "description.aer_boiler-fluid-stats", tostring(extent) }
 end
 
+-- Joins description lines, skipping any that are absent. set_description
+-- overwrites, and several of these lines are conditional -- the pipeline extent
+-- only exists when Advanced Fluid Infrastructure is installed -- so anything
+-- adding a line has to compose rather than assign.
+function helpers.compose_description(...)
+  local parts = {""}
+  for index = 1, select("#", ...) do
+    local part = select(index, ...)
+    if part then
+      if #parts > 1 then
+        parts[#parts + 1] = "\n"
+      end
+      parts[#parts + 1] = part
+    end
+  end
+
+  if #parts == 1 then
+    return nil
+  end
+  return parts
+end
+
+-- The engine's "consumes heat" section reports min_working_temperature and the
+-- buffer maximum, but never target_temperature -- which is the number that
+-- decides whether the exchanger runs at full output. Surfaced here because
+-- HeatEnergySource has no field for extending that section.
+function helpers.heat_optimal_description(temperature)
+  return {"description.aer_heat-optimal-temperature", tostring(temperature)}
+end
+
+function helpers.heat_passthrough_description()
+  return {"description.aer_heat-passthrough"}
+end
+
 function helpers.patch_boiler_extent(boiler_name, extent)
   local boiler = data.raw.boiler[boiler_name]
   if boiler then

@@ -1,6 +1,7 @@
 -- Space Age reactor tiers. Both need holmium plate, and the top tier also
 -- needs lithium plate, so neither has a base-game form.
 
+local constants = require("prototypes.power.fluid-constants")
 local fluid_helpers = require("prototypes.power.fluid-helpers")
 local function reset_to_base_reactor_graphics(reactor)
   reactor.lower_layer_picture = {
@@ -95,7 +96,8 @@ end
 local reactor_mk3 = util.table.deepcopy(data.raw["reactor"]["nuclear-reactor"])
 reactor_mk3.consumption = "120MW"
 reactor_mk3.max_health = 2000
-reactor_mk3.heat_buffer.max_temperature = 1600
+-- Matches aer_heat-exchanger-3's 800 optimal.
+reactor_mk3.heat_buffer.max_temperature = 800 / constants.reactor_optimal_fraction
 reactor_mk3.heat_buffer.specific_heat = "45MJ"
 reactor_mk3.name = "aer_nuclear-reactor-3"
 reactor_mk3.minable.result = "aer_nuclear-reactor-3"
@@ -109,7 +111,8 @@ data:extend({reactor_mk3})
 local reactor_mk4 = util.table.deepcopy(data.raw["reactor"]["nuclear-reactor"])
 reactor_mk4.consumption = "160MW"
 reactor_mk4.max_health = 2500
-reactor_mk4.heat_buffer.max_temperature = 2200
+-- Matches aer_heat-exchanger-4's 1000 optimal.
+reactor_mk4.heat_buffer.max_temperature = 1000 / constants.reactor_optimal_fraction
 reactor_mk4.heat_buffer.specific_heat = "60MJ"
 reactor_mk4.name = "aer_nuclear-reactor-4"
 reactor_mk4.minable.result = "aer_nuclear-reactor-4"

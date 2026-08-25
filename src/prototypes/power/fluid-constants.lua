@@ -7,6 +7,18 @@ return {
   -- upgrade path has to be thought through rather than followed blindly.
   heat_exchanger_min_working_temperature = 300,
 
+  -- Degrees lost per pipe tile. Measured, not guessed: the engine applies
+  -- this linearly, so reach in tiles is exactly
+  --   (reactor max temperature - exchanger optimal) / gradient.
+  -- The engine default of 1 makes distance effectively free, which is why a
+  -- reactor block could grow an arbitrarily long arm at no cost.
+  heat_pipe_temperature_gradient = 5,
+
+  -- A reactor's ceiling sits this far above the optimal of the exchanger tier
+  -- that matches it, so optimal is 80 percent of the ceiling rather than the
+  -- 50 percent it was before.
+  reactor_optimal_fraction = 0.8,
+
   iron = {
     pipeline_extent = 24,
   },
