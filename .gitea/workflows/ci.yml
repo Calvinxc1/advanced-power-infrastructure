@@ -42,6 +42,14 @@ jobs:
           file "$FACTORIO_BIN"
           "$FACTORIO_BIN" --version
 
+      - name: Run unit tests
+        run: |
+          set -euo pipefail
+          for test in tests/test_*.py; do
+            echo "== $test"
+            python3 "$test"
+          done
+
       - name: Prepare temporary Factorio mods directory
         run: |
           runner_temp="${RUNNER_TEMP:-/tmp}"
