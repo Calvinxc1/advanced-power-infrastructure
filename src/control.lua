@@ -15,82 +15,169 @@
 -- own. At or above target the steam is clamped, so an exchanger never emits
 -- steam hotter than optimal.
 --
--- The rewrite goes through set_fluid_segment_fluid, which updates a whole
--- connected pipe network in one call, so the write cost tracks the number of
--- steam networks rather than the number of exchangers. The scan that decides
--- what to write is per exchanger, which is why it runs on an interval rather
--- than every tick. See issue #11 for the measurements behind all of this.
+-- The rewrite goes through set_fluid_segment_fluid, which sets the temperature
+-- of a whole connected pipe network in one call. That is the only lever the API
+-- offers: there is no way to address just the steam one machine made. So every
+-- steam source feeding a rewritten segment has to be accounted for, or the
+-- rewrite would hand an exchanger's temperature to steam it never produced.
+--
+-- See issue #11 for the measurements behind all of this.
+
+-- Mixed steam sources -------------------------------------------------------
+--
+-- This mod ships eight steam sources between 165 and 1000 degrees, and nothing
+-- stops a player plumbing a fuel boiler into the same header as a heat
+-- exchanger. Since the rewrite necessarily covers a whole segment, a vanilla
+-- boiler's 165 degree steam sharing a header with mk2 exchangers would come out
+-- rewritten to 650 -- energy from nothing, at better than four times the value
+-- of the coal that made it.
+--
+-- So every steam source votes, weighted by how much steam it actually makes.
+-- Weighting by volume is not a nicety. A unit of steam is worth
+-- heat_capacity * (temperature - 15), so a volume-weighted mean temperature is
+-- exactly what conserves total energy, and it is the same answer the engine's
+-- own blending would reach. That is what makes the rewrite honest rather than
+-- generous: it changes which temperature the steam carries, never how much
+-- energy the segment holds for a given production mix.
+--
+-- Rate has to be derived, since no prototype field reports steam output:
+--
+--     energy per tick * effectivity / (heat capacity * degrees above ambient)
+--
+-- which reproduces the known figures exactly -- 60/s for a vanilla boiler,
+-- 103.09/s for a vanilla heat exchanger.
+--
+-- Only heat exchangers drive a rewrite. A segment fed by fuel boilers alone is
+-- left entirely alone, because their steam already leaves at the temperature it
+-- should, and the engine is a more accurate authority on it than this is.
+--
+-- One gap, accepted knowingly. Space Age's acid-neutralisation recipe makes 500
+-- degree steam in a chemical plant, which no prototype field identifies as a
+-- steam source: the plant's output box carries no filter and its recipe can
+-- change at any moment. Watching every chemical plant to catch it would cost
+-- more than the case is worth -- it lands on 500 exactly, which is identical to
+-- tier 1 and so a no-op there, and it lives on Fulgora, which has no water to
+-- run a reactor with.
 
 -- Fluid storage 2 is a boiler's output box; a pipe has a single box at 1.
 local OUTPUT_BOX = 2
 local PIPE_BOX = 1
 
-local TRACKED = {
-  -- The steel tier is vanilla's own heat exchanger, which this mod adopts as
-  -- tier 1 -- it carries the steel tint, the steel pipeline extent, and
-  -- next_upgrade into mk2 -- so it gets the same passthrough as the rest.
-  ["heat-exchanger"] = true,
-  ["aer_heat-exchanger-2"] = true,
-  ["aer_heat-exchanger-3"] = true,
-  ["aer_heat-exchanger-4"] = true,
+local PRODUCERS = {
+  -- follows-heat: output temperature tracks the heat network, so these drive
+  -- the rewrite. The steel tier is vanilla's own heat exchanger, which this mod
+  -- adopts as tier 1 -- it carries the steel tint, the steel pipeline extent,
+  -- and next_upgrade into mk2 -- so it gets the same passthrough as the rest.
+  ["heat-exchanger"] = "follows-heat",
+  ["aer_heat-exchanger-2"] = "follows-heat",
+  ["aer_heat-exchanger-3"] = "follows-heat",
+  ["aer_heat-exchanger-4"] = "follows-heat",
+
+  -- fixed: output temperature is whatever the prototype says, always. These
+  -- never trigger a rewrite; they only claim their share of a segment they
+  -- happen to share with an exchanger.
+  ["boiler"] = "fixed",
+  ["aer_steel-boiler"] = "fixed",
+  ["aer_rubber-lined-boiler"] = "fixed",
+  ["aer_holmium-reinforced-boiler"] = "fixed",
 }
 
--- prototype name -> {min_working, target}, resolved once per prototype rather
--- than per entity per tick.
-local limits = {}
+-- prototype name -> {follows_heat, min_working, target, rate}, resolved once per
+-- prototype rather than per entity per pass. false marks a prototype that
+-- cannot be resolved, so the work is not repeated for it either.
+local specs = {}
 
--- unit_number -> the pipe carrying this exchanger's output segment.
+-- unit_number -> the pipe carrying this source's output segment.
 --
 -- A machine's own fluidbox is never part of a fluid segment -- segments are a
 -- pipe-network construct -- so the rewrite has to go through the pipe the
--- exchanger feeds. Derived state only, so it is a plain local rather than
+-- machine feeds. Derived state only, so it is a plain local rather than
 -- storage, and is rebuilt naturally after a load.
 local output_pipes = {}
 
-local function limits_for(entity)
+local function spec_for(entity)
   local name = entity.name
-  local cached = limits[name]
-  if cached then return cached end
+  local cached = specs[name]
+  if cached ~= nil then return cached or nil end
 
   local prototype = entity.prototype
+  local steam = prototypes.fluid["steam"]
+  local target = prototype.target_temperature
+  local degrees = target and steam and (target - steam.default_temperature)
+  if not degrees or degrees <= 0 then
+    specs[name] = false
+    return nil
+  end
+
+  -- A burner's effectivity multiplies fuel energy on its way into the steam.
+  -- The holmium boiler runs at 1.3, so ignoring it would understate that
+  -- boiler's share of a shared header by nearly a third.
+  local burner = prototype.burner_prototype
   local buffer = prototype.heat_buffer_prototype
-  if not buffer or not prototype.target_temperature then return nil end
 
   cached = {
-    min_working = buffer.min_working_temperature or 0,
-    target = prototype.target_temperature,
+    follows_heat = PRODUCERS[name] == "follows-heat",
+    min_working = buffer and buffer.min_working_temperature or 0,
+    target = target,
+    -- Units of steam per tick. Only the ratio between sources on one segment is
+    -- ever used, so the tick basis never needs converting to seconds.
+    rate = prototype.get_max_energy_usage() * ((burner and burner.effectivity) or 1)
+      / (steam.heat_capacity * degrees),
   }
-  limits[name] = cached
+  specs[name] = cached
   return cached
 end
 
+-- The temperature this source is putting into its pipe right now, or nil when
+-- it is not producing at all and has no claim on the segment.
+local function producing_temperature(entity, spec)
+  if spec.follows_heat then
+    -- Below min_working the engine makes no steam, so an exchanger with no heat
+    -- connection, or one on a network that has gone cold, must not drag the
+    -- segment down on behalf of steam it never made.
+    local buffer = entity.temperature
+    if not buffer or buffer < spec.min_working then return nil end
+    if buffer > spec.target then return spec.target end
+    return buffer
+  end
+
+  -- A fuel boiler's steam always leaves at its target, so the only question is
+  -- whether any is being made: out of fuel, or backed up against a full output,
+  -- and its share of the header is not being replenished.
+  if entity.status ~= defines.entity_status.working then return nil end
+  return spec.target
+end
+
 local function track(entity)
-  if entity and entity.valid and TRACKED[entity.name] then
-    storage.exchangers[entity.unit_number] = entity
+  if entity and entity.valid and PRODUCERS[entity.name] then
+    storage.producers[entity.unit_number] = entity
   end
 end
 
 local function forget(entity)
   if entity and entity.unit_number then
-    storage.exchangers[entity.unit_number] = nil
+    storage.producers[entity.unit_number] = nil
     -- The pipe cache is keyed by unit_number, and unit numbers are never
-    -- reused. Left behind, an entry for a mined exchanger is never visited
-    -- again -- the scan below only reaches keys still in the registry -- so it
+    -- reused. Left behind, an entry for a mined machine is never visited
+    -- again -- the pass below only reaches keys still in the registry -- so it
     -- would hold a dead reference for the rest of the session.
     output_pipes[entity.unit_number] = nil
   end
 end
 
 -- Rebuild the registry from scratch. Used on init and on configuration change,
--- so an existing save picks up exchangers built before this mod version.
+-- so an existing save picks up machines built before this mod version.
 local function rescan()
-  storage.exchangers = {}
+  storage.producers = {}
+  -- Superseded by storage.producers, which covers fuel boilers as well. Only
+  -- ever present in a save from a development build of this branch.
+  storage.exchangers = nil
 
-  -- Only ask for prototypes this load actually has. The mk4 exchanger is Space
-  -- Age only, and find_entities_filtered errors on an unknown name rather than
-  -- ignoring it.
+  -- Only ask for prototypes this load actually has. The mk4 exchanger and the
+  -- holmium boiler are Space Age only, and find_entities_filtered errors on an
+  -- unknown name rather than ignoring it.
   local names = {}
-  for name in pairs(TRACKED) do
+  for name in pairs(PRODUCERS) do
     if prototypes.entity[name] then names[#names + 1] = name end
   end
   if #names == 0 then return end
@@ -103,7 +190,7 @@ local function rescan()
 end
 
 script.on_init(function()
-  storage.exchangers = {}
+  storage.producers = {}
   rescan()
 end)
 
@@ -155,64 +242,68 @@ local function output_pipe_for(entity)
 end
 
 -- The write is per segment, but deciding what to write costs a handful of
--- engine calls per exchanger, every one of which is paid whether or not
+-- engine calls per steam source, every one of which is paid whether or not
 -- anything moved. A reactor's core temperature changes by fractions of a degree
--- per tick, so a rewrite at 60 Hz spends that per-exchanger work re-asserting a
--- number that has barely moved.
+-- per tick, so a rewrite at 60 Hz spends that work re-asserting a number that
+-- has barely moved.
 --
--- 24 ticks is 2.5 rewrites a second, and costs a twenty-fourth of what every
--- tick did. The tradeoff is visible only if a player is watching a turbine's
--- output number while the network is actively swinging -- it steps every 0.4
--- seconds rather than gliding -- and the temperature it steps to was never
--- stale by more than the fraction of a degree the network moved in between.
--- Chosen deliberately in favour of the cost.
-local PASSTHROUGH_INTERVAL_TICKS = 24
+-- The interval is not only a smoothness knob. Between two rewrites the engine
+-- keeps making steam at its own pinned target, so a fraction of every segment
+-- is untapered at any moment, and that fraction grows with the interval.
+-- Measured on a mixed rig whose correction should land on 394.2 (see the
+-- mixed_steam_blend experiment):
+--
+--     interval   segment mean   sawtooth   taper applied
+--        6            395.8        4.9         98.4%
+--       20            399.1       17.0         95.2%
+--       60            408.0       51.5         86.5%
+--
+-- The error always favours the player -- steam is hotter than intended, never
+-- colder -- and 60 ticks costs a sixtieth of what every tick did. Chosen
+-- deliberately: this is the one cost in the mod that grows with how much the
+-- player has built, and 13% of a taper is a cheaper thing to give up than UPS
+-- on a large base.
+local PASSTHROUGH_INTERVAL_TICKS = 60
 
 script.on_nth_tick(PASSTHROUGH_INTERVAL_TICKS, function()
-  local exchangers = storage.exchangers
-  if not exchangers or not next(exchangers) then return end
+  local producers = storage.producers
+  if not producers or not next(producers) then return end
 
-  -- Collect the temperature each segment should carry. Several exchangers can
-  -- feed one segment, so average their intents -- that is what the engine's own
-  -- volume blending would have produced anyway.
-  local wanted, counts, representative = {}, {}, {}
+  -- Collect what each segment should carry: the volume-weighted mean of the
+  -- temperatures its running sources are feeding into it.
+  local weighted, weight, driven, representative = {}, {}, {}, {}
 
-  for unit_number, entity in pairs(exchangers) do
+  for unit_number, entity in pairs(producers) do
     if not entity.valid then
-      exchangers[unit_number] = nil
+      producers[unit_number] = nil
       output_pipes[unit_number] = nil
     else
-      local bounds = limits_for(entity)
-      local buffer = bounds and entity.temperature
-      -- Only exchangers that are actually producing get a say in the steam
-      -- temperature. One below its working threshold -- no heat connection, or
-      -- a network that has gone cold -- makes no steam at all, so averaging its
-      -- intent in would drag the segment down on behalf of an exchanger
-      -- contributing nothing to it.
-      if buffer and buffer >= bounds.min_working then
+      local spec = spec_for(entity)
+      local temperature = spec and producing_temperature(entity, spec)
+      if temperature then
         local pipe = output_pipe_for(entity)
         if pipe then
-          local desired = buffer
-          if desired > bounds.target then desired = bounds.target end
-
           local segment = pipe.get_fluid_segment_id(PIPE_BOX)
-          wanted[segment] = (wanted[segment] or 0) + desired
-          counts[segment] = (counts[segment] or 0) + 1
+          weighted[segment] = (weighted[segment] or 0) + temperature * spec.rate
+          weight[segment] = (weight[segment] or 0) + spec.rate
+          -- A segment with no exchanger on it is already carrying the right
+          -- temperature and is left alone entirely.
+          if spec.follows_heat then driven[segment] = true end
           representative[segment] = pipe
         end
       end
     end
   end
 
-  for segment, total in pairs(wanted) do
-    local pipe = representative[segment]
-    if pipe.valid then
+  for segment, total in pairs(weighted) do
+    local pipe = driven[segment] and representative[segment]
+    if pipe and pipe.valid then
       local fluid = pipe.get_fluid_segment_fluid(PIPE_BOX)
       if fluid and fluid.amount > 0 then
         pipe.set_fluid_segment_fluid(PIPE_BOX, {
           name = fluid.name,
           amount = fluid.amount,
-          temperature = total / counts[segment],
+          temperature = total / weight[segment],
         })
       end
     end
