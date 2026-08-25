@@ -189,5 +189,5 @@ the pole tier carrying it.
 | Pipe reach at light load | 25t | 22.5t | 20t | 17.5t |
 | Pipe throughput | 1 GW | 1.4 GW | 1.7 GW | 1.9 GW |
 | Turbine optimal | 500 | 650 | 800 | 1000 |
-| Turbines per 2x2 block | 82 | 105 | 127 | 150 |
-| Turbine rated output | 5.82 MW | 9.14 MW | 11.30 MW | 12.77 MW |
+| Turbines per 2x2 block | 82 | 105 | 119 | 130 |
+| Turbine rated output | 5.82 MW | 9.14 MW | 12.06 MW | 14.78 MW |

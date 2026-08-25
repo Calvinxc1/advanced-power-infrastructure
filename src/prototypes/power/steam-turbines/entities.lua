@@ -35,11 +35,11 @@ data:extend({steam_turbine_mk2})
 
 local steam_turbine_mk3 = util.table.deepcopy(data.raw["generator"]["steam-turbine"])
 steam_turbine_mk3.name = "aer_reinforced-steam-turbine"
--- Steam volume stops climbing here. A turbine's output is temperature times
--- volume, and from this tier up the temperature does the work: mk3 handles
--- 188 kJ/tick against mk2's 152 while moving the same steam. Holding volume
--- back is what makes a block need more turbines each tier rather than fewer.
-steam_turbine_mk3.fluid_usage_per_tick = 1.2
+-- Steam volume nearly stops climbing here. A turbine's output is temperature
+-- times volume, and from this tier up the temperature does most of the work.
+-- Holding volume back is what makes a block need more turbines each tier
+-- rather than fewer, while the count still decelerates: +22.5, +14.4, +10.5.
+steam_turbine_mk3.fluid_usage_per_tick = 1.28
 steam_turbine_mk3.maximum_temperature = 800
 steam_turbine_mk3.max_health = 800
 steam_turbine_mk3.minable.result = "aer_reinforced-steam-turbine"
