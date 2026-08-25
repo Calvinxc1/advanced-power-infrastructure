@@ -236,6 +236,90 @@ experiments.steam_mixing = {
   end,
 }
 
+-- Experiment 6 -------------------------------------------------------------
+-- The crux for the proposed design: when the heat buffer sits BELOW
+-- target_temperature, what temperature is the steam that comes out?
+--
+-- If it tracks the buffer, output temperature scales with the network and
+-- turbines taper smoothly. If it is pinned to target_temperature, the engine
+-- manufactures heat it was never given, and the design needs another route.
+experiments.output_temperature = {
+  setup = function(state)
+    state.rows = {}
+    for i, temperature in ipairs({420, 500, 575, 650, 800, 1000}) do
+      state.rows[#state.rows + 1] = {
+        buffer_temperature = temperature,
+        exchanger = place("aerm_decoupled-exchanger", 605, i * 12),
+      }
+    end
+  end,
+  sample = function(state, tick)
+    for _, row in ipairs(state.rows) do
+      row.exchanger.temperature = row.buffer_temperature
+      row.exchanger.insert_fluid{name = "water", amount = 240}
+      local produced = row.exchanger.get_fluid(2)
+      if produced and produced.amount > 0 then
+        row.output_temperature = produced.temperature
+        row.output_fluid = produced.name
+      end
+      row.exchanger.remove_fluid(2, 10000)
+    end
+
+    if tick ~= 300 then return end
+
+    for _, row in ipairs(state.rows) do
+      emit("output_temperature", {
+        {"buffer_temperature", row.buffer_temperature},
+        {"target_temperature", row.exchanger.prototype.target_temperature},
+        {"output_fluid", row.output_fluid or "none"},
+        {"output_temperature", row.output_temperature
+          and ("%.1f"):format(row.output_temperature) or "none"},
+      })
+    end
+  end,
+}
+
+-- Experiment 7 -------------------------------------------------------------
+-- Can steam temperature track the heat network rather than being pinned to a
+-- fixed target? Tests mode = "heat-fluid-inside", which heats the fluid in
+-- place instead of converting it, against a series of pinned buffer values.
+experiments.superheater = {
+  setup = function(state)
+    state.rows = {}
+    for i, temperature in ipairs({450, 600, 800, 1000}) do
+      state.rows[#state.rows + 1] = {
+        buffer_temperature = temperature,
+        boiler = place("aerm_superheater", 705, i * 12),
+      }
+    end
+  end,
+  sample = function(state, tick)
+    for _, row in ipairs(state.rows) do
+      row.boiler.temperature = row.buffer_temperature
+      -- Feed cool steam in and see how hot it comes back out.
+      row.boiler.insert_fluid{name = "steam", amount = 60, temperature = 165}
+      for index = 1, 2 do
+        local fluid = row.boiler.get_fluid(index)
+        if fluid and fluid.amount > 0 then
+          row["box" .. index] = ("%s@%.1f x%.1f"):format(
+            fluid.name, fluid.temperature or -1, fluid.amount)
+        end
+      end
+    end
+
+    if tick ~= 420 then return end
+
+    for _, row in ipairs(state.rows) do
+      emit("superheater", {
+        {"buffer_temperature", row.buffer_temperature},
+        {"input_box", row.box1 or "empty"},
+        {"output_box", row.box2 or "empty"},
+        {"status", status_name(row.boiler.status)},
+      })
+    end
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false

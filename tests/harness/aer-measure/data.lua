@@ -11,3 +11,17 @@ decoupled.energy_source.min_working_temperature = 400
 decoupled.target_temperature = 650
 
 data:extend({decoupled})
+
+-- Does mode = "heat-fluid-inside" let steam temperature track the heat network,
+-- instead of being pinned to a fixed target_temperature? Steam is the working
+-- fluid because water caps at 100 degrees and cannot carry the range.
+local superheater = table.deepcopy(data.raw.boiler["aer_heat-exchanger-2"])
+superheater.name = "aerm_superheater"
+superheater.next_upgrade = nil
+superheater.mode = "heat-fluid-inside"
+superheater.target_temperature = nil
+superheater.energy_source.min_working_temperature = 400
+superheater.fluid_box.filter = "steam"
+superheater.output_fluid_box.filter = "steam"
+
+data:extend({superheater})
