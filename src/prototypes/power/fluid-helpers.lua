@@ -61,6 +61,16 @@ local function apply_entity_tint(prototype, tint)
   tint_sprite_table(prototype.animations, tint)
   tint_sprite_table(prototype.horizontal_animation, tint)
   tint_sprite_table(prototype.vertical_animation, tint)
+
+  -- A heat pipe carries none of the sprite fields above: its graphics live in
+  -- connection_sprites, one entry per junction shape. Without this the tint is
+  -- a silent no-op and every tier renders identically once placed, which
+  -- matters because a single low-tier pipe throttles a whole run and there is
+  -- no other way to spot it.
+  --
+  -- heat_glow_sprites is deliberately left alone. That layer is the temperature
+  -- readout, and tinting it would corrupt the one cue that already works.
+  tint_sprite_table(prototype.connection_sprites, tint)
 end
 
 function helpers.apply_rubber_lined_entity_tint(prototype)

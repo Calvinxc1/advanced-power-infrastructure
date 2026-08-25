@@ -102,6 +102,19 @@ exchanger downstream produces cold steam.
 There is no error message for this. If a run is underperforming for no visible
 reason, look for a pipe you forgot to upgrade.
 
+The tiers are tinted, so you can spot the odd one out without checking each
+pipe individually:
+
+| Pipe tier | Appearance |
+| --- | --- |
+| Steel (mk1) | vanilla, untinted |
+| mk2 | darker grey |
+| mk3 | pale green |
+| mk4 | pale blue-white |
+
+The heat glow is deliberately left untinted on every tier, so it still reads as
+temperature rather than as tier.
+
 ## Upgrading has a cost
 
 Replacing a heat pipe replaces the entity, and the replacement starts cold. An
