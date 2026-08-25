@@ -644,12 +644,10 @@ end)
 local REACTOR_PANEL = "aer_reactor_output"
 local PANEL_REFRESH_TICKS = 30
 
-local REACTORS = {
-  ["nuclear-reactor"] = true,
-  ["aer_nuclear-reactor-2"] = true,
-  ["aer_nuclear-reactor-3"] = true,
-  ["aer_nuclear-reactor-4"] = true,
-}
+-- REACTORS above serves both halves. Two copies would let a future tier reach
+-- one and not the other, and the failure is quiet either way: a panel that
+-- opens for a reactor the bonus never pays, or a reactor paid a bonus it cannot
+-- show.
 
 local function megawatts(watts)
   return string.format("%.1f MW", watts / 1000000)
