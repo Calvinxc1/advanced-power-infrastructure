@@ -1,8 +1,10 @@
 -- Headless measurement harness for heat-chain behaviour Wube does not document.
 --
 -- Emits "AERM <experiment>|<key>=<value>|..." lines to the log, which
--- scripts/factorio-measure.sh extracts and tests/test_heat_chain_measurements.py
--- asserts against. Never shipped with the mod.
+-- scripts/factorio-measure.sh extracts and prints. Records are read by a person
+-- rather than asserted against: these experiments answer design questions once,
+-- and the answers are written into the code and docs that depend on them.
+-- Never shipped with the mod.
 
 local SURFACE = 1
 local experiments = {}
@@ -37,6 +39,54 @@ end
 local function fuel(entity)
   entity.insert{name = "uranium-fuel-cell", count = 50}
   return entity
+end
+
+-- Attach a pipe to a machine's output fluid box.
+--
+-- LuaEntity.fluidbox is gone in 2.1 -- the fluid box API now hangs off the
+-- entity directly -- so there is no get_pipe_connections to ask. Rather than
+-- reason about footprints and connection offsets, try the candidate tiles and
+-- keep the one the engine actually reports as a neighbour. A rig that guessed
+-- wrong then reports nothing instead of reporting something misleading.
+local function attach_pipe(entity, box_index)
+  for _, offset in ipairs({{0, -1.5}, {0, -2}, {0, -2.5}, {0, -1}}) do
+    local pipe = surface().create_entity{
+      name = "pipe",
+      position = {entity.position.x + offset[1], entity.position.y + offset[2]},
+      force = game.forces.player,
+    }
+    if pipe then
+      local neighbours = entity.fluidbox_neighbours
+      for _, candidate in pairs((neighbours and neighbours[box_index]) or {}) do
+        if candidate == pipe then return pipe end
+      end
+      pipe.destroy()
+    end
+  end
+  return nil
+end
+
+-- Fill the straight line between two pipes so they share one fluid segment.
+-- Returns false if they are not on a common row or column, which makes a rig
+-- that silently failed to connect obvious in the record.
+local function join_pipes(first, second)
+  if not (first and second and first.valid and second.valid) then return false end
+  local a, b = first.position, second.position
+  if a.y ~= b.y and a.x ~= b.x then return false end
+
+  local step = 1
+  if a.x == b.x then
+    if b.y < a.y then step = -1 end
+    for y = a.y + step, b.y - step, step do
+      surface().create_entity{name = "pipe", position = {a.x, y}, force = game.forces.player}
+    end
+  else
+    if b.x < a.x then step = -1 end
+    for x = a.x + step, b.x - step, step do
+      surface().create_entity{name = "pipe", position = {x, a.y}, force = game.forces.player}
+    end
+  end
+  return true
 end
 
 -- Experiment 1 -------------------------------------------------------------
@@ -927,6 +977,160 @@ experiments.spin_up = {
           and ("%.1f"):format(row.reached_ceiling / 60) or "not reached"},
       })
     end
+  end,
+}
+
+-- Experiment 10 ------------------------------------------------------------
+-- The mixed-source blend, and the accessors it rests on.
+--
+-- The passthrough rewrites a whole pipe segment, so any steam source sharing a
+-- segment with a heat exchanger has its steam rewritten too. Weighting each
+-- source by how much steam it actually makes is what keeps that honest, and the
+-- weight has to be derived -- no prototype field reports steam output:
+--
+--     energy per tick * effectivity / (heat capacity * degrees above ambient)
+--
+-- Part 1 checks that derivation against figures already known from play: a
+-- vanilla boiler makes 60 steam/s, a vanilla heat exchanger 103.09/s. It also
+-- proves out every accessor the shipped code calls, since a nil field here is a
+-- crash there.
+--
+-- Part 2 puts a vanilla boiler and an mk2 exchanger on one steam header and
+-- reads what comes out. Three outcomes tell three different stories:
+--   ~650  the boiler's steam was promoted -- energy from nothing
+--   ~497  the volume-weighted blend, which is what the engine's own mixing
+--         would have produced and what the shipped code aims for
+--   ~165  the exchanger lost its vote, so the taper is broken instead
+experiments.mixed_steam_blend = {
+  setup = function(state)
+    local steam = prototypes.fluid["steam"]
+    state.steam_heat_capacity = steam.heat_capacity
+    state.steam_base = steam.default_temperature
+
+    state.rows = {}
+    for _, name in ipairs({
+      "boiler", "aer_steel-boiler", "aer_rubber-lined-boiler",
+      "aer_holmium-reinforced-boiler", "heat-exchanger", "aer_heat-exchanger-2",
+      "aer_heat-exchanger-3", "aer_heat-exchanger-4",
+    }) do
+      local prototype = prototypes.entity[name]
+      if prototype then
+        state.rows[#state.rows + 1] = {name = name, prototype = prototype}
+      end
+    end
+
+    -- The exchanger is held at 500 rather than at its 650 target, which is what
+    -- makes the reading decisive. At 650 every hypothesis lands on the same
+    -- number and the rig proves nothing.
+    --
+    --   solo, no passthrough    650  the engine pins output to target
+    --   solo, passthrough       500  the taper: steam follows the network
+    --   mixed, no passthrough   496.8  the engine's own volume blend of 650 and 165
+    --   mixed, promoted         500  cold steam handed the exchanger's temperature
+    --   mixed, weighted blend   394.2  (60*165 + 129.92*500) / 189.92
+    --
+    -- Both machines face the same way at the same y, so their steam connections
+    -- land on one row and a straight run of pipe joins them.
+    state.boiler = place("boiler", 1000, 0)
+    state.exchanger = place("aer_heat-exchanger-2", 1020, 0)
+    state.boiler_pipe = attach_pipe(state.boiler, 2)
+    state.exchanger_pipe = attach_pipe(state.exchanger, 2)
+    state.joined = join_pipes(state.boiler_pipe, state.exchanger_pipe)
+    state.boiler.insert{name = "coal", count = 50}
+
+    -- Control: the same exchanger with nothing else on its segment.
+    state.solo = place("aer_heat-exchanger-2", 1000, 40)
+    state.solo_pipe = attach_pipe(state.solo, 2)
+  end,
+  sample = function(state, tick)
+    -- Water drains as steam is made and the buffer drains with it, so both are
+    -- topped up every tick to hold the rig at a steady production mix.
+    for _, machine in ipairs({state.boiler, state.exchanger, state.solo}) do
+      if machine and machine.valid then
+        machine.insert_fluid{name = "water", amount = 200}
+      end
+    end
+    for _, machine in ipairs({state.exchanger, state.solo}) do
+      if machine and machine.valid then machine.temperature = 500 end
+    end
+
+    -- The rewrite runs on an interval, so between two writes the engine keeps
+    -- adding steam at its own pinned target temperature. Trace the segment
+    -- across several intervals to see how far it drifts back up in between:
+    -- that drift is steam escaping the taper, and it is set by the interval.
+    if tick >= 120 and tick <= 360 then
+      local pipe = state.exchanger_pipe
+      if pipe and pipe.valid and pipe.has_fluid_segment(1) then
+        local fluid = pipe.get_fluid_segment_fluid(1)
+        if fluid then
+          state.trace = state.trace or {}
+          state.trace[#state.trace + 1] = fluid.temperature or -1
+        end
+      end
+    end
+
+    if tick == 360 and state.trace and #state.trace > 0 then
+      local low, high, total = math.huge, -math.huge, 0
+      for _, value in ipairs(state.trace) do
+        if value < low then low = value end
+        if value > high then high = value end
+        total = total + value
+      end
+      emit("blend_interval_drift", {
+        {"samples", #state.trace},
+        {"lowest", ("%.1f"):format(low)},
+        {"highest", ("%.1f"):format(high)},
+        {"mean", ("%.1f"):format(total / #state.trace)},
+        {"sawtooth", ("%.1f"):format(high - low)},
+      })
+    end
+
+    -- Sampled while the run is still filling. Once a segment backs up both
+    -- machines stop producing, and a stalled rig measures nothing.
+    if tick ~= 200 then return end
+
+    for _, row in ipairs(state.rows) do
+      local prototype = row.prototype
+      local burner = prototype.burner_prototype
+      local buffer = prototype.heat_buffer_prototype
+      local effectivity = (burner and burner.effectivity) or 1
+      local degrees = prototype.target_temperature - state.steam_base
+      local per_tick = prototype.get_max_energy_usage() * effectivity
+        / (state.steam_heat_capacity * degrees)
+      emit("steam_rate", {
+        {"producer", row.name},
+        {"target", prototype.target_temperature},
+        {"energy_per_tick", prototype.get_max_energy_usage()},
+        {"effectivity", effectivity},
+        {"has_burner", burner ~= nil},
+        {"min_working", buffer and buffer.min_working_temperature or "none"},
+        {"steam_per_second", ("%.2f"):format(per_tick * 60)},
+      })
+    end
+
+    local function segment_of(pipe)
+      if not (pipe and pipe.valid and pipe.has_fluid_segment(1)) then return "none", nil end
+      return pipe.get_fluid_segment_id(1), pipe.get_fluid_segment_fluid(1)
+    end
+
+    local boiler_segment = segment_of(state.boiler_pipe)
+    local exchanger_segment, mixed_fluid = segment_of(state.exchanger_pipe)
+    local _, solo_fluid = segment_of(state.solo_pipe)
+
+    emit("mixed_steam_blend", {
+      -- Rig diagnostics first: a reading below means nothing if the two
+      -- machines never reached one segment, or if either stopped producing.
+      {"pipes_joined", state.joined},
+      {"one_segment", boiler_segment == exchanger_segment},
+      {"boiler_status", status_name(state.boiler.status)},
+      {"exchanger_status", status_name(state.exchanger.status)},
+      {"exchanger_buffer", ("%.0f"):format(state.exchanger.temperature or -1)},
+      {"mixed_amount", mixed_fluid and ("%.1f"):format(mixed_fluid.amount) or "none"},
+      {"mixed_temperature", mixed_fluid and ("%.1f"):format(mixed_fluid.temperature or -1) or "none"},
+      {"solo_status", status_name(state.solo.status)},
+      {"solo_amount", solo_fluid and ("%.1f"):format(solo_fluid.amount) or "none"},
+      {"solo_temperature", solo_fluid and ("%.1f"):format(solo_fluid.temperature or -1) or "none"},
+    })
   end,
 }
 
