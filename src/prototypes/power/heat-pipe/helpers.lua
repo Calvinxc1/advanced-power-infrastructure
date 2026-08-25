@@ -16,6 +16,7 @@ function helpers.make_heat_pipe(name, minable_result, heat, next_upgrade, tint, 
   heat_pipe.heat_buffer.max_temperature = heat.max_temperature
   heat_pipe.heat_buffer.specific_heat = heat.specific_heat
   heat_pipe.heat_buffer.max_transfer = heat.max_transfer
+  heat_pipe.heat_buffer.min_temperature_gradient = heat.min_temperature_gradient
   if tint then
     tint(heat_pipe)
   end

@@ -7,12 +7,32 @@ local constants = {
   -- upgrade path has to be thought through rather than followed blindly.
   heat_exchanger_min_working_temperature = 300,
 
-  -- Degrees lost per pipe tile. Measured, not guessed: the engine applies
-  -- this linearly, so reach in tiles is exactly
-  --   (reactor max temperature - exchanger optimal) / gradient.
-  -- The engine default of 1 makes distance effectively free, which is why a
-  -- reactor block could grow an arbitrarily long arm at no cost.
-  heat_pipe_temperature_gradient = 5,
+  -- How far a lightly loaded run should reach before it drops below optimal.
+  -- Shrinking with tier is deliberate: a bigger reactor is meant to be harder
+  -- to lay out, not merely bigger. Gradient is derived from this rather than
+  -- set directly, so the design intent is what appears in the source.
+  --
+  -- These are light-load figures. Real runs are shorter, because the drop per
+  -- tile is min_temperature_gradient plus a component proportional to the heat
+  -- flowing through -- measured at roughly +2.7 degrees/tile per 80 MW on a
+  -- tier 1 pipe. Heavier spokes reach less far.
+  heat_tier_optimal_reach = {
+    mk1 = 25,
+    mk2 = 22.5,
+    mk3 = 20,
+    mk4 = 17.5,
+  },
+
+  -- Throughput deliberately grows more slowly than exchanger draw, which runs
+  -- 1 : 1.8 : 2.5 : 3.2. Capacity outrunning demand is what made higher tiers
+  -- easier to lay out; keeping it behind demand is what makes the same tileable
+  -- layout lose efficiency as the tiers rise, while still producing more power.
+  heat_tier_max_transfer = {
+    mk1 = "1GW",
+    mk2 = "1.4GW",
+    mk3 = "1.7GW",
+    mk4 = "1.9GW",
+  },
 
   -- A reactor's ceiling sits this far above the optimal of the exchanger tier
   -- that matches it, so optimal is 80 percent of the ceiling rather than the
@@ -82,6 +102,14 @@ local constants = {
 constants.heat_tier_ceiling = {}
 for tier, optimal in pairs(constants.heat_tier_optimal) do
   constants.heat_tier_ceiling[tier] = optimal / constants.reactor_optimal_fraction
+end
+
+-- Degrees lost per pipe tile, at light load. The engine treats this as a floor
+-- rather than a fixed rate, so it is the best case a run can achieve.
+constants.heat_tier_gradient = {}
+for tier, optimal in pairs(constants.heat_tier_optimal) do
+  constants.heat_tier_gradient[tier] =
+    (constants.heat_tier_ceiling[tier] - optimal) / constants.heat_tier_optimal_reach[tier]
 end
 
 return constants
