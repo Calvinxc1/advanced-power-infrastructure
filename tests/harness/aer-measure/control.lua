@@ -48,10 +48,10 @@ end
 -- reason about footprints and connection offsets, try the candidate tiles and
 -- keep the one the engine actually reports as a neighbour. A rig that guessed
 -- wrong then reports nothing instead of reporting something misleading.
-local function attach_pipe(entity, box_index)
+local function attach_pipe(entity, box_index, pipe_name)
   for _, offset in ipairs({{0, -1.5}, {0, -2}, {0, -2.5}, {0, -1}}) do
     local pipe = surface().create_entity{
-      name = "pipe",
+      name = pipe_name or "pipe",
       position = {entity.position.x + offset[1], entity.position.y + offset[2]},
       force = game.forces.player,
     }
@@ -1573,6 +1573,123 @@ experiments.reactor_panel_figures = {
           {"base_mw", ("%.1f"):format(output.base_output / 1000000)},
           {"current_mw", ("%.1f"):format(output.current_output / 1000000)},
           {"engine_bonus", ("%.3f"):format(subject.neighbour_bonus or -1)},
+        })
+      end
+    end
+  end,
+}
+
+-- Experiment 18 ------------------------------------------------------------
+-- INCONCLUSIVE. Does a machine's max_pipeline_extent bind the network it joins?
+--
+-- Kept because what it rules out is worth not rediscovering: this question
+-- cannot be answered from a headless map, by any of three routes tried.
+--
+-- Heat exchangers and steam turbines are held to a 64 tile pipeline extent at
+-- every tier, deliberately, so that upgrading them never removes the need for
+-- pumps. But the extent is a property of the machine's own fluid box, and a
+-- machine's fluid box is not part of a fluid segment -- measured earlier. If the
+-- engine takes a segment's limit only from the pipes in it, then attaching a 64
+-- tile machine to a 512 tile foundation pipe run constrains nothing, and the
+-- design does nothing for exactly the player who upgraded their pipes.
+--
+-- Route 1, build it and look: create_entity builds under script rules, which
+-- ignore the extent limit outright. The vanilla control settles it -- a 24 tile
+-- pipe ran to 141 tiles in one segment, with the machine still connected.
+--
+-- Route 2, ask whether a player could build it: can_place_entity with a manual
+-- build check returns false on empty open ground far from any pipeline, so it
+-- is unusable here rather than reporting on the extent rule. Only
+-- build_check_type.script returns true, and script is the one that bypasses.
+--
+-- Route 3, inspect the segment: the segment forms end to end regardless, since
+-- it was built by route 1.
+--
+-- So the rig below measures how far a scripted run reaches, which is not the
+-- question. Answering it needs a real player in a real game: build outward from
+-- an exchanger on foundation pipe and note the length at which placement is
+-- refused, if it ever is.
+experiments.pipeline_extent = {
+  setup = function(state)
+    -- Grow each run one tile at a time, asking first whether a player would be
+    -- allowed to place it. create_entity builds under script rules and ignores
+    -- the extent limit entirely -- an earlier version of this rig ran a 24 tile
+    -- vanilla pipe out to 141 tiles that way and proved nothing. The manual
+    -- build check is the rule a player is actually held to.
+    --
+    -- The vanilla row is the control. If it stops near 24 the rig is measuring
+    -- the extent rule; if it runs to the end, the rig is measuring nothing.
+    state.cases = {
+      {label = "vanilla_pipe", pipe = "pipe", extent = 24},
+      {label = "afi_steel", pipe = "afi_steel-pipe", extent = 64},
+      {label = "afi_foundation", pipe = "afi_foundation-pipe", extent = 512},
+    }
+
+    -- Sanity check the accessor before trusting anything it says: an empty
+    -- tile in open ground, far from any pipeline, under each build check type.
+    for _, check in ipairs({"manual", "script", "manual_ghost", "ghost_revive"}) do
+      local kind = defines.build_check_type[check]
+      emit("build_check_sanity", {
+        {"build_check_type", check},
+        {"exists", kind ~= nil},
+        {"empty_ground_allowed", kind ~= nil and surface().can_place_entity{
+          name = "pipe", position = {6000, 6000},
+          force = game.forces.player, build_check_type = kind} or "n/a"},
+      })
+    end
+
+    for index, case in ipairs(state.cases) do
+      if not prototypes.entity[case.pipe] then
+        case.missing = true
+      else
+        case.exchanger = place("aer_heat-exchanger-2", 4000 + index * 400, 0)
+        case.first = attach_pipe(case.exchanger, 2, case.pipe)
+        case.length = case.first and 1 or 0
+        case.refused_at = "not within 300"
+
+        if case.first then
+          local origin = case.first.position
+          for step = 1, 300 do
+            local position = {origin.x + step, origin.y}
+            local allowed = surface().can_place_entity{
+              name = case.pipe,
+              position = position,
+              force = game.forces.player,
+              build_check_type = defines.build_check_type.manual,
+            }
+            if not allowed then
+              case.refused_at = step
+              break
+            end
+            local pipe = surface().create_entity{
+              name = case.pipe, position = position, force = game.forces.player,
+            }
+            if not pipe then
+              case.refused_at = ("create failed at %d"):format(step)
+              break
+            end
+            case.length = case.length + 1
+          end
+        end
+      end
+    end
+  end,
+  sample = function(state, tick)
+    if tick ~= 240 then return end
+
+    for _, case in ipairs(state.cases) do
+      if case.missing then
+        emit("pipeline_extent", {
+          {"case", case.label},
+          {"result", "prototype absent -- run with AER_MEASURE_EXTRA_MODS"},
+        })
+      else
+        emit("pipeline_extent", {
+          {"case", case.label},
+          {"pipe_extent", case.extent},
+          {"machine_extent_on_exchanger", 64},
+          {"run_length_reached", case.length},
+          {"refused_at_step", case.refused_at},
         })
       end
     end

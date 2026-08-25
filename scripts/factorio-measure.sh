@@ -39,6 +39,18 @@ printf '[path]\nread-data=__PATH__executable__/../../data\nwrite-data=%s\n' \
 ln -s "$repo_root/src" "$mods_dir/$mod_name"
 cp -r "$repo_root/tests/harness/aer-measure" "$mods_dir/aer-measure"
 
+# Some questions only exist when a companion mod is loaded -- pipeline extent is
+# only set at all when Advanced Fluid Infrastructure is present. Colon separated
+# paths to further mod source directories, each linked under its info.json name.
+if [[ -n "${AER_MEASURE_EXTRA_MODS:-}" ]]; then
+  IFS=':' read -r -a extra_mods <<< "$AER_MEASURE_EXTRA_MODS"
+  for extra in "${extra_mods[@]}"; do
+    [[ -n "$extra" ]] || continue
+    extra_name="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]+"/info.json", encoding="utf-8"))["name"])' "$extra")"
+    ln -s "$extra" "$mods_dir/$extra_name"
+  done
+fi
+
 "$factorio_bin" --config "$config" --mod-directory "$mods_dir" --create "$save_dir/measure.zip" >/dev/null 2>&1
 "$factorio_bin" --config "$config" --mod-directory "$mods_dir" --benchmark "$save_dir/measure.zip" \
   --benchmark-ticks "$ticks" 2>&1 | sed -n 's/.*\(AERM[ _].*\)$/\1/p'
