@@ -128,24 +128,40 @@ local function spec_for(entity)
   return cached
 end
 
--- The temperature this source is putting into its pipe right now, or nil when
--- it is not producing at all and has no claim on the segment.
-local function producing_temperature(entity, spec)
-  if spec.follows_heat then
-    -- Below min_working the engine makes no steam, so an exchanger with no heat
-    -- connection, or one on a network that has gone cold, must not drag the
-    -- segment down on behalf of steam it never made.
-    local buffer = entity.temperature
-    if not buffer or buffer < spec.min_working then return nil end
-    if buffer > spec.target then return spec.target end
-    return buffer
-  end
+-- The two statuses that mean a machine has steam to speak for: it is making
+-- some, or it made some and the pipe it fills has backed up. Everything else --
+-- out of fuel, out of water, heat network gone cold -- has no claim on the
+-- segment at all.
+--
+-- Measured rather than assumed, because heat is only half of what an exchanger
+-- needs and buffer temperature alone cannot see the other half. A hot exchanger
+-- with no water reports no_input_fluid and makes nothing; letting it vote on
+-- buffer temperature alone would hand its full production weight to steam it is
+-- not producing, and against a fuel boiler that genuinely is, that promotes the
+-- boiler's cold steam -- the same bug this branch already fixed once, coming
+-- back through a different door. See the exchanger_producing experiment.
+local PRODUCING = {
+  [defines.entity_status.working] = true,
+  [defines.entity_status.full_output] = true,
+}
 
-  -- A fuel boiler's steam always leaves at its target, so the only question is
-  -- whether any is being made: out of fuel, or backed up against a full output,
-  -- and its share of the header is not being replenished.
-  if entity.status ~= defines.entity_status.working then return nil end
-  return spec.target
+-- The temperature this source is putting into its pipe right now, or nil when
+-- it has no claim on the segment.
+local function producing_temperature(entity, spec)
+  if not PRODUCING[entity.status] then return nil end
+
+  -- A fuel boiler's steam always leaves at its target.
+  if not spec.follows_heat then return spec.target end
+
+  -- An exchanger's steam follows its heat network, clamped so it never emits steam
+  -- hotter than optimal. The min_working floor is redundant against the status
+  -- check -- a cold exchanger reports low_temperature -- and is kept as a guard
+  -- on a backed-up exchanger whose network then goes cold, a combination the
+  -- status measurements did not cover.
+  local buffer = entity.temperature
+  if not buffer or buffer < spec.min_working then return nil end
+  if buffer > spec.target then return spec.target end
+  return buffer
 end
 
 local function track(entity)
