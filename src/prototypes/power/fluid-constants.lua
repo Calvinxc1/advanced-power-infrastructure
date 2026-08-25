@@ -14,6 +14,16 @@ local constants = {
   -- power blocks compartmentalised and keeps pumps a real part of the layout.
   power_building_pipeline_extent = 64,
 
+  -- Turbines a single heat exchanger feeds, held constant at every tier.
+  --
+  -- Each tier's fluid_usage_per_tick is chosen to land on this ratio, since a
+  -- generator's output is (optimal - 15) * fluid_usage_per_tick * steam heat
+  -- capacity. Keeping it flat means the exchanger-to-turbine ratio learned at
+  -- the steel tier stays true all the way up, so the difficulty lives in
+  -- placement -- more exchangers, less reach -- rather than in relearning the
+  -- local ratio at every tier.
+  turbines_per_exchanger = 1.8,
+
   -- How far a lightly loaded run should reach before it drops below optimal.
   -- Shrinking with tier is deliberate: a bigger reactor is meant to be harder
   -- to lay out, not merely bigger. Gradient is derived from this rather than

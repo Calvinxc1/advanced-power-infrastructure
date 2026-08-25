@@ -16,12 +16,16 @@ steam_turbine_mk1.fast_replaceable_group = "steam-turbine"
 steam_turbine_mk1.next_upgrade = "aer_rubber-lined-steam-turbine"
 fluid_helpers.set_prototype_fluid_boxes_extent(steam_turbine_mk1, constants.power_building_pipeline_extent)
 fluid_helpers.set_description(steam_turbine_mk1, fluid_helpers.boiler_description(constants.power_building_pipeline_extent))
+-- Trimmed from vanilla's 1.0 so a steel exchanger feeds 1.8 turbines, the
+-- same ratio every tier above holds. This is a base-game change: the vanilla
+-- turbine drops from 5.82 MW to 5.56 MW.
+steam_turbine_mk1.fluid_usage_per_tick = 0.955
 advanced_power_apply_steel_icon_tint(steam_turbine_mk1)
 tint_steam_turbine(steam_turbine_mk1, steel_tier_entity_tint)
 
 local steam_turbine_mk2 = util.table.deepcopy(data.raw["generator"]["steam-turbine"])
 steam_turbine_mk2.name = "aer_rubber-lined-steam-turbine"
-steam_turbine_mk2.fluid_usage_per_tick = 1.2
+steam_turbine_mk2.fluid_usage_per_tick = 1.203
 steam_turbine_mk2.maximum_temperature = 650
 steam_turbine_mk2.max_health = 650
 steam_turbine_mk2.minable.result = "aer_rubber-lined-steam-turbine"
@@ -39,7 +43,7 @@ steam_turbine_mk3.name = "aer_reinforced-steam-turbine"
 -- times volume, and from this tier up the temperature does most of the work.
 -- Holding volume back is what makes a block need more turbines each tier
 -- rather than fewer, while the count still decelerates: +22.5, +14.4, +10.5.
-steam_turbine_mk3.fluid_usage_per_tick = 1.28
+steam_turbine_mk3.fluid_usage_per_tick = 1.268
 steam_turbine_mk3.maximum_temperature = 800
 steam_turbine_mk3.max_health = 800
 steam_turbine_mk3.minable.result = "aer_reinforced-steam-turbine"

@@ -19,7 +19,7 @@ steam_turbine_mk4.name = "aer_foundation-steam-turbine"
 -- Volume barely moves from mk3 while temperature climbs 200 degrees, so this
 -- tier handles 246 kJ/tick against mk3's 201 -- and a block still needs more
 -- turbines than the tier below, rather than fewer.
-steam_turbine_mk4.fluid_usage_per_tick = 1.25
+steam_turbine_mk4.fluid_usage_per_tick = 1.246
 steam_turbine_mk4.maximum_temperature = 1000
 steam_turbine_mk4.max_health = 1000
 steam_turbine_mk4.minable.result = "aer_foundation-steam-turbine"
