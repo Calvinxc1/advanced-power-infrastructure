@@ -135,6 +135,11 @@ times its base output: **480 MW total** for the steel tier.
 At 10 MW per steel exchanger, that supports **48 exchangers**. Reaching all 48
 from one block takes some care.
 
+Higher tiers need considerably more: a mk2 block supports 58, mk3 supports 67,
+mk4 supports 72. Exchanger draw deliberately grows more slowly than reactor
+output, so a bigger reactor is a bigger placement problem and not simply a
+bigger number.
+
 A layout that does it:
 
 - Four spokes of **8 exchangers**, one from each reactor's outer face
@@ -179,7 +184,7 @@ the pole tier carrying it.
 | Reactor / pipe ceiling | 625 | 812.5 | 1000 | 1250 |
 | Exchanger optimal | 500 | 650 | 800 | 1000 |
 | Exchanger stops below | 300 | 300 | 300 | 300 |
-| Exchanger draw | 10 MW | 18 MW | 25 MW | 32 MW |
+| Exchanger draw | 10 MW | 16.5 MW | 21.5 MW | 26.5 MW |
 | Pipe loss per tile, light load | 5.0 | 7.2 | 10.0 | 14.3 |
 | Pipe reach at light load | 25t | 22.5t | 20t | 17.5t |
 | Pipe throughput | 1 GW | 1.4 GW | 1.7 GW | 1.9 GW |

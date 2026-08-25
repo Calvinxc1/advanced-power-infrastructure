@@ -6,7 +6,7 @@ local constants = require("prototypes.power.fluid-constants")
 local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 local heat_exchanger_mk4 = util.table.deepcopy(data.raw["boiler"]["heat-exchanger"])
-heat_exchanger_mk4.energy_consumption = "32MW"
+heat_exchanger_mk4.energy_consumption = "26.5MW"
 heat_exchanger_mk4.target_temperature = 1000
 heat_exchanger_mk4.max_health = 800
 heat_exchanger_mk4.name = "aer_heat-exchanger-4"
