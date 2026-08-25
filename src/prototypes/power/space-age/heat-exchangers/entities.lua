@@ -13,8 +13,8 @@ heat_exchanger_mk4.name = "aer_heat-exchanger-4"
 heat_exchanger_mk4.minable.result = "aer_heat-exchanger-4"
 heat_exchanger_mk4.fast_replaceable_group = "heat-exchanger"
 heat_exchanger_mk4.next_upgrade = nil
--- Starts working where mk3 is optimal.
-heat_exchanger_mk4.energy_source.min_working_temperature = 800
+heat_exchanger_mk4.energy_source.min_working_temperature =
+  constants.heat_exchanger_min_working_temperature
 heat_exchanger_mk4.energy_source.minimum_glow_temperature = 850
 heat_exchanger_mk4.energy_source.max_temperature = 2200
 heat_exchanger_mk4.energy_source.specific_heat = "4MJ"

@@ -552,7 +552,7 @@ experiments.passthrough = {
   setup = function(state)
     state.rows = {}
     -- mk2 is min_working 500, target 650. Span below, inside and above.
-    for i, buffer in ipairs({450, 500, 550, 600, 650, 900}) do
+    for i, buffer in ipairs({400, 450, 500, 600, 650, 900}) do
       local x = 1400 + i * 12
       local exchanger = place("aer_heat-exchanger-2", x, 200)
       local row = {buffer = buffer, exchanger = exchanger, pipes = {}}

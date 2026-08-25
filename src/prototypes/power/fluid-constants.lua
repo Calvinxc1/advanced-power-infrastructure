@@ -1,4 +1,12 @@
 return {
+  -- Every heat exchanger tier starts working at the same network temperature,
+  -- rather than each tier raising its own floor. A higher tier will therefore
+  -- run on a network built for a lower one -- it just produces that network's
+  -- cooler steam while consuming its own tier's larger energy draw. Upgrading
+  -- the exchanger without upgrading the heat source is a real loss, so the
+  -- upgrade path has to be thought through rather than followed blindly.
+  heat_exchanger_min_working_temperature = 450,
+
   iron = {
     pipeline_extent = 24,
   },
