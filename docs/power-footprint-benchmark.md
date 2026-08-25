@@ -59,10 +59,10 @@ realistic layout actually delivers.
 - A **2x2 reactor block** at every tier.
 - Two kinds of exchanger run, both fed from the block:
   - **Double runs** — a heat pipe with exchangers on both sides, so a depth of 5
-    means five ranks and ten exchangers on that run.
+    means five ranks, two columns and ten exchangers on that run.
   - **Single runs** — one column of exchangers along the pipe, so a depth of 5
     means five exchangers.
-- Eight double runs and four single runs per block, as built for these readings.
+- **Four double runs** (eight columns) and **four single runs** per block.
 - Exchanger-to-turbine ratios deliberately **slightly undermatched**, so that
   turbine output reports the heat chain's efficiency rather than being capped by
   turbine count.
@@ -82,6 +82,24 @@ realistic layout actually delivers.
 Far-end temperature is the settled figure at the end of the run; exchangers
 closer to the reactor sit hotter, which is why mk4 delivers 87.6% rather than
 the ~69% the far-end figure alone would imply.
+
+### The layout tested is the designed one
+
+Worth stating, because it is what makes the efficiencies above meaningful: these
+readings come from a block carrying the exchanger count the tier is designed
+around, not an arbitrary one.
+
+| Tier | Double runs | Single runs | Exchangers built | Design figure | Difference |
+| ---: | --- | --- | ---: | ---: | ---: |
+| mk1 | 4 runs x 4 deep x 2 = 32 | 4 x 4 = 16 | **48** | 48 | none |
+| mk2 | 4 runs x 5 deep x 2 = 40 | 4 x 4 = 16 | **56** | 58 | -2 |
+| mk3 | 4 runs x 5 deep x 2 = 40 | 4 x 6 = 24 | **64** | 67 | -3 |
+| mk4 | 4 runs x 6 deep x 2 = 48 | 4 x 6 = 24 | **72** | 72 | none |
+
+mk1 and mk4 land exactly on the figure the tier is built for. mk2 and mk3 sit
+two and three exchangers under it, which is the deliberate undermatch: it keeps
+turbine output reporting the heat chain's efficiency rather than being capped by
+the number of exchangers fed.
 
 ### What it shows
 
