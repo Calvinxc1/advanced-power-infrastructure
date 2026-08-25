@@ -12,7 +12,20 @@ local constants = {
   -- it rise with tier solved the plumbing problem the upper tiers are supposed
   -- to pose: a higher-tier run stopped needing pumps at all. Pinning it keeps
   -- power blocks compartmentalised and keeps pumps a real part of the layout.
-  power_building_pipeline_extent = 64,
+  --
+  -- Dropped from 64 to 24 after play-testing, where steam runs on foundation
+  -- pipe went well past 64 without ever meeting the limit. 64 is simply longer
+  -- than the runs a power block actually produces, so it never bound anything.
+  -- 24 is deliberately aggressive and may need raising -- it is set here to find
+  -- out where the limit starts to bite rather than to be right first time.
+  --
+  -- This only reaches heat exchangers and steam turbines. Pipes take their
+  -- extent from Advanced Fluid Infrastructure and are left alone, which is also
+  -- the open question: if a machine's extent turns out not to constrain a
+  -- network built from longer-extent pipes, this number changes nothing and the
+  -- claim it supports has to come out of the docs. That could not be settled
+  -- headless -- see the pipeline_extent experiment.
+  power_building_pipeline_extent = 24,
 
   -- Heat pipes need their own, stronger entity tints.
   --
