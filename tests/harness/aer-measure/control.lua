@@ -813,6 +813,61 @@ experiments.throughput = {
   end,
 }
 
+-- Experiment 15 ------------------------------------------------------------
+-- Regression: an exchanger with no heat connection, sharing a steam pipe with
+-- working ones, must not drag the steam temperature down.
+--
+-- Found in play. A dud sits at ambient, the passthrough clamped its intent up
+-- to min_working, and that value was averaged in alongside real producers --
+-- so exchangers making no steam at all voted on how hot the steam was.
+experiments.dud_exchanger = {
+  setup = function(state)
+    state.rows = {}
+
+    local function build(label, working, duds, y)
+      local row = {label = label, working = {}, duds = {}}
+      -- Working exchangers, buffers pinned at optimal.
+      for i = 1, working do
+        row.working[i] = place("aer_heat-exchanger-2", 1500 + i * 6, y)
+      end
+      -- Duds: same steam side, never given any heat.
+      for i = 1, duds do
+        row.duds[i] = place("aer_heat-exchanger-2", 1500 + (working + i) * 6, y)
+      end
+      state.rows[#state.rows + 1] = row
+    end
+
+    build("no_duds", 4, 0, 900)
+    build("two_duds", 4, 2, 940)
+    build("four_duds", 4, 4, 980)
+  end,
+  sample = function(state, tick)
+    for _, row in ipairs(state.rows) do
+      for _, exchanger in ipairs(row.working) do
+        exchanger.temperature = 650
+        exchanger.insert_fluid{name = "water", amount = 240}
+      end
+      -- Duds get water but no heat, exactly like a pipe-connected shell.
+      for _, dud in ipairs(row.duds) do
+        dud.insert_fluid{name = "water", amount = 240}
+      end
+    end
+
+    if tick ~= 600 then return end
+    for _, row in ipairs(state.rows) do
+      local sample = row.working[1]
+      local fluid = sample.get_fluid(2)
+      emit("dud_exchanger", {
+        {"case", row.label},
+        {"working", #row.working},
+        {"duds", #row.duds},
+        {"dud_buffer", ("%.1f"):format(row.duds[1] and row.duds[1].temperature or -1)},
+        {"steam_temperature", fluid and ("%.2f"):format(fluid.temperature or -1) or "none"},
+      })
+    end
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false

@@ -164,11 +164,15 @@ script.on_event(defines.events.on_tick, function()
     else
       local bounds = limits_for(entity)
       local buffer = bounds and entity.temperature
-      if buffer then
+      -- Only exchangers that are actually producing get a say in the steam
+      -- temperature. One below its working threshold -- no heat connection, or
+      -- a network that has gone cold -- makes no steam at all, so averaging its
+      -- intent in would drag the segment down on behalf of an exchanger
+      -- contributing nothing to it.
+      if buffer and buffer >= bounds.min_working then
         local pipe = output_pipe_for(entity)
         if pipe then
           local desired = buffer
-          if desired < bounds.min_working then desired = bounds.min_working end
           if desired > bounds.target then desired = bounds.target end
 
           local segment = pipe.get_fluid_segment_id(PIPE_BOX)
