@@ -1041,6 +1041,17 @@ experiments.mixed_steam_blend = {
     -- Control: the same exchanger with nothing else on its segment.
     state.solo = place("aer_heat-exchanger-2", 1000, 40)
     state.solo_pipe = attach_pipe(state.solo, 2)
+
+    -- Regression: a working boiler sharing a header with an exchanger that has
+    -- heat but no water. The exchanger is making nothing, so it has no claim on
+    -- the segment and the boiler's steam must be left at 165. Reading 496.8
+    -- here means a machine that produces nothing was given a full vote.
+    state.dry_boiler = place("boiler", 1000, 80)
+    state.dry_exchanger = place("aer_heat-exchanger-2", 1020, 80)
+    state.dry_boiler_pipe = attach_pipe(state.dry_boiler, 2)
+    state.dry_exchanger_pipe = attach_pipe(state.dry_exchanger, 2)
+    join_pipes(state.dry_boiler_pipe, state.dry_exchanger_pipe)
+    state.dry_boiler.insert{name = "coal", count = 50}
   end,
   sample = function(state, tick)
     -- Water drains as steam is made and the buffer drains with it, so both are
@@ -1052,6 +1063,13 @@ experiments.mixed_steam_blend = {
     end
     for _, machine in ipairs({state.exchanger, state.solo}) do
       if machine and machine.valid then machine.temperature = 500 end
+    end
+    -- Heat but deliberately no water.
+    if state.dry_exchanger and state.dry_exchanger.valid then
+      state.dry_exchanger.temperature = 500
+    end
+    if state.dry_boiler and state.dry_boiler.valid then
+      state.dry_boiler.insert_fluid{name = "water", amount = 200}
     end
 
     -- The rewrite runs on an interval, so between two writes the engine keeps
@@ -1116,6 +1134,8 @@ experiments.mixed_steam_blend = {
     local boiler_segment = segment_of(state.boiler_pipe)
     local exchanger_segment, mixed_fluid = segment_of(state.exchanger_pipe)
     local _, solo_fluid = segment_of(state.solo_pipe)
+    local dry_boiler_segment, dry_fluid = segment_of(state.dry_boiler_pipe)
+    local dry_exchanger_segment = segment_of(state.dry_exchanger_pipe)
 
     emit("mixed_steam_blend", {
       -- Rig diagnostics first: a reading below means nothing if the two
@@ -1130,7 +1150,66 @@ experiments.mixed_steam_blend = {
       {"solo_status", status_name(state.solo.status)},
       {"solo_amount", solo_fluid and ("%.1f"):format(solo_fluid.amount) or "none"},
       {"solo_temperature", solo_fluid and ("%.1f"):format(solo_fluid.temperature or -1) or "none"},
+      {"dry_exchanger_status", status_name(state.dry_exchanger.status)},
+      {"dry_boiler_status", status_name(state.dry_boiler.status)},
+      {"dry_one_segment", dry_boiler_segment == dry_exchanger_segment},
+      {"dry_amount", dry_fluid and ("%.1f"):format(dry_fluid.amount) or "none"},
+      {"dry_temperature", dry_fluid and ("%.1f"):format(dry_fluid.temperature or -1) or "none"},
     })
+  end,
+}
+
+-- Experiment 11 ------------------------------------------------------------
+-- Which heat exchangers are actually making steam?
+--
+-- The passthrough lets an exchanger vote on its segment's temperature whenever
+-- its heat buffer is at or above min_working. That is a proxy for "producing",
+-- and it is wrong in at least one way: heat is only half of what an exchanger
+-- needs. One with a hot buffer and no water makes nothing, but would vote with
+-- its full production weight -- and against a fuel boiler that is genuinely
+-- producing, that vote promotes the boiler's cold steam. The same class of bug
+-- the branch already fixed once, re-entering through a different door.
+--
+-- So: what does status report in each state, and does steam actually appear?
+experiments.exchanger_producing = {
+  setup = function(state)
+    state.cases = {}
+    local layouts = {
+      {label = "hot_and_watered", buffer = 650, water = true},
+      {label = "hot_but_dry", buffer = 650, water = false},
+      {label = "cold_but_watered", buffer = 100, water = true},
+      {label = "cold_and_dry", buffer = 100, water = false},
+    }
+    for i, layout in ipairs(layouts) do
+      local exchanger = place("aer_heat-exchanger-2", 1200, i * 10)
+      state.cases[i] = {
+        label = layout.label, buffer = layout.buffer, water = layout.water,
+        exchanger = exchanger, pipe = attach_pipe(exchanger, 2),
+      }
+    end
+  end,
+  sample = function(state, tick)
+    for _, case in ipairs(state.cases) do
+      if case.exchanger.valid then
+        case.exchanger.temperature = case.buffer
+        if case.water then case.exchanger.insert_fluid{name = "water", amount = 200} end
+      end
+    end
+
+    if tick ~= 300 then return end
+
+    for _, case in ipairs(state.cases) do
+      local fluid = case.pipe and case.pipe.valid and case.pipe.has_fluid_segment(1)
+        and case.pipe.get_fluid_segment_fluid(1) or nil
+      emit("exchanger_producing", {
+        {"case", case.label},
+        {"buffer", case.buffer},
+        {"watered", case.water},
+        {"status", status_name(case.exchanger.status)},
+        {"steam_in_pipe", fluid and ("%.1f"):format(fluid.amount) or "none"},
+        {"steam_temperature", fluid and ("%.1f"):format(fluid.temperature or -1) or "none"},
+      })
+    end
   end,
 }
 
