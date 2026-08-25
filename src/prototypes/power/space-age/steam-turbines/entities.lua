@@ -16,7 +16,9 @@ end
 
 local steam_turbine_mk4 = util.table.deepcopy(data.raw["generator"]["steam-turbine"])
 steam_turbine_mk4.name = "aer_foundation-steam-turbine"
-steam_turbine_mk4.fluid_usage_per_tick = 1.6
+-- Less steam than mk2, and still the most powerful tier: 1000 degree steam
+-- carries enough energy per unit that 1.08 of it beats 1.2 at 650.
+steam_turbine_mk4.fluid_usage_per_tick = 1.08
 steam_turbine_mk4.maximum_temperature = 1000
 steam_turbine_mk4.max_health = 1000
 steam_turbine_mk4.minable.result = "aer_foundation-steam-turbine"
