@@ -121,3 +121,9 @@ reset_to_base_reactor_graphics(reactor_mk2)
 advanced_power_apply_rubber_lined_icon_tint(reactor_mk2)
 fluid_helpers.apply_rubber_lined_entity_tint(reactor_mk2)
 data:extend({reactor_mk2})
+
+-- Stated per tier from each prototype's own neighbour_bonus.
+fluid_helpers.set_description(data.raw["reactor"]["nuclear-reactor"],
+  fluid_helpers.reactor_neighbour_description(data.raw["reactor"]["nuclear-reactor"].neighbour_bonus))
+fluid_helpers.set_description(reactor_mk2,
+  fluid_helpers.reactor_neighbour_description(reactor_mk2.neighbour_bonus))

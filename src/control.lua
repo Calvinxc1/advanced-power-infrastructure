@@ -198,3 +198,107 @@ script.on_event(defines.events.on_tick, function()
     end
   end
 end)
+
+-- Reactor heat output panel -------------------------------------------------
+--
+-- A reactor's real output is consumption * (1 + neighbour_bonus), and nothing
+-- in game reports it. The prototype's own figure is the standalone one, which
+-- is wrong for any real build: a reactor in a 2x2 block produces three times it.
+--
+-- localised_description cannot help here -- it is fixed at data stage and
+-- read-only at runtime -- so the live figure needs a GUI. This one is attached
+-- to the reactor's own window, which means it costs nothing until a player
+-- opens a reactor, and nothing again once they close it.
+--
+-- LuaEntity.neighbour_bonus is the engine's own maintained value rather than
+-- something recomputed here; the reactor already needs it every tick to produce
+-- heat. See issue #10.
+
+local REACTOR_PANEL = "aer_reactor_output"
+local PANEL_REFRESH_TICKS = 30
+
+local REACTORS = {
+  ["nuclear-reactor"] = true,
+  ["aer_nuclear-reactor-2"] = true,
+  ["aer_nuclear-reactor-3"] = true,
+  ["aer_nuclear-reactor-4"] = true,
+}
+
+local function megawatts(watts)
+  return string.format("%.1f MW", watts / 1000000)
+end
+
+local function panel_rows(entity)
+  local prototype = entity.prototype
+  -- get_max_energy_usage is per tick; the tooltip figure is per second.
+  local base = prototype.get_max_energy_usage() * 60
+  local bonus = entity.neighbour_bonus or 0
+  return {
+    {"aer-reactor-gui.base", megawatts(base)},
+    {"aer-reactor-gui.neighbours", string.format("%d", bonus)},
+    {"aer-reactor-gui.bonus", string.format("+%d%%", bonus * 100)},
+    {"aer-reactor-gui.current", megawatts(base * (1 + bonus))},
+    {"aer-reactor-gui.temperature", string.format("%.0f °C", entity.temperature or 0)},
+  }
+end
+
+local function refresh_panel(player)
+  local frame = player.gui.relative[REACTOR_PANEL]
+  local entity = player.opened
+  if not frame then return false end
+  if not (entity and entity.valid and entity.object_name == "LuaEntity"
+          and REACTORS[entity.name]) then
+    frame.destroy()
+    return false
+  end
+
+  local table_element = frame.aer_reactor_table
+  table_element.clear()
+  for _, row in ipairs(panel_rows(entity)) do
+    table_element.add{type = "label", caption = {row[1]}}
+    local value = table_element.add{type = "label", caption = row[2]}
+    value.style.font = "default-bold"
+  end
+  return true
+end
+
+local function open_panel(player, entity)
+  local existing = player.gui.relative[REACTOR_PANEL]
+  if existing then existing.destroy() end
+
+  local frame = player.gui.relative.add{
+    type = "frame",
+    name = REACTOR_PANEL,
+    caption = {"aer-reactor-gui.title"},
+    direction = "vertical",
+    anchor = {
+      gui = defines.relative_gui_type.reactor_gui,
+      position = defines.relative_gui_position.right,
+    },
+  }
+  frame.add{type = "table", name = "aer_reactor_table", column_count = 2}
+  refresh_panel(player)
+end
+
+script.on_event(defines.events.on_gui_opened, function(event)
+  local entity = event.entity
+  if not (entity and entity.valid and REACTORS[entity.name]) then return end
+  local player = game.get_player(event.player_index)
+  if player then open_panel(player, entity) end
+end)
+
+script.on_event(defines.events.on_gui_closed, function(event)
+  local player = game.get_player(event.player_index)
+  local frame = player and player.gui.relative[REACTOR_PANEL]
+  if frame then frame.destroy() end
+end)
+
+-- Only runs while a panel is actually open. Neighbour bonus changes rarely, but
+-- core temperature moves constantly, so a stale panel would be misleading.
+script.on_nth_tick(PANEL_REFRESH_TICKS, function()
+  for _, player in pairs(game.connected_players) do
+    if player.gui.relative[REACTOR_PANEL] then
+      refresh_panel(player)
+    end
+  end
+end)

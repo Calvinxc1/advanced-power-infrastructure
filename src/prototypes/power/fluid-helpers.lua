@@ -147,6 +147,20 @@ end
 -- per-tile loss is the one that decides layout, and the maximum matters because
 -- a pipe is a node in the heat network: the lowest-tier pipe in a run caps the
 -- whole run, with no error to say so.
+-- The engine reports a reactor's own output, which is its standalone figure and
+-- wrong for any real build -- a reactor in a 2x2 block produces three times it.
+-- Only the neighbour relationship is stated here; the live figure needs the
+-- runtime panel in control.lua, since it depends on what is built beside it.
+function helpers.reactor_neighbour_description(neighbour_bonus)
+  if not neighbour_bonus or neighbour_bonus <= 0 then
+    return nil
+  end
+  return {
+    "description.aer_reactor-neighbour-note",
+    string.format("%d", neighbour_bonus * 100),
+  }
+end
+
 function helpers.heat_pipe_description(heat_buffer)
   if not heat_buffer then
     return nil

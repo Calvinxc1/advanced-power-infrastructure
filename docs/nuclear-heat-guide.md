@@ -174,6 +174,17 @@ Measured results: reactors settle at 624.8°C, the 8-exchanger spokes end at
 Note the shape of the answer. It is not one big run. It is many small ones,
 because load is what costs you temperature.
 
+## Reactor output is not what the tooltip says
+
+A reactor's listed heat output is its **standalone** figure. Each adjacent
+reactor adds another 100% of it, so a reactor in a 2x2 block -- two neighbours
+-- produces three times its listed output.
+
+That is why a 2x2 block of steel reactors makes 480 MW rather than 160 MW.
+
+Opening a reactor shows a panel with its base output, how many neighbours it
+has, and what it is actually producing right now.
+
 ## Things that will catch you out
 
 **Steam of different temperatures mixes.** Two steam sources at different

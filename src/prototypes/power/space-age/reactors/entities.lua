@@ -126,3 +126,9 @@ data:extend({reactor_mk4})
 
 -- Re-point the base ladder's top tier now that a tier above it exists.
 data.raw["reactor"]["aer_nuclear-reactor-2"].next_upgrade = "aer_nuclear-reactor-3"
+
+-- Stated per tier from each prototype's own neighbour_bonus.
+fluid_helpers.set_description(reactor_mk3,
+  fluid_helpers.reactor_neighbour_description(reactor_mk3.neighbour_bonus))
+fluid_helpers.set_description(reactor_mk4,
+  fluid_helpers.reactor_neighbour_description(reactor_mk4.neighbour_bonus))
