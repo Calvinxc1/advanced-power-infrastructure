@@ -209,6 +209,55 @@ function helpers.compose_description(...)
   return parts
 end
 
+-- Append a line to whatever a prototype already says, rather than replacing it.
+-- set_description overwrites, and by the time these run a prototype may already
+-- carry a pipeline extent line, a heat optimal line, or both.
+function helpers.add_description_line(prototype, line)
+  if not (prototype and line) then
+    return
+  end
+  prototype.localised_description =
+    helpers.compose_description(prototype.localised_description, line)
+end
+
+-- The number that decides whether a generator is earning its tier.
+--
+-- The engine labels this "Max. temperature", which is wrong in a way that costs
+-- the player output: it is the temperature at which the generator reaches full
+-- output, not a ceiling. Steam hotter than this is still accepted and still
+-- consumed at the same rate -- scale_fluid_usage is false on every one of these
+-- -- and the surplus heat is simply thrown away. A foundation turbine fed 500
+-- degree steam runs at 49% and nothing in game says so.
+--
+-- The core label is left alone. It is one key shared with heat buffers, where
+-- "maximum" is correct, so overriding it would fix these and break heat pipes.
+-- See issue #12.
+function helpers.generator_optimal_description(temperature)
+  if not temperature then
+    return nil
+  end
+  return {"description.aer_generator-optimal-steam", tostring(temperature)}
+end
+
+-- The other half of the pairing: what a steam source actually produces, so the
+-- tier a generator wants can be matched to the tier something makes.
+function helpers.boiler_steam_description(temperature)
+  if not temperature then
+    return nil
+  end
+  return {"description.aer_boiler-steam-output", tostring(temperature)}
+end
+
+-- A heat exchanger is the exception. Its steam follows the heat network rather
+-- than leaving at a fixed temperature, so stating a flat figure would be untrue
+-- for most of the band it works across.
+function helpers.exchanger_steam_description(temperature)
+  if not temperature then
+    return nil
+  end
+  return {"description.aer_exchanger-steam-output", tostring(temperature)}
+end
+
 -- The engine's "consumes heat" section reports min_working_temperature and the
 -- buffer maximum, but never target_temperature -- which is the number that
 -- decides whether the exchanger runs at full output. Surfaced here because

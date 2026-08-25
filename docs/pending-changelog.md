@@ -41,6 +41,8 @@ behaviour and base-game prototypes, but adds no breaking migration.
   Ease of use:
     - Added the optimal heat temperature to every heat exchanger tooltip. The game reports the temperature an exchanger stops working at, but never the one it needs to reach full output.
     - Added carrying temperature, throughput, and heat loss per tile to every heat pipe tooltip.
+    - Added the optimal steam temperature to every steam engine and steam turbine tooltip, and stated that hotter steam is consumed at the same rate with the surplus discarded. The game labels this number "Max. temperature", which reads as a ceiling; it is the temperature at which the generator reaches full output, and a foundation turbine fed 500 degree steam runs at 49% without stalling or warning.
+    - Added the steam temperature each boiler produces, and for heat exchangers the temperature their steam follows the heat network up to, so a generator tier can be matched to a tier that feeds it.
     - Added a note to reactor tooltips stating what each adjacent reactor contributes.
   Modding:
     - Added a read-only remote interface, advanced-power-infrastructure, with reactor_output(unit_number). It returns a reactor's base output, adjacent reactor count, aligned heat connections, bonus, current output and core temperature -- the same figures its own panel shows, since the panel renders from this call rather than repeating the sum.

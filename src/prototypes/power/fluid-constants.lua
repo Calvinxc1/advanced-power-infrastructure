@@ -82,6 +82,31 @@ local constants = {
   -- 50 percent it was before.
   reactor_optimal_fraction = 0.8,
 
+  -- Every steam source and every steam consumer this mod owns or adopts.
+  -- Shared, because more than one pass needs the same list and a second copy
+  -- would be one tier away from disagreeing with the first.
+  steam_producers = {
+    "heat-exchanger",
+    "aer_heat-exchanger-2",
+    "aer_heat-exchanger-3",
+    "aer_heat-exchanger-4",
+    "boiler",
+    "aer_steel-boiler",
+    "aer_rubber-lined-boiler",
+    "aer_holmium-reinforced-boiler",
+  },
+
+  steam_consumers = {
+    "steam-turbine",
+    "aer_rubber-lined-steam-turbine",
+    "aer_reinforced-steam-turbine",
+    "aer_foundation-steam-turbine",
+    "steam-engine",
+    "aer_steel-steam-engine",
+    "aer_rubber-lined-steam-engine",
+    "aer_holmium-steam-engine",
+  },
+
   -- What one aligned heat connection between two reactors is worth.
   --
   -- A reactor has three heat connections a side, so two flush reactors line up
