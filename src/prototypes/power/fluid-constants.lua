@@ -59,11 +59,19 @@ local constants = {
   -- tile is min_temperature_gradient plus a component proportional to the heat
   -- flowing through -- measured at roughly +2.7 degrees/tile per 80 MW on a
   -- tier 1 pipe. Heavier spokes reach less far.
+  --
+  -- Doubled from 25/16/12/9 after play-testing, which halves every tier's loss
+  -- per tile. The ladder's shape is untouched -- the ratios between tiers are
+  -- identical, so reach still shrinks as tiers rise and mk4 still falls off
+  -- fastest relative to its own budget -- but the whole thing now bites at
+  -- twice the distance. mk4 losing 27.8 degrees a tile made a nine tile arm the
+  -- practical limit, which read as punishing rather than as a design problem to
+  -- solve.
   heat_tier_optimal_reach = {
-    mk1 = 25,
-    mk2 = 16,
-    mk3 = 12,
-    mk4 = 9,
+    mk1 = 50,
+    mk2 = 32,
+    mk3 = 24,
+    mk4 = 18,
   },
 
   -- Throughput deliberately grows more slowly than exchanger draw, which runs
