@@ -57,10 +57,10 @@ pipe tier and on how hard the run is working.
 
 | Pipe tier | Loss per tile | Reach before steam drops below optimal |
 | --- | ---: | ---: |
-| Steel (mk1) | 2.5 | 50 tiles |
-| mk2 | 5.1 | 32 tiles |
-| mk3 | 8.3 | 24 tiles |
-| mk4 | 13.9 | 18 tiles |
+| Steel (mk1) | 5.0 | 25 tiles |
+| mk2 | 8.1 | 20 tiles |
+| mk3 | 13.3 | 15 tiles |
+| mk4 | 20.8 | 12 tiles |
 
 Yes, higher tiers reach *less* far. A bigger reactor is meant to be a harder
 design problem, not just a bigger number. It still produces far more power.
@@ -69,22 +69,15 @@ design problem, not just a bigger number. It still produces far more power.
 heat down a pipe needs a temperature difference to drive it. The more heat
 flowing, the steeper the fall.
 
-A worked example on a steel pipe run 13 tiles long:
+A worked example, measured in game on a steel pipe run 13 tiles long:
 
 | Exchangers on the run | Heat flowing | Loss per tile | Temperature at the end |
 | ---: | ---: | ---: | ---: |
-| 8 | 80 MW | 5.2 | 557°C |
-| 4 | 40 MW | 3.7 | 577°C |
+| 8 | 80 MW | 7.7 | 525°C |
+| 4 | 40 MW | 6.2 | 544°C |
 
 Same pipe, same length, same tier. Halving the exchangers on the run bought
-20°C at the far end.
-
-> These four figures are derived rather than measured. The run was measured in
-> game at the old gradient, giving 7.7 and 6.2 per tile; the load component of
-> that -- 2.7 and 1.2 -- comes from heat flow rather than from the pipe, so it
-> carries over unchanged while the pipe's own 5.0 halved to 2.5. Worth
-> re-measuring in game to confirm the two parts really do add the way the
-> earlier readings implied.
+19°C at the far end.
 
 **This is the single most useful thing to know.** Splitting 48 exchangers across
 twelve short spokes instead of four long ones is worth about 35°C at the far
@@ -177,11 +170,9 @@ A layout that does it:
 - Runs 13 tiles long
 - 86 steel steam turbines
 
-Results: reactors settle at 624.8°C, the 8-exchanger spokes end at about 557°C
-and the 4-exchanger spokes at about 577°C. Every exchanger is comfortably above
-its 500°C optimal, and the block runs at full output -- with considerably more
-headroom than before the pipe losses were halved, so this layout now tolerates
-longer spokes than 13 tiles.
+Measured results: reactors settle at 624.8°C, the 8-exchanger spokes end at
+525°C, the 4-exchanger spokes end at 544°C. Every exchanger is at or above its
+500°C optimal, and the block runs at full output.
 
 Note the shape of the answer. It is not one big run. It is many small ones,
 because load is what costs you temperature.
@@ -259,8 +250,8 @@ the pole tier carrying it.
 | Exchanger optimal | 500 | 650 | 800 | 1000 |
 | Exchanger stops below | 300 | 300 | 300 | 300 |
 | Exchanger draw | 10 MW | 16.5 MW | 21.5 MW | 26.5 MW |
-| Pipe loss per tile, light load | 2.5 | 5.1 | 8.3 | 13.9 |
-| Pipe reach at light load | 50t | 32t | 24t | 18t |
+| Pipe loss per tile, light load | 5.0 | 8.1 | 13.3 | 20.8 |
+| Pipe reach at light load | 25t | 20t | 15t | 12t |
 | Pipe throughput | 1 GW | 1.4 GW | 1.7 GW | 1.9 GW |
 | Turbine optimal | 500 | 650 | 800 | 1000 |
 | Turbines per 2x2 block | 86 | 105 | 121 | 130 |
