@@ -158,10 +158,15 @@ end
 -- engine calls per exchanger, every one of which is paid whether or not
 -- anything moved. A reactor's core temperature changes by fractions of a degree
 -- per tick, so a rewrite at 60 Hz spends that per-exchanger work re-asserting a
--- number that has barely moved. Ten times a second is far finer than the signal
--- it is following, and costs a sixth as much on a base with hundreds of
--- exchangers.
-local PASSTHROUGH_INTERVAL_TICKS = 6
+-- number that has barely moved.
+--
+-- 24 ticks is 2.5 rewrites a second, and costs a twenty-fourth of what every
+-- tick did. The tradeoff is visible only if a player is watching a turbine's
+-- output number while the network is actively swinging -- it steps every 0.4
+-- seconds rather than gliding -- and the temperature it steps to was never
+-- stale by more than the fraction of a degree the network moved in between.
+-- Chosen deliberately in favour of the cost.
+local PASSTHROUGH_INTERVAL_TICKS = 24
 
 script.on_nth_tick(PASSTHROUGH_INTERVAL_TICKS, function()
   local exchangers = storage.exchangers
