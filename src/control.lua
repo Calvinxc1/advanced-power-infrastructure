@@ -63,6 +63,32 @@
 local OUTPUT_BOX = 2
 local PIPE_BOX = 1
 
+-- script.on_nth_tick keeps one handler per interval: registering a second for
+-- the same interval replaces the first rather than adding to it. This file has
+-- two periodic jobs -- the steam rewrite and the reactor panel refresh -- whose
+-- intervals are independent constants, so nothing stops them landing on the
+-- same number. When they do, the later registration silently deletes the
+-- earlier one.
+--
+-- That is not hypothetical. Setting the rewrite to 30 to match the panel's 30
+-- removed the rewrite entirely: no error, no crash, just steam that stopped
+-- tapering. Registering through here instead makes the intervals free to be
+-- anything, including equal.
+local nth_tick_handlers = {}
+
+local function every_nth_tick(interval, handler)
+  local existing = nth_tick_handlers[interval]
+  local combined = handler
+  if existing then
+    combined = function(event)
+      existing(event)
+      handler(event)
+    end
+  end
+  nth_tick_handlers[interval] = combined
+  script.on_nth_tick(interval, combined)
+end
+
 local PRODUCERS = {
   -- follows-heat: output temperature tracks the heat network, so these drive
   -- the rewrite. The steel tier is vanilla's own heat exchanger, which this mod
@@ -282,6 +308,7 @@ end
 --     interval   segment mean   sawtooth   taper applied
 --        6            395.8        4.9         98.4%
 --       20            399.1       17.0         95.2%
+--       30            401.4       25.6         93.0%
 --       60            408.0       51.5         86.5%
 --
 -- The error always favours the player -- steam is hotter than intended, never
@@ -291,7 +318,7 @@ end
 -- on a large base.
 local PASSTHROUGH_INTERVAL_TICKS = 60
 
-script.on_nth_tick(PASSTHROUGH_INTERVAL_TICKS, function()
+every_nth_tick(PASSTHROUGH_INTERVAL_TICKS, function()
   local producers = storage.producers
   if not producers or not next(producers) then return end
 
@@ -432,7 +459,7 @@ end)
 
 -- Only runs while a panel is actually open. Neighbour bonus changes rarely, but
 -- core temperature moves constantly, so a stale panel would be misleading.
-script.on_nth_tick(PANEL_REFRESH_TICKS, function()
+every_nth_tick(PANEL_REFRESH_TICKS, function()
   for _, player in pairs(game.connected_players) do
     if player.gui.relative[REACTOR_PANEL] then
       refresh_panel(player)
