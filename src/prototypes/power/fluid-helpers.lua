@@ -229,9 +229,19 @@ end
 -- -- and the surplus heat is simply thrown away. A foundation turbine fed 500
 -- degree steam runs at 49% and nothing in game says so.
 --
--- The core label is left alone. It is one key shared with heat buffers, where
--- "maximum" is correct, so overriding it would fix these and break heat pipes.
--- See issue #12.
+-- The core label is left alone, decided under issue #12 rather than deferred.
+-- [description] maximum-temperature is a single core key shared with heat
+-- buffers, where "maximum" is the correct word -- a heat pipe really cannot
+-- carry hotter -- so relabelling it to something accurate for generators would
+-- make it wrong for heat pipes, including contradicting the heat pipe tooltips
+-- this mod adds. Overriding it would also impose this mod's wording on every
+-- other mod's generators.
+--
+-- So the misleading line stays and this one is added beneath it, which is why
+-- this text explains what the number does rather than only stating it.
+--
+-- Still worth a look in game: if heat entities turn out not to render that key
+-- at all, overriding it becomes safe and "optimal" becomes available.
 function helpers.generator_optimal_description(temperature)
   if not temperature then
     return nil
