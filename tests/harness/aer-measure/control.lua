@@ -66,26 +66,52 @@ local function attach_pipe(entity, box_index)
   return nil
 end
 
--- Fill the straight line between two pipes so they share one fluid segment.
--- Returns false if they are not on a common row or column, which makes a rig
--- that silently failed to connect obvious in the record.
+-- Same idea as attach_pipe, but scanning a ring rather than a fixed candidate
+-- list, for entities whose connection offsets are not known ahead of time.
+local function attach_pipe_scan(entity, box_index)
+  for radius = 2, 3 do
+    for _, offset in ipairs({{0, -radius}, {0, radius}, {-radius, 0}, {radius, 0},
+                             {1, -radius}, {-1, -radius}, {1, radius}, {-1, radius},
+                             {-radius, 1}, {-radius, -1}, {radius, 1}, {radius, -1}}) do
+      local pipe = surface().create_entity{
+        name = "pipe",
+        position = {entity.position.x + offset[1], entity.position.y + offset[2]},
+        force = game.forces.player,
+      }
+      if pipe then
+        local neighbours = entity.fluidbox_neighbours
+        for _, candidate in pairs((neighbours and neighbours[box_index]) or {}) do
+          if candidate == pipe then return pipe end
+        end
+        pipe.destroy()
+      end
+    end
+  end
+  return nil
+end
+
+-- Fill pipe between two pipes so they share one fluid segment: straight when
+-- they share a row or column, an L otherwise. create_entity returns nil on an
+-- occupied tile rather than erroring, so a path that runs into something leaves
+-- a gap -- which shows up as two segment ids in the record rather than one.
 local function join_pipes(first, second)
   if not (first and second and first.valid and second.valid) then return false end
   local a, b = first.position, second.position
-  if a.y ~= b.y and a.x ~= b.x then return false end
 
-  local step = 1
-  if a.x == b.x then
-    if b.y < a.y then step = -1 end
-    for y = a.y + step, b.y - step, step do
-      surface().create_entity{name = "pipe", position = {a.x, y}, force = game.forces.player}
-    end
-  else
-    if b.x < a.x then step = -1 end
-    for x = a.x + step, b.x - step, step do
-      surface().create_entity{name = "pipe", position = {x, a.y}, force = game.forces.player}
-    end
+  -- Never place on top of the two pipes being joined: create_entity fails on an
+  -- occupied tile, and an attempt on the endpoints is what a straight run does
+  -- at both ends.
+  local function fill(x, y)
+    if (x == a.x and y == a.y) or (x == b.x and y == b.y) then return end
+    surface().create_entity{name = "pipe", position = {x, y}, force = game.forces.player}
   end
+
+  -- Along the row first, then up the column at the corner. When the two share a
+  -- row the second leg is empty and this is a straight run.
+  local step = (b.x < a.x) and -1 or 1
+  for x = a.x, b.x, step do fill(x, a.y) end
+  step = (b.y < a.y) and -1 or 1
+  for y = a.y, b.y, step do fill(b.x, y) end
   return true
 end
 
@@ -1210,6 +1236,56 @@ experiments.exchanger_producing = {
         {"steam_temperature", fluid and ("%.1f"):format(fluid.temperature or -1) or "none"},
       })
     end
+  end,
+}
+
+-- Experiment 12 ------------------------------------------------------------
+-- How far does set_fluid_segment_fluid actually reach?
+--
+-- The passthrough rewrites a whole fluid segment. Pipes are certainly in one.
+-- A storage tank is the open question, and it decides the blast radius: if a
+-- tank's contents are part of the segment, then buffered steam is rewritten
+-- wholesale every pass, and a tank farm holding steam from a hot network would
+-- be re-stamped with whatever the network is doing right now.
+--
+-- Rig: a tank pre-loaded with 900 degree steam, connected to a run fed by an
+-- exchanger held at 500. If the tank ends up near 500 it is inside the segment.
+-- If it holds near 900, or blends only as fluid physically moves, it is not.
+experiments.segment_reach = {
+  setup = function(state)
+    state.exchanger = place("aer_heat-exchanger-2", 1400, 0)
+    state.pipe = attach_pipe(state.exchanger, 2)
+    state.tank = place("storage-tank", 1400, -8)
+    state.tank_pipe = attach_pipe_scan(state.tank, 1)
+    state.joined = join_pipes(state.pipe, state.tank_pipe)
+    if state.tank.valid then
+      state.tank.insert_fluid{name = "steam", amount = 1000, temperature = 900}
+    end
+  end,
+  sample = function(state, tick)
+    if state.exchanger.valid then
+      state.exchanger.temperature = 500
+      state.exchanger.insert_fluid{name = "water", amount = 200}
+    end
+
+    if tick ~= 300 then return end
+
+    local tank_fluid = state.tank.valid and state.tank.get_fluid(1) or nil
+    local pipe_fluid = state.pipe and state.pipe.valid and state.pipe.has_fluid_segment(1)
+      and state.pipe.get_fluid_segment_fluid(1) or nil
+
+    emit("segment_reach", {
+      {"tank_attached", state.tank_pipe ~= nil},
+      {"pipes_joined", state.joined},
+      {"pipe_segment", state.pipe and state.pipe.valid and state.pipe.has_fluid_segment(1)
+        and state.pipe.get_fluid_segment_id(1) or "none"},
+      {"tank_pipe_segment", state.tank_pipe and state.tank_pipe.valid
+        and state.tank_pipe.has_fluid_segment(1)
+        and state.tank_pipe.get_fluid_segment_id(1) or "none"},
+      {"pipe_temperature", pipe_fluid and ("%.1f"):format(pipe_fluid.temperature or -1) or "none"},
+      {"tank_amount", tank_fluid and ("%.1f"):format(tank_fluid.amount) or "none"},
+      {"tank_temperature", tank_fluid and ("%.1f"):format(tank_fluid.temperature or -1) or "none"},
+    })
   end,
 }
 
