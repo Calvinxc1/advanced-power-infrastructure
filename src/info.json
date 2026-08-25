@@ -5,7 +5,7 @@
   "title": "Advanced Power Infrastructure",
   "author": "Jason M. Cherry",
   "contact": "",
-  "description": "Expands Factorio 2.1 power generation and storage progression with additional steam, nuclear, and heat tiers. Space Age is optional and adds the holmium, foundation, solar, and fusion tiers on top.",
+  "description": "Expands Factorio 2.1 power progression with extra steam and nuclear tiers, and reworks nuclear heat so distance, heat pipe tier, and reactor placement all matter. Space Age is optional and adds the holmium, foundation, solar, and fusion tiers on top.",
   "dependencies": [
     "base >= 2.1.0",
     "? space-age >= 2.1.0",
