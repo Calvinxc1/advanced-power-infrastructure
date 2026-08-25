@@ -311,12 +311,15 @@ end
 --       30            401.4       25.6         93.0%
 --       60            408.0       51.5         86.5%
 --
--- The error always favours the player -- steam is hotter than intended, never
--- colder -- and 60 ticks costs a sixtieth of what every tick did. Chosen
--- deliberately: this is the one cost in the mod that grows with how much the
--- player has built, and 13% of a taper is a cheaper thing to give up than UPS
--- on a large base.
-local PASSTHROUGH_INTERVAL_TICKS = 60
+-- The error always favours the player: steam is hotter than intended, never
+-- colder. 30 ticks keeps 93% of the taper for a thirtieth of what every tick
+-- cost, which is the point on that curve where both sides are still cheap --
+-- half the sawtooth of 60 ticks for twice a cost that is already small.
+--
+-- Note that this equals PANEL_REFRESH_TICKS, which is safe only because both
+-- jobs register through every_nth_tick. Registering either directly with
+-- script.on_nth_tick would delete the other.
+local PASSTHROUGH_INTERVAL_TICKS = 30
 
 every_nth_tick(PASSTHROUGH_INTERVAL_TICKS, function()
   local producers = storage.producers
