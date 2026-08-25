@@ -225,6 +225,16 @@ for _, event in pairs(build_events) do
   end
 end
 
+-- Cloning names its new entity destination rather than entity, so it cannot
+-- join the loop above. Surface cloning is an editor and scripted-mod path
+-- rather than a player one, but a cloned exchanger that never reaches the
+-- registry is invisible to the passthrough until the next configuration change.
+if defines.events.on_entity_cloned then
+  script.on_event(defines.events.on_entity_cloned, function(data)
+    track(data.destination)
+  end)
+end
+
 local remove_events = {
   defines.events.on_player_mined_entity,
   defines.events.on_robot_mined_entity,
