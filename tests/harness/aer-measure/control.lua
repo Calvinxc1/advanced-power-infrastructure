@@ -1,0 +1,164 @@
+-- Headless measurement harness for heat-chain behaviour Wube does not document.
+--
+-- Emits "AERM <experiment>|<key>=<value>|..." lines to the log, which
+-- scripts/factorio-measure.sh extracts and tests/test_heat_chain_measurements.py
+-- asserts against. Never shipped with the mod.
+
+local SURFACE = 1
+local experiments = {}
+
+local function emit(experiment, fields)
+  local parts = {}
+  for _, pair in ipairs(fields) do
+    parts[#parts + 1] = ("%s=%s"):format(pair[1], tostring(pair[2]))
+  end
+  log(("AERM %s|%s"):format(experiment, table.concat(parts, "|")))
+end
+
+local function surface() return game.surfaces[SURFACE] end
+
+-- defines.entity_status values are opaque integers; report the name so the
+-- record is unambiguous without consulting the enum.
+local function status_name(value)
+  for name, candidate in pairs(defines.entity_status) do
+    if candidate == value then return name end
+  end
+  return ("unknown(%s)"):format(tostring(value))
+end
+
+local function place(name, x, y)
+  return surface().create_entity{
+    name = name, position = {x, y}, force = game.forces.player,
+  }
+end
+
+local function fuel(entity)
+  entity.insert{name = "uranium-fuel-cell", count = 50}
+  return entity
+end
+
+-- Experiment 1 -------------------------------------------------------------
+-- What does LuaEntity.neighbour_bonus return: the per-neighbour prototype
+-- value, or the aggregate across all neighbours?
+experiments.neighbour_bonus = {
+  setup = function(state)
+    state.solo = fuel(place("nuclear-reactor", 0, 0))
+    state.pair = {fuel(place("nuclear-reactor", 100, 0)), fuel(place("nuclear-reactor", 105, 0))}
+    state.block = {}
+    for i, pos in ipairs({{50, 0}, {55, 0}, {50, 5}, {55, 5}}) do
+      state.block[i] = fuel(place("nuclear-reactor", pos[1], pos[2]))
+    end
+  end,
+  sample = function(state, tick)
+    if tick ~= 120 then return end
+    emit("neighbour_bonus", {
+      {"prototype_bonus", state.solo.prototype.neighbour_bonus},
+      {"solo", state.solo.neighbour_bonus},
+      {"inline_pair", state.pair[1].neighbour_bonus},
+      {"block_corner", state.block[1].neighbour_bonus},
+    })
+  end,
+}
+
+-- Experiment 2 -------------------------------------------------------------
+-- specific_heat: joules per degree, per entity? Drive a lone reactor with a
+-- known heat output and measure the temperature slope. C = P / (dT/dt).
+experiments.specific_heat = {
+  setup = function(state)
+    state.reactor = fuel(place("nuclear-reactor", 200, 0))
+    state.samples = {}
+  end,
+  sample = function(state, tick)
+    if tick % 60 ~= 0 or tick < 120 or tick > 360 then return end
+    state.samples[#state.samples + 1] = {tick = tick, temp = state.reactor.temperature}
+    if tick ~= 360 then return end
+
+    local first, last = state.samples[1], state.samples[#state.samples]
+    local per_second = (last.temp - first.temp) / ((last.tick - first.tick) / 60)
+    emit("specific_heat", {
+      {"consumption_w", state.reactor.prototype.get_max_energy_usage()},
+      {"neighbour_bonus", state.reactor.neighbour_bonus},
+      {"declared_specific_heat", state.reactor.prototype.heat_buffer_prototype.specific_heat},
+      {"observed_deg_per_second", ("%.4f"):format(per_second)},
+      {"first_temp", first.temp}, {"last_temp", last.temp},
+      {"ticks", last.tick - first.tick},
+    })
+  end,
+}
+
+-- Experiment 3 -------------------------------------------------------------
+-- #11: will a heat buffer below target_temperature still drive a boiler, so
+-- the hard cutoff becomes a throughput taper? Uses aerm_decoupled-exchanger
+-- (min_working 400, target 650) pinned at a series of network temperatures.
+--
+-- No plumbing: water is injected and steam extracted directly each tick, so
+-- throughput is bounded only by the heat available, never by pipes.
+experiments.exchanger_threshold = {
+  setup = function(state)
+    state.rows = {}
+    for i, temperature in ipairs({350, 450, 550, 650, 800}) do
+      state.rows[#state.rows + 1] = {
+        temperature = temperature,
+        exchanger = place("aerm_decoupled-exchanger", 305, i * 12),
+        steam = 0,
+      }
+    end
+  end,
+  sample = function(state, tick)
+    for _, row in ipairs(state.rows) do
+      local exchanger = row.exchanger
+      -- Hold the buffer at the network temperature under test, keep water
+      -- unlimited, and drain the steam so the output box never saturates.
+      exchanger.temperature = row.temperature
+      exchanger.insert_fluid{name = "water", amount = 240}
+      -- Fluid storage 2 is the boiler output box.
+      local removed = exchanger.remove_fluid(2, 10000)
+      local amount = type(removed) == "table" and removed.amount or (removed or 0)
+      row.steam = row.steam + (amount or 0)
+      row.last_status = exchanger.status
+    end
+
+    if tick ~= 600 then return end
+
+    for _, row in ipairs(state.rows) do
+      local proto = row.exchanger.prototype
+      local buffer = proto.heat_buffer_prototype
+      emit("exchanger_threshold", {
+        {"network_temperature", row.temperature},
+        {"min_working_temperature", buffer and buffer.min_working_temperature or "nil"},
+        {"target_temperature", proto.target_temperature},
+        {"status", status_name(row.last_status)},
+        {"steam_total", ("%.2f"):format(row.steam)},
+        {"steam_per_second", ("%.3f"):format(row.steam / (600 / 60))},
+      })
+    end
+  end,
+}
+
+-- Driver -------------------------------------------------------------------
+local state = {}
+local started = false
+
+script.on_event(defines.events.on_tick, function(event)
+  if not started then
+    started = true
+    surface().always_day = true
+    log("AERM_BEGIN")
+    for name, experiment in pairs(experiments) do
+      state[name] = {}
+      local ok, err = pcall(experiment.setup, state[name])
+      if not ok then emit("setup_error", {{"experiment", name}, {"error", err}}) end
+    end
+    return
+  end
+
+  for name, experiment in pairs(experiments) do
+    local ok, err = pcall(experiment.sample, state[name], event.tick)
+    if not ok then emit("sample_error", {{"experiment", name}, {"error", err}}) end
+  end
+
+  if event.tick == 660 then
+    log("AERM_END")
+    script.on_event(defines.events.on_tick, nil)
+  end
+end)
