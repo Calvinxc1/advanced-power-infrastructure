@@ -635,6 +635,70 @@ experiments.passthrough = {
   end,
 }
 
+-- Experiment 12 ------------------------------------------------------------
+-- What does min_temperature_gradient actually do to a heat run?
+--
+-- Distance is free today: heat reaches the far end of any length of pipe at
+-- full temperature, so nothing stops a reactor block sprouting a 40-tile run.
+-- If this field imposes a per-connection temperature cost, it is the lever that
+-- makes exchangers want to stay near the reactor.
+--
+-- Uses a heat-interface pinned at 1000 rather than a reactor: it is 1x1 so the
+-- run connects without hunting for heat ports, and pinning it removes warm-up
+-- time from the measurement entirely.
+experiments.gradient = {
+  setup = function(state)
+    state.runs = {}
+    local variants = {
+      {name = "heat-pipe", label = "default(1)"},
+      {name = "aerm_gradient-5", label = "5"},
+      {name = "aerm_gradient-10", label = "10"},
+      {name = "aerm_gradient-25", label = "25"},
+      {name = "aerm_gradient-50", label = "50"},
+    }
+
+    for i, variant in ipairs(variants) do
+      local y = 300 + i * 30
+      local run = {label = variant.label, pipes = {}}
+      run.source = place("heat-interface", 0, y)
+
+      for j = 1, 40 do
+        run.pipes[j] = place(variant.name, j, y)
+      end
+
+      -- Constant draw at the far end, so heat must cross the whole run.
+      run.load = place("aer_heat-exchanger-2", 43, y)
+      state.runs[#state.runs + 1] = run
+    end
+  end,
+  sample = function(state, tick)
+    for _, run in ipairs(state.runs) do
+      if run.source.valid then run.source.temperature = 1000 end
+      if run.load.valid then run.load.insert_fluid{name = "water", amount = 240} end
+    end
+
+    -- Sample repeatedly: the first reading is a warm-up wavefront, not a
+    -- steady state, and only convergence between samples proves equilibrium.
+    if tick ~= 1800 and tick ~= 7200 and tick ~= 18000 then return end
+
+    for _, run in ipairs(state.runs) do
+      local profile = {}
+      for _, index in ipairs({1, 2, 5, 10, 15, 20, 30, 40}) do
+        local pipe = run.pipes[index]
+        profile[#profile + 1] = ("%d:%s"):format(
+          index, pipe and pipe.valid and ("%.0f"):format(pipe.temperature or -1) or "?")
+      end
+      emit("gradient", {
+        {"seconds", tick / 60},
+        {"min_temperature_gradient", run.label},
+        {"profile", table.concat(profile, " ")},
+        {"far_load", ("%.0f"):format(run.load.temperature or -1)},
+        {"load_status", status_name(run.load.status)},
+      })
+    end
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false
@@ -657,7 +721,8 @@ script.on_event(defines.events.on_tick, function(event)
     if not ok then emit("sample_error", {{"experiment", name}, {"error", err}}) end
   end
 
-  if event.tick == 660 then
+  -- Must outlast the slowest experiment's sample tick.
+  if event.tick == 18060 then
     log("AERM_END")
     script.on_event(defines.events.on_tick, nil)
   end
