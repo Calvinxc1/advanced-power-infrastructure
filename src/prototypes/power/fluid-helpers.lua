@@ -85,6 +85,20 @@ function helpers.apply_foundation_entity_tint(prototype)
   apply_entity_tint(prototype, constants.foundation.entity_tint)
 end
 
+-- Heat pipe variants of the above, using the stronger dedicated tints. See
+-- fluid-constants.heat_pipe_entity_tint for why they differ.
+function helpers.apply_rubber_lined_heat_pipe_tint(prototype)
+  apply_entity_tint(prototype, constants.heat_pipe_entity_tint.rubber_lined)
+end
+
+function helpers.apply_reinforced_heat_pipe_tint(prototype)
+  apply_entity_tint(prototype, constants.heat_pipe_entity_tint.reinforced)
+end
+
+function helpers.apply_foundation_heat_pipe_tint(prototype)
+  apply_entity_tint(prototype, constants.heat_pipe_entity_tint.foundation)
+end
+
 function helpers.set_fluid_box_extent(fluid_box, extent)
   if optional_dependencies.has_advanced_fluid_infrastructure and fluid_box then
     fluid_box.max_pipeline_extent = extent

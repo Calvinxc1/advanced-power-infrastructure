@@ -109,12 +109,15 @@ checked directly.
 The tiers are also tinted, so you can spot the odd one out without checking each
 pipe individually:
 
-| Pipe tier | Appearance |
+| Pipe tier | Colour |
 | --- | --- |
 | Steel (mk1) | vanilla, untinted |
-| mk2 | darker grey |
-| mk3 | pale green |
-| mk4 | pale blue-white |
+| mk2 | dark |
+| mk3 | green |
+| mk4 | light blue |
+
+The same colours are used on the crafting menu icons, so a pipe looks in the
+world like it looked when you picked it.
 
 The heat glow is deliberately left untinted on every tier, so it still reads as
 temperature rather than as tier.

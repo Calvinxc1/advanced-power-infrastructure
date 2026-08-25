@@ -30,7 +30,7 @@ local heat_pipe_mk2 = heat_pipe_helpers.make_heat_pipe(
     min_temperature_gradient = constants.heat_tier_gradient.mk2,
   },
   nil,
-  fluid_helpers.apply_rubber_lined_entity_tint
+  fluid_helpers.apply_rubber_lined_heat_pipe_tint
 )
 heat_pipe_mk2.max_health = 300
 

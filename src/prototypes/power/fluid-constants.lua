@@ -14,6 +14,26 @@ local constants = {
   -- power blocks compartmentalised and keeps pumps a real part of the layout.
   power_building_pipeline_extent = 64,
 
+  -- Heat pipes need their own, stronger entity tints.
+  --
+  -- The shared per-material entity_tint values are built for large buildings,
+  -- where a gentle multiplier reads clearly across a big sprite. A heat pipe is
+  -- one tile, largely covered by its own connection graphics, and often half
+  -- hidden under other entities -- the same multiplier does almost nothing. The
+  -- rubber-lined value is worse still: r0.42 g0.42 b0.42 is pure grey, so
+  -- against an already-grey pipe it darkens without shifting hue at all.
+  --
+  -- Hues follow each tier's established identity, taken from the icon tints so
+  -- the crafting menu and the placed entity agree: rubber-lined dark, reinforced
+  -- green, foundation pale blue. Saturation is raised to what a one-tile sprite
+  -- actually needs. Tier 1 stays vanilla and untinted, which makes it the
+  -- reference -- and it is the tier most likely to be the accidental bottleneck.
+  heat_pipe_entity_tint = {
+    rubber_lined = { r = 0.32, g = 0.30, b = 0.30, a = 1 },
+    reinforced   = { r = 0.40, g = 0.90, b = 0.50, a = 1 },
+    foundation   = { r = 0.60, g = 0.80, b = 1.00, a = 1 },
+  },
+
   -- Turbines a single heat exchanger feeds, held constant at every tier.
   --
   -- Each tier's fluid_usage_per_tick is chosen to land on this ratio, since a

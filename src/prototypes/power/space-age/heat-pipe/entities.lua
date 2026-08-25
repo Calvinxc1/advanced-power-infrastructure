@@ -17,7 +17,7 @@ local heat_pipe_mk3 = heat_pipe_helpers.make_heat_pipe(
     min_temperature_gradient = constants.heat_tier_gradient.mk3,
   },
   "aer_heat-pipe-4",
-  fluid_helpers.apply_reinforced_entity_tint,
+  fluid_helpers.apply_reinforced_heat_pipe_tint,
   constants.reinforced.resistances
 )
 heat_pipe_mk3.max_health = 350
@@ -33,7 +33,7 @@ local heat_pipe_mk4 = heat_pipe_helpers.make_heat_pipe(
     min_temperature_gradient = constants.heat_tier_gradient.mk4,
   },
   nil,
-  fluid_helpers.apply_foundation_entity_tint,
+  fluid_helpers.apply_foundation_heat_pipe_tint,
   constants.foundation.resistances
 )
 heat_pipe_mk4.max_health = 400
