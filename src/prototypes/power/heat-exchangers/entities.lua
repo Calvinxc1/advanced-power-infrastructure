@@ -6,6 +6,8 @@ data.raw["boiler"]["heat-exchanger"].next_upgrade = "aer_heat-exchanger-2"
 fluid_helpers.set_prototype_fluid_boxes_extent(data.raw["boiler"]["heat-exchanger"], constants.steel.pipeline_extent)
 fluid_helpers.set_description(data.raw["boiler"]["heat-exchanger"], fluid_helpers.boiler_description(constants.steel.pipeline_extent))
 advanced_power_apply_steel_icon_tint(data.raw["boiler"]["heat-exchanger"])
+data.raw["boiler"]["heat-exchanger"].energy_source.min_working_temperature =
+  constants.heat_exchanger_min_working_temperature
 
 local heat_exchanger_mk2 = util.table.deepcopy(data.raw["boiler"]["heat-exchanger"])
 heat_exchanger_mk2.energy_consumption = "18MW"

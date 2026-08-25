@@ -5,7 +5,7 @@ return {
   -- cooler steam while consuming its own tier's larger energy draw. Upgrading
   -- the exchanger without upgrading the heat source is a real loss, so the
   -- upgrade path has to be thought through rather than followed blindly.
-  heat_exchanger_min_working_temperature = 450,
+  heat_exchanger_min_working_temperature = 300,
 
   iron = {
     pipeline_extent = 24,

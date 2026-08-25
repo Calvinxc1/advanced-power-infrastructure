@@ -25,6 +25,10 @@ local OUTPUT_BOX = 2
 local PIPE_BOX = 1
 
 local TRACKED = {
+  -- The steel tier is vanilla's own heat exchanger, which this mod adopts as
+  -- tier 1 -- it carries the steel tint, the steel pipeline extent, and
+  -- next_upgrade into mk2 -- so it gets the same passthrough as the rest.
+  ["heat-exchanger"] = true,
   ["aer_heat-exchanger-2"] = true,
   ["aer_heat-exchanger-3"] = true,
   ["aer_heat-exchanger-4"] = true,

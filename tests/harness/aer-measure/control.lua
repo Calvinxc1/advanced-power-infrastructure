@@ -551,10 +551,19 @@ experiments.drift_rate = {
 experiments.passthrough = {
   setup = function(state)
     state.rows = {}
-    -- mk2 is min_working 500, target 650. Span below, inside and above.
-    for i, buffer in ipairs({400, 450, 500, 600, 650, 900}) do
+    -- Sweep both the steel tier (optimal 500) and mk2 (optimal 650) across a
+    -- common 300 floor, so clamping is exercised at two different optima.
+    local cases = {}
+    for _, name in ipairs({"heat-exchanger", "aer_heat-exchanger-2"}) do
+      for _, buffer in ipairs({250, 350, 500, 650, 900}) do
+        cases[#cases + 1] = {name = name, buffer = buffer}
+      end
+    end
+
+    for i, case in ipairs(cases) do
+      local buffer = case.buffer
       local x = 1400 + i * 12
-      local exchanger = place("aer_heat-exchanger-2", x, 200)
+      local exchanger = place(case.name, x, 200)
       local row = {buffer = buffer, exchanger = exchanger, pipes = {}}
 
       local connections = exchanger.get_fluid_box_pipe_connections(2)
@@ -611,6 +620,7 @@ experiments.passthrough = {
       })
 
       emit("passthrough", {
+        {"exchanger", row.exchanger.name},
         {"buffer", row.buffer},
         {"min_working", buffer_proto and buffer_proto.min_working_temperature or "nil"},
         {"target", proto.target_temperature},
