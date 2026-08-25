@@ -153,14 +153,6 @@ function helpers.boiler_description(extent)
   return { "description.aer_boiler-fluid-stats", tostring(extent) }
 end
 
--- Joins description lines, skipping any that are absent. set_description
--- overwrites, and several of these lines are conditional -- the pipeline extent
--- only exists when Advanced Fluid Infrastructure is installed -- so anything
--- adding a line has to compose rather than assign.
--- A heat pipe's three defining numbers, none of which the engine surfaces. The
--- per-tile loss is the one that decides layout, and the maximum matters because
--- a pipe is a node in the heat network: the lowest-tier pipe in a run caps the
--- whole run, with no error to say so.
 -- The engine reports a reactor's own output, which is its standalone figure and
 -- wrong for any real build -- a reactor in a 2x2 block produces three times it.
 -- Only the neighbour relationship is stated here; the live figure needs the
@@ -175,6 +167,10 @@ function helpers.reactor_neighbour_description(neighbour_bonus)
   }
 end
 
+-- A heat pipe's three defining numbers, none of which the engine surfaces. The
+-- per-tile loss is the one that decides layout, and the maximum matters because
+-- a pipe is a node in the heat network: the lowest-tier pipe in a run caps the
+-- whole run, with no error to say so.
 function helpers.heat_pipe_description(heat_buffer)
   if not heat_buffer then
     return nil
@@ -187,6 +183,10 @@ function helpers.heat_pipe_description(heat_buffer)
   }
 end
 
+-- Joins description lines, skipping any that are absent. set_description
+-- overwrites, and several of these lines are conditional -- the pipeline extent
+-- only exists when Advanced Fluid Infrastructure is installed -- so anything
+-- adding a line has to compose rather than assign.
 function helpers.compose_description(...)
   local parts = {""}
   for index = 1, select("#", ...) do
