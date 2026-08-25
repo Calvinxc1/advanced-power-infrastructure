@@ -7,24 +7,28 @@ local constants = {
   -- upgrade path has to be thought through rather than followed blindly.
   heat_exchanger_min_working_temperature = 300,
 
-  -- Steam-producing and steam-consuming buildings are held to this pipeline
-  -- extent at every tier, rather than inheriting their material tier's. Letting
-  -- it rise with tier solved the plumbing problem the upper tiers are supposed
-  -- to pose: a higher-tier run stopped needing pumps at all. Pinning it keeps
-  -- power blocks compartmentalised and keeps pumps a real part of the layout.
+  -- Every building this mod owns is held to this pipeline extent, at every
+  -- tier, rather than inheriting its material tier's. Pipeline extent is not
+  -- part of the progression here: upgrading a boiler, an engine, an exchanger,
+  -- a turbine or a fusion reactor buys output, never reach.
   --
-  -- Dropped from 64 to 24 after play-testing, where steam runs on foundation
-  -- pipe went well past 64 without ever meeting the limit. 64 is simply longer
-  -- than the runs a power block actually produces, so it never bound anything.
-  -- 24 is deliberately aggressive and may need raising -- it is set here to find
-  -- out where the limit starts to bite rather than to be right first time.
+  -- Letting it rise with tier solved the plumbing problem the upper tiers are
+  -- supposed to pose -- a higher-tier run stopped needing pumps at all -- and it
+  -- also left the two halves of the same power chain following opposite rules,
+  -- with a holmium boiler reaching 192 tiles beside an mk4 exchanger reaching
+  -- 24. Pinning all of them keeps power blocks compartmentalised and keeps
+  -- pumps a real part of every layout.
   --
-  -- This only reaches heat exchangers and steam turbines. Pipes take their
-  -- extent from Advanced Fluid Infrastructure and are left alone, which is also
-  -- the open question: if a machine's extent turns out not to constrain a
-  -- network built from longer-extent pipes, this number changes nothing and the
-  -- claim it supports has to come out of the docs. That could not be settled
-  -- headless -- see the pipeline_extent experiment.
+  -- 24 is chosen because it is vanilla pipe's own extent: a player who has not
+  -- upgraded their pipes never meets this limit at all, and it binds only once
+  -- better pipe would otherwise have bought reach for free. An earlier 64
+  -- matched the extent Advanced Fluid Infrastructure gives assemblers,
+  -- refineries and chemical plants, but was longer than the runs a power block
+  -- actually produces, so it never bound anything.
+  --
+  -- Deliberately excluded: pipes, underground pipes, pumps and offshore pumps
+  -- keep their own progression tiers. Carrying fluid further is what upgrading
+  -- those is for, and this mod does not define them in any case.
   power_building_pipeline_extent = 24,
 
   -- Heat pipes need their own, stronger entity tints.

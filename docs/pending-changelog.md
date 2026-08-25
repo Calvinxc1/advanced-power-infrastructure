@@ -49,7 +49,7 @@ behaviour and base-game prototypes, but adds no breaking migration.
   Balancing:
     - Raised the number of heat exchangers and turbines a reactor block needs at every tier above steel, while shrinking the distance heat will travel. Higher tiers are now harder to lay out rather than simply larger: a 2x2 block needs about 48 exchangers at the steel tier and about 72 at mk4.
     - Held one heat exchanger to 1.8 steam turbines at every tier, so the ratio learned at the steel tier stays true all the way up.
-    - Held heat exchangers and steam turbines to a 24 tile pipeline extent at every tier, rather than letting it rise with the tier, so upgrading them never removes the need for pumps.
+    - Held every building in this mod to a 24 tile pipeline extent at every tier -- boilers, steam engines, heat exchangers, steam turbines and fusion -- rather than letting it rise with the tier. Pipeline extent is no longer part of the progression: upgrading a building buys output, never reach, so pumps stay a real part of every layout. Pipes, underground pipes and offshore pumps keep their own tiers, since carrying fluid further is what upgrading those is for.
     - Lowered reactor and heat pipe temperature ceilings to sit just above the exchanger tier they feed, rather than at roughly double it.
     - Reduced the base game steam turbine from 5.82 MW to 5.56 MW so that one heat exchanger feeds exactly 1.8 turbines at every tier.
     - Gave the base game heat exchanger and heat pipe this mod's tier 1 values, which they already carried for tint, pipeline extent, and upgrade path.

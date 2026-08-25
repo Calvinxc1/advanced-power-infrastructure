@@ -232,7 +232,8 @@ turbine tier built for 650°C steam is quietly holding that tier below its
 optimal.
 
 **Pipeline extent still applies, at every tier.** Heat exchangers and steam
-turbines are held to a 24 tile pipeline extent regardless of tier, so upgrading
+turbines are held to a 24 tile pipeline extent regardless of tier -- as is every
+other building this mod owns, boilers, engines and fusion included -- so upgrading
 them never removes the need for pumps. Long steam runs need pumps, and a pump
 has a throughput limit of its own -- a steel pump will not feed an unlimited
 number of turbines. Expect pumps to be part of the layout, not a fix for one.
