@@ -89,6 +89,59 @@ local function every_nth_tick(interval, handler)
   script.on_nth_tick(interval, combined)
 end
 
+-- This file keeps two registries -- steam sources and reactors -- and both need
+-- rebuilding on the same events. Collecting hooks here lets each half register
+-- next to the code it belongs to, instead of one list at the top that has to
+-- know about everything below it.
+local rescan_hooks, built_hooks, removed_hooks = {}, {}, {}
+
+local function on_rescan(hook) rescan_hooks[#rescan_hooks + 1] = hook end
+local function on_built(hook) built_hooks[#built_hooks + 1] = hook end
+local function on_removed(hook) removed_hooks[#removed_hooks + 1] = hook end
+
+local function run_hooks(hooks, entity)
+  for _, hook in ipairs(hooks) do hook(entity) end
+end
+
+script.on_init(function() run_hooks(rescan_hooks) end)
+script.on_configuration_changed(function() run_hooks(rescan_hooks) end)
+
+local build_events = {
+  defines.events.on_built_entity,
+  defines.events.on_robot_built_entity,
+  defines.events.on_space_platform_built_entity,
+  defines.events.script_raised_built,
+  defines.events.script_raised_revive,
+}
+for _, event in pairs(build_events) do
+  if event then
+    script.on_event(event, function(data) run_hooks(built_hooks, data.entity) end)
+  end
+end
+
+-- Cloning names its new entity destination rather than entity, so it cannot
+-- join the loop above. Surface cloning is an editor and scripted-mod path
+-- rather than a player one, but a clone that never reaches a registry is
+-- invisible until the next configuration change.
+if defines.events.on_entity_cloned then
+  script.on_event(defines.events.on_entity_cloned, function(data)
+    run_hooks(built_hooks, data.destination)
+  end)
+end
+
+local remove_events = {
+  defines.events.on_player_mined_entity,
+  defines.events.on_robot_mined_entity,
+  defines.events.on_space_platform_mined_entity,
+  defines.events.on_entity_died,
+  defines.events.script_raised_destroy,
+}
+for _, event in pairs(remove_events) do
+  if event then
+    script.on_event(event, function(data) run_hooks(removed_hooks, data.entity) end)
+  end
+end
+
 local PRODUCERS = {
   -- follows-heat: output temperature tracks the heat network, so these drive
   -- the rewrite. The steel tier is vanilla's own heat exchanger, which this mod
@@ -231,48 +284,9 @@ local function rescan()
   end
 end
 
-script.on_init(function()
-  storage.producers = {}
-  rescan()
-end)
-
-script.on_configuration_changed(rescan)
-
-local build_events = {
-  defines.events.on_built_entity,
-  defines.events.on_robot_built_entity,
-  defines.events.on_space_platform_built_entity,
-  defines.events.script_raised_built,
-  defines.events.script_raised_revive,
-}
-for _, event in pairs(build_events) do
-  if event then
-    script.on_event(event, function(data) track(data.entity) end)
-  end
-end
-
--- Cloning names its new entity destination rather than entity, so it cannot
--- join the loop above. Surface cloning is an editor and scripted-mod path
--- rather than a player one, but a cloned exchanger that never reaches the
--- registry is invisible to the passthrough until the next configuration change.
-if defines.events.on_entity_cloned then
-  script.on_event(defines.events.on_entity_cloned, function(data)
-    track(data.destination)
-  end)
-end
-
-local remove_events = {
-  defines.events.on_player_mined_entity,
-  defines.events.on_robot_mined_entity,
-  defines.events.on_space_platform_mined_entity,
-  defines.events.on_entity_died,
-  defines.events.script_raised_destroy,
-}
-for _, event in pairs(remove_events) do
-  if event then
-    script.on_event(event, function(data) forget(data.entity) end)
-  end
-end
+on_rescan(rescan)
+on_built(track)
+on_removed(forget)
 
 local function output_pipe_for(entity)
   local cached = output_pipes[entity.unit_number]
@@ -366,6 +380,252 @@ every_nth_tick(PASSTHROUGH_INTERVAL_TICKS, function()
   end
 end)
 
+-- Reactor neighbour bonus ---------------------------------------------------
+--
+-- Vanilla pays a reactor's neighbour bonus once per adjacent reactor, and pays
+-- it in full or not at all: a single tile of offset between two reactors takes
+-- the entire bonus away. Here it is paid per heat connection instead. A reactor
+-- has three connections a side, each worth a third, so two flush reactors line
+-- up all three and are worth the same 100% vanilla pays -- every exchanger,
+-- turbine and reach figure derived from a flush 2x2 block is untouched -- while
+-- sliding one along the shared edge costs a third at a time.
+--
+-- Measured before any of this was written, because none of it is documented:
+--
+--   * The engine pays once per neighbouring reactor, however many connection
+--     points pair up. Three connections a side, at a third each, still read
+--     0.333 for a flush pair rather than 1.0. Giving each point its own
+--     category does not split it either -- the dedupe is per entity.
+--   * LuaEntity.neighbour_bonus is read only, so the number cannot simply be
+--     computed here and handed back to the engine.
+--
+-- What is left is to switch the engine's bonus off in the prototypes and add
+-- the heat here. That is the same mechanism the engine uses -- a reactor's
+-- bonus is extra heat in its buffer -- and two measurements make it safe:
+-- writing above max_temperature is clamped by the engine rather than erroring,
+-- and an unfuelled reactor still accepts a temperature write, which is why the
+-- status gate below is mandatory rather than defensive.
+--
+-- Connections must line up exactly. Since they sit two tiles apart, an offset
+-- of one tile lines up none of them and pays nothing, while an offset of two
+-- pays two thirds. Chosen deliberately over a rule based on how much the
+-- reactors overlap; the alignment is the thing being modelled.
+
+local REACTORS = {
+  ["nuclear-reactor"] = true,
+  ["aer_nuclear-reactor-2"] = true,
+  ["aer_nuclear-reactor-3"] = true,
+  ["aer_nuclear-reactor-4"] = true,
+}
+
+local CONNECTION_BONUS = 1 / 3
+
+-- Two reactors are neighbours when their footprints are flush along one axis
+-- and overlap on the other. Sizes come from the prototype rather than a
+-- constant so a tier that changed shape would still be measured correctly.
+local reactor_specs = {}
+
+local function reactor_spec(entity)
+  local name = entity.name
+  local cached = reactor_specs[name]
+  if cached ~= nil then return cached or nil end
+
+  local prototype = entity.prototype
+  local buffer = prototype.heat_buffer_prototype
+  if not buffer or not buffer.connections then
+    reactor_specs[name] = false
+    return nil
+  end
+
+  -- Group the heat connections by the side they sit on, keeping the offset
+  -- along that side. North and south run along x, east and west along y.
+  local sides = {}
+  for _, connection in pairs(buffer.connections) do
+    local direction, position = connection.direction, connection.position
+    -- A MapPosition read back from a prototype may arrive named or indexed, so
+    -- accept both rather than depending on which.
+    local x = position and (position.x or position[1])
+    local y = position and (position.y or position[2])
+    if direction and x and y then
+      local along = (direction == defines.direction.north
+                     or direction == defines.direction.south) and x or y
+      sides[direction] = sides[direction] or {}
+      sides[direction][along] = true
+    end
+  end
+
+  cached = {
+    width = prototype.tile_width,
+    height = prototype.tile_height,
+    sides = sides,
+    specific_heat = buffer.specific_heat,
+    energy_per_tick = prototype.get_max_energy_usage(),
+  }
+  reactor_specs[name] = cached
+  return cached
+end
+
+-- How many of this reactor's connections on `side` meet one of the other's on
+-- the facing side, given how far the two are offset along that edge.
+local function aligned_connections(spec, other_spec, side, facing, offset)
+  local mine = spec.sides[side]
+  local theirs = other_spec.sides[facing]
+  if not (mine and theirs) then return 0 end
+
+  local count = 0
+  for along in pairs(mine) do
+    if theirs[along - offset] then count = count + 1 end
+  end
+  return count
+end
+
+local function connections_between(entity, other)
+  local spec, other_spec = reactor_spec(entity), reactor_spec(other)
+  if not (spec and other_spec) then return 0 end
+
+  local dx = other.position.x - entity.position.x
+  local dy = other.position.y - entity.position.y
+  local flush_x = (spec.width + other_spec.width) / 2
+  local flush_y = (spec.height + other_spec.height) / 2
+
+  -- Flush along x: touching side to side, offset vertically.
+  if math.abs(dx) == flush_x and math.abs(dy) < flush_y then
+    local side = dx > 0 and defines.direction.east or defines.direction.west
+    local facing = dx > 0 and defines.direction.west or defines.direction.east
+    return aligned_connections(spec, other_spec, side, facing, dy)
+  end
+
+  -- Flush along y: stacked, offset horizontally.
+  if math.abs(dy) == flush_y and math.abs(dx) < flush_x then
+    local side = dy > 0 and defines.direction.south or defines.direction.north
+    local facing = dy > 0 and defines.direction.north or defines.direction.south
+    return aligned_connections(spec, other_spec, side, facing, dx)
+  end
+
+  return 0
+end
+
+local function bonus_for(entity)
+  local spec = reactor_spec(entity)
+  if not spec then return 0, 0, 0 end
+
+  -- A neighbour can be no further than one full reactor away on either axis.
+  local reach = math.max(spec.width, spec.height) + 1
+  local position = entity.position
+  local candidates = entity.surface.find_entities_filtered{
+    type = "reactor",
+    area = {
+      {position.x - reach, position.y - reach},
+      {position.x + reach, position.y + reach},
+    },
+  }
+
+  local connections, neighbours = 0, 0
+  for _, other in pairs(candidates) do
+    if other.valid and other ~= entity and REACTORS[other.name] then
+      local aligned = connections_between(entity, other)
+      if aligned > 0 then
+        connections = connections + aligned
+        neighbours = neighbours + 1
+      end
+    end
+  end
+
+  return connections * CONNECTION_BONUS, connections, neighbours
+end
+
+-- Bonuses only change when a reactor is built or removed, so they are computed
+-- then rather than on every pass. Building one changes its neighbours' bonuses
+-- as well as its own, hence the sweep over everything in range.
+local function refresh_bonus(entity)
+  if not (entity and entity.valid and REACTORS[entity.name]) then return end
+  local record = storage.reactors[entity.unit_number]
+  if not record then
+    record = {entity = entity}
+    storage.reactors[entity.unit_number] = record
+  end
+  record.bonus, record.connections, record.neighbours = bonus_for(entity)
+end
+
+local function refresh_bonuses_near(entity)
+  if not (entity and entity.valid) then return end
+  local spec = reactor_spec(entity)
+  local reach = ((spec and math.max(spec.width, spec.height)) or 5) + 1
+  local position = entity.position
+  for _, other in pairs(entity.surface.find_entities_filtered{
+    type = "reactor",
+    area = {
+      {position.x - reach, position.y - reach},
+      {position.x + reach, position.y + reach},
+    },
+  }) do
+    refresh_bonus(other)
+  end
+end
+
+local function track_reactor(entity)
+  if entity and entity.valid and REACTORS[entity.name] then
+    refresh_bonus(entity)
+    refresh_bonuses_near(entity)
+  end
+end
+
+local function forget_reactor(entity)
+  if not (entity and entity.unit_number) then return end
+  if storage.reactors then storage.reactors[entity.unit_number] = nil end
+  -- The neighbours it was propping up have to be told before it is gone.
+  refresh_bonuses_near(entity)
+end
+
+local function rescan_reactors()
+  storage.reactors = {}
+  local names = {}
+  for name in pairs(REACTORS) do
+    if prototypes.entity[name] then names[#names + 1] = name end
+  end
+  if #names == 0 then return end
+
+  for _, surface in pairs(game.surfaces) do
+    for _, entity in pairs(surface.find_entities_filtered{name = names}) do
+      refresh_bonus(entity)
+    end
+  end
+end
+
+-- Paying the bonus. The engine gives a reactor `energy_per_tick` of heat while
+-- it is burning fuel; this adds the same share again for every aligned
+-- connection, as a temperature rise over the buffer's own specific heat.
+--
+-- Gated on working: an unfuelled reactor accepts a temperature write just as
+-- readily as a running one, and paying a bonus to a reactor that is not
+-- consuming fuel would be heat from nothing. A reactor already at its ceiling
+-- reports working too, but the engine clamps the write, so the overflow is
+-- discarded exactly as the engine discards its own.
+on_rescan(rescan_reactors)
+on_built(track_reactor)
+on_removed(forget_reactor)
+
+local BONUS_INTERVAL_TICKS = 30
+
+every_nth_tick(BONUS_INTERVAL_TICKS, function()
+  local reactors = storage.reactors
+  if not reactors or not next(reactors) then return end
+
+  for unit_number, record in pairs(reactors) do
+    local entity = record.entity
+    if not (entity and entity.valid) then
+      reactors[unit_number] = nil
+    elseif (record.bonus or 0) > 0
+        and entity.status == defines.entity_status.working then
+      local spec = reactor_spec(entity)
+      if spec and spec.specific_heat > 0 then
+        local energy = spec.energy_per_tick * record.bonus * BONUS_INTERVAL_TICKS
+        entity.temperature = entity.temperature + energy / spec.specific_heat
+      end
+    end
+  end
+end)
+
 -- Reactor heat output panel -------------------------------------------------
 --
 -- A reactor's real output is consumption * (1 + neighbour_bonus), and nothing
@@ -399,12 +659,25 @@ local function panel_rows(entity)
   local prototype = entity.prototype
   -- get_max_energy_usage is per tick; the tooltip figure is per second.
   local base = prototype.get_max_energy_usage() * 60
-  local bonus = entity.neighbour_bonus or 0
+
+  -- Read from this mod's own record rather than LuaEntity.neighbour_bonus,
+  -- which is now zero on every tier: the engine pays nothing and the bonus
+  -- above is paid here. Falls back to computing it if a reactor somehow is not
+  -- in the registry, so the panel can never quietly report a reactor as solo.
+  local record = storage.reactors and storage.reactors[entity.unit_number]
+  local bonus, connections, neighbours
+  if record and record.bonus then
+    bonus, connections, neighbours = record.bonus, record.connections, record.neighbours
+  else
+    bonus, connections, neighbours = bonus_for(entity)
+  end
+
   return {
     {"aer-reactor-gui.base", megawatts(base)},
-    {"aer-reactor-gui.neighbours", string.format("%d", bonus)},
-    {"aer-reactor-gui.bonus", string.format("+%d%%", bonus * 100)},
-    {"aer-reactor-gui.current", megawatts(base * (1 + bonus))},
+    {"aer-reactor-gui.neighbours", string.format("%d", neighbours or 0)},
+    {"aer-reactor-gui.connections", string.format("%d", connections or 0)},
+    {"aer-reactor-gui.bonus", string.format("+%d%%", math.floor((bonus or 0) * 100 + 0.5))},
+    {"aer-reactor-gui.current", megawatts(base * (1 + (bonus or 0)))},
     {"aer-reactor-gui.temperature", string.format("%.0f °C", entity.temperature or 0)},
   }
 end
