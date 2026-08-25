@@ -25,9 +25,15 @@ local constants = {
   turbines_per_exchanger = 1.8,
 
   -- How far a lightly loaded run should reach before it drops below optimal.
-  -- Shrinking with tier is deliberate: a bigger reactor is meant to be harder
-  -- to lay out, not merely bigger. Gradient is derived from this rather than
-  -- set directly, so the design intent is what appears in the source.
+  -- Gradient is derived from this rather than set directly, so the design
+  -- intent is what appears in the source.
+  --
+  -- The decline has to outpace the temperature budget, which itself grows with
+  -- tier. An earlier 25/22.5/20/17.5 did not: gradient and budget rose together
+  -- and cancelled, leaving every tier about 65 degrees above optimal at the end
+  -- of a 13 tile run. Same margin at every tier, dressed in bigger numbers.
+  -- These values make the margin shrink and then go negative, so a spoke that
+  -- worked at one tier does not simply keep working at the next.
   --
   -- These are light-load figures. Real runs are shorter, because the drop per
   -- tile is min_temperature_gradient plus a component proportional to the heat
@@ -35,9 +41,9 @@ local constants = {
   -- tier 1 pipe. Heavier spokes reach less far.
   heat_tier_optimal_reach = {
     mk1 = 25,
-    mk2 = 22.5,
-    mk3 = 20,
-    mk4 = 17.5,
+    mk2 = 16,
+    mk3 = 12,
+    mk4 = 9,
   },
 
   -- Throughput deliberately grows more slowly than exchanger draw, which runs
