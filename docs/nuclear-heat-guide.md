@@ -200,6 +200,14 @@ anything above its own optimal.
 **Keep one steam tier per pipe network.** There is no warning for this either.
 The fluid is still steam and the pipes still connect.
 
+**That includes fuel boilers.** A coal or holmium boiler plumbed into the same
+header as your heat exchangers is just another steam source at its own fixed
+temperature, and it drags the whole header toward that temperature by however
+much steam it is contributing. It costs you nothing in energy — the blend is
+weighted by volume, so nothing is gained or lost — but a boiler feeding a
+turbine tier built for 650°C steam is quietly holding that tier below its
+optimal.
+
 **Pipeline extent still applies, at every tier.** Heat exchangers and steam
 turbines are held to a 64 tile pipeline extent regardless of tier, so upgrading
 them never removes the need for pumps. Long steam runs need pumps, and a pump
