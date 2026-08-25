@@ -1289,6 +1289,236 @@ experiments.segment_reach = {
   end,
 }
 
+-- Experiment 13 ------------------------------------------------------------
+-- Is the neighbour bonus paid per connection point, or per neighbouring
+-- reactor? Everything #10 wants depends on the answer.
+--
+-- Vanilla defines one connection per side, worth a full neighbour_bonus.
+-- aerm_reactor-per-connection defines three per side at a third each. If the
+-- engine sums per point, a flush pair reads 1.0 and offsetting it walks down
+-- through 0.67 and 0.33. If it sums per reactor, a flush pair reads 0.33 and
+-- the design is not expressible through this field at all.
+--
+-- The vanilla pairs at the same offsets are a control, and answer the issue's
+-- other open question on their own: whether vanilla's bonus is all-or-nothing
+-- as the offset grows, or already degrades.
+experiments.neighbour_per_connection = {
+  setup = function(state)
+    state.cases = {}
+    for offset = 0, 5 do
+      for _, variant in ipairs({
+        {label = "vanilla", name = "nuclear-reactor", x = 2000 + offset * 20},
+        {label = "per_connection", name = "aerm_reactor-per-connection", x = 2200 + offset * 20},
+        {label = "per_category", name = "aerm_reactor-per-category", x = 2400 + offset * 20},
+      }) do
+        local left = place(variant.name, variant.x, 0)
+        local right = place(variant.name, variant.x + 5, offset)
+        state.cases[#state.cases + 1] = {
+          label = variant.label, offset = offset, left = fuel(left), right = fuel(right),
+        }
+      end
+    end
+  end,
+  sample = function(state, tick)
+    if tick ~= 120 then return end
+    for _, case in ipairs(state.cases) do
+      emit("neighbour_per_connection", {
+        {"variant", case.label},
+        {"offset_tiles", case.offset},
+        {"prototype_bonus", ("%.3f"):format(case.left.prototype.neighbour_bonus)},
+        {"left_bonus", ("%.3f"):format(case.left.neighbour_bonus or -1)},
+        {"right_bonus", ("%.3f"):format(case.right.neighbour_bonus or -1)},
+      })
+    end
+  end,
+}
+
+-- Experiment 14 ------------------------------------------------------------
+-- Is LuaEntity.neighbour_bonus writable?
+--
+-- The engine pays the bonus once per neighbouring reactor, so a per-connection
+-- bonus cannot be expressed in the prototype. If the runtime value can be
+-- written, control.lua can count aligned connections itself and set the number,
+-- and the engine keeps doing the actual heat production. If it is read-only,
+-- the only remaining route is injecting heat by hand, which means reimplementing
+-- a mechanic the engine already runs every tick.
+experiments.neighbour_bonus_writable = {
+  setup = function(state)
+    state.pair = {
+      fuel(place("nuclear-reactor", 2500, 0)),
+      fuel(place("nuclear-reactor", 2505, 0)),
+    }
+    state.solo = fuel(place("nuclear-reactor", 2600, 0))
+  end,
+  sample = function(state, tick)
+    if tick ~= 120 then return end
+
+    local reactor = state.pair[1]
+    local before = reactor.neighbour_bonus
+    local ok, err = pcall(function() reactor.neighbour_bonus = 2.5 end)
+    emit("neighbour_bonus_writable", {
+      {"target", "paired_reactor"},
+      {"before", ("%.3f"):format(before or -1)},
+      {"write_accepted", ok},
+      {"error", ok and "none" or tostring(err)},
+      {"after", ("%.3f"):format(reactor.neighbour_bonus or -1)},
+    })
+
+    -- Also worth knowing whether a solo reactor can be given a bonus it did not
+    -- earn, since that is the shape the control.lua route would need.
+    local solo_before = state.solo.neighbour_bonus
+    local solo_ok = pcall(function() state.solo.neighbour_bonus = 1.5 end)
+    emit("neighbour_bonus_writable", {
+      {"target", "solo_reactor"},
+      {"before", ("%.3f"):format(solo_before or -1)},
+      {"write_accepted", solo_ok},
+      {"error", "n/a"},
+      {"after", ("%.3f"):format(state.solo.neighbour_bonus or -1)},
+    })
+  end,
+}
+
+-- Experiment 15 ------------------------------------------------------------
+-- When is a reactor actually turning fuel into heat?
+--
+-- The runtime bonus adds heat by hand, so it must add it only while the reactor
+-- is genuinely producing. Inject into an idle reactor and the bonus becomes
+-- energy from nothing; skip a producing one and the bonus silently disappears.
+-- A reactor sitting at its temperature ceiling is the interesting case, since
+-- it stops consuming fuel there and the engine's own bonus stops with it.
+experiments.reactor_producing = {
+  setup = function(state)
+    state.cases = {
+      {label = "fuelled_cold", fuelled = true, temperature = 500},
+      {label = "fuelled_at_ceiling", fuelled = true, temperature = 625},
+      {label = "unfuelled", fuelled = false, temperature = 500},
+    }
+    for i, case in ipairs(state.cases) do
+      local reactor = place("nuclear-reactor", 2700 + i * 10, 0)
+      if case.fuelled then fuel(reactor) end
+      case.reactor = reactor
+      case.ceiling = reactor.prototype.heat_buffer_prototype.max_temperature
+      case.specific_heat = reactor.prototype.heat_buffer_prototype.specific_heat
+      case.energy_per_tick = reactor.prototype.get_max_energy_usage()
+    end
+  end,
+  sample = function(state, tick)
+    if tick == 60 then
+      for _, case in ipairs(state.cases) do
+        if case.reactor.valid then case.reactor.temperature = case.temperature end
+      end
+      return
+    end
+    if tick ~= 120 then return end
+
+    for _, case in ipairs(state.cases) do
+      local reactor = case.reactor
+      -- Can heat be added by hand at all, and does it stick?
+      local before = reactor.temperature
+      local ok = pcall(function() reactor.temperature = before + 5 end)
+      emit("reactor_producing", {
+        {"case", case.label},
+        {"status", status_name(reactor.status)},
+        {"ceiling", case.ceiling},
+        {"specific_heat", case.specific_heat},
+        {"energy_per_tick", case.energy_per_tick},
+        {"temperature_before", ("%.1f"):format(before or -1)},
+        {"write_accepted", ok},
+        {"temperature_after", ("%.1f"):format(reactor.temperature or -1)},
+      })
+    end
+  end,
+}
+
+-- Experiment 16 ------------------------------------------------------------
+-- Does the runtime bonus actually arrive, and in the right amount?
+--
+-- The prototypes now carry neighbour_bonus = 0, so anything a paired reactor
+-- gains over a lone one is heat this mod added by hand. A reactor's buffer
+-- rises at energy_per_tick * (1 + bonus) / specific_heat, so the ratio of a
+-- pair's rise to a solo reactor's rise is exactly 1 + bonus.
+--
+-- Connections sit two tiles apart and must line up exactly, so the expected
+-- ladder as one reactor slides along the shared edge is:
+--
+--   offset 0  three connections  bonus 1.000  ratio 2.000
+--   offset 1  none               bonus 0.000  ratio 1.000
+--   offset 2  two                bonus 0.667  ratio 1.667
+--   offset 3  none               bonus 0.000  ratio 1.000
+--   offset 4  one                bonus 0.333  ratio 1.333
+--   offset 5  none, not touching bonus 0.000  ratio 1.000
+experiments.runtime_neighbour_bonus = {
+  setup = function(state)
+    state.solo = fuel(place("nuclear-reactor", 3000, 0))
+
+    -- What shape does a heat connection's position actually come back in? The
+    -- bonus geometry reads it, and assuming named fields crashed the mod.
+    local connection = prototypes.entity["nuclear-reactor"].heat_buffer_prototype.connections[1]
+    emit("heat_connection_shape", {
+      {"has_named_x", connection.position.x ~= nil},
+      {"has_indexed_1", connection.position[1] ~= nil},
+      {"direction", tostring(connection.direction)},
+    })
+    state.cases = {}
+    for offset = 0, 5 do
+      state.cases[#state.cases + 1] = {
+        offset = offset,
+        left = fuel(place("nuclear-reactor", 3100 + offset * 20, 0)),
+        right = fuel(place("nuclear-reactor", 3105 + offset * 20, offset)),
+      }
+    end
+
+    -- The layout every balance figure on this branch is derived from. Each
+    -- reactor in a flush 2x2 has two flush neighbours, so it must still read a
+    -- bonus of 2.0 and three times its standalone output, exactly as vanilla
+    -- pays today. If this moved, the exchanger and turbine counts moved with it.
+    state.block = {}
+    for _, position in ipairs({{0, 0}, {5, 0}, {0, 5}, {5, 5}}) do
+      state.block[#state.block + 1] =
+        fuel(place("nuclear-reactor", 3300 + position[1], position[2]))
+    end
+  end,
+  sample = function(state, tick)
+    -- Start every reactor from the same cold buffer, far enough below the
+    -- ceiling that nothing clamps during the window.
+    if tick == 200 then
+      state.solo.temperature = 100
+      for _, case in ipairs(state.cases) do
+        case.left.temperature = 100
+        case.right.temperature = 100
+      end
+      for _, reactor in ipairs(state.block) do reactor.temperature = 100 end
+      return
+    end
+    if tick ~= 500 then return end
+
+    local solo_rise = (state.solo.temperature or 0) - 100
+    for _, case in ipairs(state.cases) do
+      local rise = (case.left.temperature or 0) - 100
+      emit("runtime_neighbour_bonus", {
+        {"offset_tiles", case.offset},
+        {"solo_rise", ("%.2f"):format(solo_rise)},
+        {"paired_rise", ("%.2f"):format(rise)},
+        {"ratio", solo_rise > 0 and ("%.3f"):format(rise / solo_rise) or "n/a"},
+        {"implied_bonus", solo_rise > 0
+          and ("%.3f"):format(rise / solo_rise - 1) or "n/a"},
+        {"engine_bonus", ("%.3f"):format(case.left.neighbour_bonus or -1)},
+      })
+    end
+
+    local block_rise = (state.block[1].temperature or 0) - 100
+    emit("runtime_neighbour_bonus", {
+      {"offset_tiles", "flush_2x2_corner"},
+      {"solo_rise", ("%.2f"):format(solo_rise)},
+      {"paired_rise", ("%.2f"):format(block_rise)},
+      {"ratio", solo_rise > 0 and ("%.3f"):format(block_rise / solo_rise) or "n/a"},
+      {"implied_bonus", solo_rise > 0
+        and ("%.3f"):format(block_rise / solo_rise - 1) or "n/a"},
+      {"engine_bonus", ("%.3f"):format(state.block[1].neighbour_bonus or -1)},
+    })
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false

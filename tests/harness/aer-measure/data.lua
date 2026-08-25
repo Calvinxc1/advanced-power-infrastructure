@@ -53,3 +53,89 @@ for _, gradient in ipairs({1, 5, 10, 25, 50}) do
   pipe.heat_buffer.min_temperature_gradient = gradient
   data:extend({pipe})
 end
+
+-- #10 wants the neighbour bonus paid per heat connection rather than per
+-- neighbour: three connections a side, a third of the bonus each, so a reactor
+-- offset until only two line up earns two thirds.
+--
+-- Whether that is expressible at all comes down to one undocumented question:
+-- does the engine sum neighbour_bonus once per connection point that finds a
+-- neighbour, or once per distinct neighbouring reactor? Per point and the
+-- design works. Per reactor and three points are worth the same as one, and the
+-- whole approach has to be abandoned before any balance work starts.
+--
+-- This variant answers it. Vanilla defines one connection per side at the
+-- midpoint; this defines three, at the same offsets as the reactor's own heat
+-- connections, with a third of the bonus each. If the engine pays per point, a
+-- flush pair still reads 1.0 -- the same as vanilla today, which is what would
+-- keep every balance figure on the heat-chain branch intact.
+local per_connection = table.deepcopy(data.raw.reactor["nuclear-reactor"])
+per_connection.name = "aerm_reactor-per-connection"
+per_connection.next_upgrade = nil
+per_connection.minable = {mining_time = 0.5, result = "nuclear-reactor"}
+per_connection.neighbour_bonus = 1 / 3
+
+local connections = {}
+for _, side in ipairs({
+  {direction = 0,  axis = "y", edge = -2.5},
+  {direction = 8,  axis = "y", edge = 2.5},
+  {direction = 4,  axis = "x", edge = 2.5},
+  {direction = 12, axis = "x", edge = -2.5},
+}) do
+  for _, along in ipairs({-2, 0, 2}) do
+    local position
+    if side.axis == "y" then
+      position = {along, side.edge}
+    else
+      position = {side.edge, along}
+    end
+    connections[#connections + 1] = {
+      location = {position = position, direction = side.direction},
+      category = "nuclear-reactor",
+      neighbour_category = {"nuclear-reactor"},
+    }
+  end
+end
+per_connection.neighbour_connectable = {connections = connections}
+
+data:extend({per_connection})
+
+-- The per-connection variant showed the engine counting once per neighbouring
+-- reactor, however many points pair up. One possibility remains before the
+-- prototype route is exhausted: the dedupe might be per category pair rather
+-- than per entity. If each of the three points on a side pairs through its own
+-- category, the engine might see three relationships instead of one.
+--
+-- Categories are positional, so a point at offset -2 on one reactor meets a
+-- point at offset -2 on its neighbour, and both carry the same category.
+local per_category = table.deepcopy(data.raw.reactor["nuclear-reactor"])
+per_category.name = "aerm_reactor-per-category"
+per_category.next_upgrade = nil
+per_category.minable = {mining_time = 0.5, result = "nuclear-reactor"}
+per_category.neighbour_bonus = 1 / 3
+
+local categories = {[-2] = "aerm-nr-low", [0] = "aerm-nr-mid", [2] = "aerm-nr-high"}
+local connections = {}
+for _, side in ipairs({
+  {direction = 0,  axis = "y", edge = -2.5},
+  {direction = 8,  axis = "y", edge = 2.5},
+  {direction = 4,  axis = "x", edge = 2.5},
+  {direction = 12, axis = "x", edge = -2.5},
+}) do
+  for _, along in ipairs({-2, 0, 2}) do
+    local position
+    if side.axis == "y" then
+      position = {along, side.edge}
+    else
+      position = {side.edge, along}
+    end
+    connections[#connections + 1] = {
+      location = {position = position, direction = side.direction},
+      category = categories[along],
+      neighbour_category = {categories[along]},
+    }
+  end
+end
+per_category.neighbour_connectable = {connections = connections}
+
+data:extend({per_category})
