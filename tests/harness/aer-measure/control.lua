@@ -1519,6 +1519,66 @@ experiments.runtime_neighbour_bonus = {
   end,
 }
 
+-- Experiment 17 ------------------------------------------------------------
+-- Does the reactor panel report the bonus the reactor is actually being paid?
+--
+-- The panel itself cannot be driven headless: GUI events need a player and
+-- there is no API to create one. But the panel's arithmetic is reachable
+-- through the mod's remote interface, and it is the same call the panel renders
+-- from rather than a second copy of the sum -- so if these figures are right,
+-- the only thing left untested is the widget construction.
+--
+-- Checked against the heat the reactor actually receives, not against the same
+-- number twice: experiment 16 measures the bonus from the temperature rise, and
+-- these must agree with it.
+experiments.reactor_panel_figures = {
+  setup = function(state)
+    state.cases = {
+      {label = "solo", positions = {{0, 0}}},
+      {label = "flush_pair", positions = {{0, 0}, {5, 0}}},
+      {label = "offset_1", positions = {{0, 0}, {5, 1}}},
+      {label = "offset_2", positions = {{0, 0}, {5, 2}}},
+      {label = "offset_4", positions = {{0, 0}, {5, 4}}},
+      {label = "flush_2x2", positions = {{0, 0}, {5, 0}, {0, 5}, {5, 5}}},
+    }
+    for index, case in ipairs(state.cases) do
+      local origin = 3500 + index * 30
+      case.reactors = {}
+      for _, offset in ipairs(case.positions) do
+        case.reactors[#case.reactors + 1] =
+          fuel(place("nuclear-reactor", origin + offset[1], offset[2]))
+      end
+    end
+  end,
+  sample = function(state, tick)
+    if tick ~= 400 then return end
+
+    for _, case in ipairs(state.cases) do
+      local subject = case.reactors[1]
+      local output = remote.call(
+        "advanced-power-infrastructure", "reactor_output", subject.unit_number)
+
+      if not output then
+        emit("reactor_panel_figures", {
+          {"case", case.label},
+          {"result", "no record -- reactor not tracked"},
+        })
+      else
+        emit("reactor_panel_figures", {
+          {"case", case.label},
+          {"neighbours", output.neighbours},
+          {"connections", output.connections},
+          {"bonus", ("%.3f"):format(output.bonus)},
+          {"panel_shows", ("+%d%%"):format(math.floor(output.bonus * 100 + 0.5))},
+          {"base_mw", ("%.1f"):format(output.base_output / 1000000)},
+          {"current_mw", ("%.1f"):format(output.current_output / 1000000)},
+          {"engine_bonus", ("%.3f"):format(subject.neighbour_bonus or -1)},
+        })
+      end
+    end
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false
