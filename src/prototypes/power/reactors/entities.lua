@@ -1,7 +1,18 @@
+local constants = require("prototypes.power.fluid-constants")
 local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 data.raw["reactor"]["nuclear-reactor"].fast_replaceable_group = "nuclear-reactor"
 data.raw["reactor"]["nuclear-reactor"].next_upgrade = "aer_nuclear-reactor-2"
+-- Ceiling sits just above the steel exchanger's 500 optimal, rather than at
+-- double it. Set before the tiers below deepcopy this prototype.
+data.raw["reactor"]["nuclear-reactor"].heat_buffer.max_temperature =
+  constants.heat_tier_ceiling.mk1
+
+-- heat_buffer.max_transfer is deliberately left at vanilla's flat 10 GW on
+-- every reactor tier, and is the only number in the heat chain that does not
+-- scale. It never binds: a mk4 2x2 block pushes 1.92 GW against it, so making
+-- it tier up would read as consistency without changing anything in play.
+-- Reviewed under issue #14 and kept as a non-constraint on purpose.
 
 local function reset_to_base_reactor_graphics(reactor)
   reactor.lower_layer_picture = {
@@ -96,7 +107,8 @@ end
 local reactor_mk2 = util.table.deepcopy(data.raw["reactor"]["nuclear-reactor"])
 reactor_mk2.consumption = "80MW"
 reactor_mk2.max_health = 1500
-reactor_mk2.heat_buffer.max_temperature = 1300
+-- Matches aer_heat-exchanger-2's 650 optimal.
+reactor_mk2.heat_buffer.max_temperature = constants.heat_tier_ceiling.mk2
 reactor_mk2.heat_buffer.specific_heat = "30MJ"
 reactor_mk2.name = "aer_nuclear-reactor-2"
 reactor_mk2.minable.result =  "aer_nuclear-reactor-2"
@@ -109,3 +121,13 @@ reset_to_base_reactor_graphics(reactor_mk2)
 advanced_power_apply_rubber_lined_icon_tint(reactor_mk2)
 fluid_helpers.apply_rubber_lined_entity_tint(reactor_mk2)
 data:extend({reactor_mk2})
+
+-- The engine's neighbour bonus is switched off on every tier, and control.lua
+-- pays a bonus per aligned heat connection instead. The engine pays once per
+-- neighbouring reactor however many connections line up, which is exactly the
+-- distinction this is built to make. See issue #10.
+for _, reactor in ipairs({data.raw["reactor"]["nuclear-reactor"], reactor_mk2}) do
+  reactor.neighbour_bonus = 0
+  fluid_helpers.set_description(reactor,
+    fluid_helpers.reactor_connection_description(constants.reactor_connection_bonus))
+end

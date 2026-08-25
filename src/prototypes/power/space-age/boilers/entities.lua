@@ -22,9 +22,9 @@ boiler_mk4.minable.result =  "aer_holmium-reinforced-boiler"
 boiler_mk4.fast_replaceable_group = "boiler"
 boiler_mk4.next_upgrade = nil
 boiler_mk4.energy_source.effectivity = 1.3
-fluid_helpers.set_fluid_box_extent(boiler_mk4.fluid_box, fluid_constants.reinforced.pipeline_extent)
-fluid_helpers.set_fluid_box_extent(boiler_mk4.output_fluid_box, fluid_constants.reinforced.pipeline_extent)
-fluid_helpers.set_description(boiler_mk4, fluid_helpers.boiler_description(fluid_constants.reinforced.pipeline_extent))
+fluid_helpers.set_fluid_box_extent(boiler_mk4.fluid_box, fluid_constants.power_building_pipeline_extent)
+fluid_helpers.set_fluid_box_extent(boiler_mk4.output_fluid_box, fluid_constants.power_building_pipeline_extent)
+fluid_helpers.set_description(boiler_mk4, fluid_helpers.boiler_description(fluid_constants.power_building_pipeline_extent))
 advanced_power_apply_holmium_icon_tint(boiler_mk4)
 tint_boiler_structure(boiler_mk4, holmium_tier_entity_tint)
 data:extend({boiler_mk4})

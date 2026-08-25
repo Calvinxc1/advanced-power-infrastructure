@@ -9,6 +9,6 @@ steam_engine_mk4.name = "aer_holmium-steam-engine"
 steam_engine_mk4.subgroup = "aer_steam-power"
 steam_engine_mk4.order = "b[steam-engine-4]"
 steam_engine_mk4.place_result = "aer_holmium-steam-engine"
-fluid_helpers.set_description(steam_engine_mk4, fluid_helpers.boiler_description(fluid_constants.reinforced.pipeline_extent))
+fluid_helpers.set_description(steam_engine_mk4, fluid_helpers.boiler_description(fluid_constants.power_building_pipeline_extent))
 advanced_power_apply_holmium_icon_tint(steam_engine_mk4)
 data:extend({steam_engine_mk4})

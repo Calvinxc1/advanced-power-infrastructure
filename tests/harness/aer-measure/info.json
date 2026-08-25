@@ -1,0 +1,9 @@
+{
+  "name": "aer-measure",
+  "version": "0.0.1",
+  "factorio_version": "2.1",
+  "title": "AER measurement harness",
+  "author": "Jason M. Cherry",
+  "description": "Headless runtime probe used to measure heat-chain behaviour that Wube does not document. Never shipped; loaded only by scripts/factorio-measure.sh.",
+  "dependencies": ["base >= 2.1.0", "advanced-power-infrastructure"]
+}

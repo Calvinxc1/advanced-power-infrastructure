@@ -30,6 +30,8 @@ Electric poles, substations, and long-distance transmission belong in Advanced E
 
 Advanced Power Infrastructure, Advanced Energy Grid, and Advanced Fluid Infrastructure are designed to be played together as a set. Each mod loads and works fine on its own, but the staged progression is designed with all three installed together.
 
+Nuclear heat does not behave the way vanilla nuclear heat does here: distance costs temperature, each pipe tier caps the heat it will carry, and heat exchangers taper their output instead of cutting out. None of that is visible in a tooltip, and a layout that would be fine in vanilla can quietly produce well under what it should. [docs/nuclear-heat-guide.md](docs/nuclear-heat-guide.md) is the player reference for building around it.
+
 ## Status
 
 The current mod version is `0.2.1`. This is an early public release for Factorio 2.1. The mod loads successfully in standalone mode, and the core progression is implemented. Balance values, long-running save upgrade paths, and broad compatibility with other power mods should still be treated as experimental during the 0.2.x series.

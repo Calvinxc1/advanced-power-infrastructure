@@ -1,4 +1,191 @@
-return {
+local constants = {
+  -- Every heat exchanger tier starts working at the same network temperature,
+  -- rather than each tier raising its own floor. A higher tier will therefore
+  -- run on a network built for a lower one -- it just produces that network's
+  -- cooler steam while consuming its own tier's larger energy draw. Upgrading
+  -- the exchanger without upgrading the heat source is a real loss, so the
+  -- upgrade path has to be thought through rather than followed blindly.
+  heat_exchanger_min_working_temperature = 300,
+
+  -- Every building this mod owns is held to this pipeline extent, at every
+  -- tier, rather than inheriting its material tier's. Pipeline extent is not
+  -- part of the progression here: upgrading a boiler, an engine, an exchanger,
+  -- a turbine or a fusion reactor buys output, never reach.
+  --
+  -- Letting it rise with tier solved the plumbing problem the upper tiers are
+  -- supposed to pose -- a higher-tier run stopped needing pumps at all -- and it
+  -- also left the two halves of the same power chain following opposite rules,
+  -- with a holmium boiler reaching 192 tiles beside an mk4 exchanger reaching
+  -- 24. Pinning all of them keeps power blocks compartmentalised and keeps
+  -- pumps a real part of every layout.
+  --
+  -- 24 is chosen because it is vanilla pipe's own extent: a player who has not
+  -- upgraded their pipes never meets this limit at all, and it binds only once
+  -- better pipe would otherwise have bought reach for free. An earlier 64
+  -- matched the extent Advanced Fluid Infrastructure gives assemblers,
+  -- refineries and chemical plants, but was longer than the runs a power block
+  -- actually produces, so it never bound anything.
+  --
+  -- Deliberately excluded: pipes, underground pipes, pumps and offshore pumps
+  -- keep their own progression tiers. Carrying fluid further is what upgrading
+  -- those is for, and this mod does not define them in any case.
+  power_building_pipeline_extent = 24,
+
+  -- Heat pipes need their own, stronger entity tints.
+  --
+  -- The shared per-material entity_tint values are built for large buildings,
+  -- where a gentle multiplier reads clearly across a big sprite. A heat pipe is
+  -- one tile, largely covered by its own connection graphics, and often half
+  -- hidden under other entities -- the same multiplier does almost nothing. The
+  -- rubber-lined value is worse still: r0.42 g0.42 b0.42 is pure grey, so
+  -- against an already-grey pipe it darkens without shifting hue at all.
+  --
+  -- Hues follow each tier's established identity, taken from the icon tints so
+  -- the crafting menu and the placed entity agree: rubber-lined dark, reinforced
+  -- green, foundation pale blue. Saturation is raised to what a one-tile sprite
+  -- actually needs. Tier 1 stays vanilla and untinted, which makes it the
+  -- reference -- and it is the tier most likely to be the accidental bottleneck.
+  heat_pipe_entity_tint = {
+    rubber_lined = { r = 0.32, g = 0.30, b = 0.30, a = 1 },
+    reinforced   = { r = 0.40, g = 0.90, b = 0.50, a = 1 },
+    foundation   = { r = 0.60, g = 0.80, b = 1.00, a = 1 },
+  },
+
+  -- Turbines a single heat exchanger feeds, held constant at every tier.
+  --
+  -- Each tier's fluid_usage_per_tick is chosen to land on this ratio, since a
+  -- generator's output is (optimal - 15) * fluid_usage_per_tick * steam heat
+  -- capacity. Keeping it flat means the exchanger-to-turbine ratio learned at
+  -- the steel tier stays true all the way up, so the difficulty lives in
+  -- placement -- more exchangers, less reach -- rather than in relearning the
+  -- local ratio at every tier.
+  turbines_per_exchanger = 1.8,
+
+  -- How far a lightly loaded run should reach before it drops below optimal.
+  -- Gradient is derived from this rather than set directly, so the design
+  -- intent is what appears in the source.
+  --
+  -- The decline has to outpace the temperature budget, which itself grows with
+  -- tier. An earlier 25/22.5/20/17.5 did not: gradient and budget rose together
+  -- and cancelled, leaving every tier about 65 degrees above optimal at the end
+  -- of a 13 tile run. Same margin at every tier, dressed in bigger numbers.
+  -- These values make the margin shrink and then go negative, so a spoke that
+  -- worked at one tier does not simply keep working at the next.
+  --
+  -- These are light-load figures. Real runs are shorter, because the drop per
+  -- tile is min_temperature_gradient plus a component proportional to the heat
+  -- flowing through -- measured at roughly +2.7 degrees/tile per 80 MW on a
+  -- tier 1 pipe. Heavier spokes reach less far.
+  --
+  -- Two easings were tried in play and both reverted. Halving every tier
+  -- (50/32/24/18) moved the steel tier as well and pushed the whole ladder out
+  -- to where nothing bit until very long runs. Easing only the upper tiers
+  -- (25/20/15/12, finishing at 20.8 a tile) held mk1 correctly but moved the
+  -- point of failure from mk3 to mk4, which softened the thing the ladder
+  -- exists to do. This profile is the one that plays best.
+  heat_tier_optimal_reach = {
+    mk1 = 25,
+    mk2 = 16,
+    mk3 = 12,
+    mk4 = 9,
+  },
+
+  -- What one heat exchanger of each tier draws. Shared, because the exchangers
+  -- set their consumption from it and pipe throughput is derived from it, and a
+  -- second copy would be one balance pass away from disagreeing with the first.
+  -- mk1 is vanilla's own figure, which this mod does not change.
+  heat_tier_exchanger_draw = {
+    mk1 = 10,
+    mk2 = 16.5,
+    mk3 = 21.5,
+    mk4 = 26.5,
+  },
+
+  -- Exchangers on the busiest single run of the benchmark layout: a heat pipe
+  -- with exchangers down both sides, so mk4's twelve is a run six ranks deep.
+  -- Taken from the measured block in docs/power-footprint-benchmark.md rather
+  -- than invented, so throughput is sized against a spoke someone actually
+  -- built.
+  heat_tier_reference_spoke = {
+    mk1 = 8,
+    mk2 = 10,
+    mk3 = 10,
+    mk4 = 12,
+  },
+
+  -- How much more heat one pipe may carry than that reference spoke draws.
+  --
+  -- This is the width constraint, and it is deliberately a different axis from
+  -- the temperature gradient. Gradient limits how *long* a spoke can be; a
+  -- double-sided run is no longer than a single-sided one but draws twice the
+  -- heat through the same pipe, and only throughput notices that. So this is
+  -- what pushes the upper tiers off wide runs and onto more, narrower ones.
+  --
+  -- Meant to start mattering at mk3. mk1 and mk2 keep enough room that a
+  -- traditional layout never meets it; mk3 tightens; mk4 leaves only double the
+  -- reference spoke, so widening a run past the benchmark's is what finds the
+  -- ceiling.
+  heat_tier_flow_headroom = {
+    mk1 = 7,
+    mk2 = 5,
+    mk3 = 3,
+    mk4 = 2,
+  },
+
+  -- A reactor's ceiling sits this far above the optimal of the exchanger tier
+  -- that matches it, so optimal is 80 percent of the ceiling rather than the
+  -- 50 percent it was before.
+  reactor_optimal_fraction = 0.8,
+
+  -- Every steam source and every steam consumer this mod owns or adopts.
+  -- Shared, because more than one pass needs the same list and a second copy
+  -- would be one tier away from disagreeing with the first.
+  steam_producers = {
+    "heat-exchanger",
+    "aer_heat-exchanger-2",
+    "aer_heat-exchanger-3",
+    "aer_heat-exchanger-4",
+    "boiler",
+    "aer_steel-boiler",
+    "aer_rubber-lined-boiler",
+    "aer_holmium-reinforced-boiler",
+  },
+
+  steam_consumers = {
+    "steam-turbine",
+    "aer_rubber-lined-steam-turbine",
+    "aer_reinforced-steam-turbine",
+    "aer_foundation-steam-turbine",
+    "steam-engine",
+    "aer_steel-steam-engine",
+    "aer_rubber-lined-steam-engine",
+    "aer_holmium-steam-engine",
+  },
+
+  -- What one aligned heat connection between two reactors is worth.
+  --
+  -- A reactor has three heat connections a side, so two flush reactors line up
+  -- all three and the pair is worth the full 100 percent vanilla pays -- every
+  -- exchanger, turbine and reach figure derived from a flush 2x2 block is
+  -- unchanged. Sliding one reactor along the shared edge breaks the alignment
+  -- two tiles at a time, and the bonus falls with it.
+  --
+  -- The engine cannot express this. Its neighbour bonus is paid once per
+  -- neighbouring reactor however many connection points pair up, and
+  -- LuaEntity.neighbour_bonus is read only, so the prototypes carry a bonus of
+  -- zero and control.lua pays it instead. See issue #10.
+  reactor_connection_bonus = 1 / 3,
+
+  -- The optimal temperature of each heat exchanger tier. Every other heat
+  -- temperature in the mod derives from these, so a tier cannot drift out of
+  -- step with its own reactor or pipe.
+  heat_tier_optimal = {
+    mk1 = 500,
+    mk2 = 650,
+    mk3 = 800,
+    mk4 = 1000,
+  },
+
   iron = {
     pipeline_extent = 24,
   },
@@ -44,3 +231,30 @@ return {
     },
   },
 }
+
+-- Each tier's heat network ceiling, shared by the reactor that produces the heat
+-- and the pipe that carries it. Matching them is what makes a pipe tier a
+-- requirement rather than an option: a pipe is a node in the network like any
+-- other, so a lower-tier pipe caps the whole network at its own maximum.
+constants.heat_tier_ceiling = {}
+for tier, optimal in pairs(constants.heat_tier_optimal) do
+  constants.heat_tier_ceiling[tier] = optimal / constants.reactor_optimal_fraction
+end
+
+-- Heat one pipe tier will carry, derived from the spoke it is sized against
+-- rather than set directly, so the design intent is what appears in the source.
+constants.heat_tier_max_transfer = {}
+for tier, spoke in pairs(constants.heat_tier_reference_spoke) do
+  constants.heat_tier_max_transfer[tier] = ("%gMW"):format(
+    spoke * constants.heat_tier_exchanger_draw[tier] * constants.heat_tier_flow_headroom[tier])
+end
+
+-- Degrees lost per pipe tile, at light load. The engine treats this as a floor
+-- rather than a fixed rate, so it is the best case a run can achieve.
+constants.heat_tier_gradient = {}
+for tier, optimal in pairs(constants.heat_tier_optimal) do
+  constants.heat_tier_gradient[tier] =
+    (constants.heat_tier_ceiling[tier] - optimal) / constants.heat_tier_optimal_reach[tier]
+end
+
+return constants

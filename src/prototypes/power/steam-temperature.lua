@@ -4,27 +4,10 @@
 -- ceiling when the engine derives `max_power_output`. Raise the ceiling to cover every steam
 -- temperature this mod produces or consumes.
 
-local steam_producers = {
-  "heat-exchanger",
-  "aer_heat-exchanger-2",
-  "aer_heat-exchanger-3",
-  "aer_heat-exchanger-4",
-  "boiler",
-  "aer_steel-boiler",
-  "aer_rubber-lined-boiler",
-  "aer_holmium-reinforced-boiler",
-}
+local constants = require("prototypes.power.fluid-constants")
 
-local steam_consumers = {
-  "steam-turbine",
-  "aer_rubber-lined-steam-turbine",
-  "aer_reinforced-steam-turbine",
-  "aer_foundation-steam-turbine",
-  "steam-engine",
-  "aer_steel-steam-engine",
-  "aer_rubber-lined-steam-engine",
-  "aer_holmium-steam-engine",
-}
+local steam_producers = constants.steam_producers
+local steam_consumers = constants.steam_consumers
 
 local steam = data.raw.fluid["steam"]
 if not steam then
