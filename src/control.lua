@@ -16,9 +16,10 @@
 -- steam hotter than optimal.
 --
 -- The rewrite goes through set_fluid_segment_fluid, which updates a whole
--- connected pipe network in one call, so the cost tracks the number of steam
--- networks rather than the number of exchangers. See issue #11 for the
--- measurements behind all of this.
+-- connected pipe network in one call, so the write cost tracks the number of
+-- steam networks rather than the number of exchangers. The scan that decides
+-- what to write is per exchanger, which is why it runs on an interval rather
+-- than every tick. See issue #11 for the measurements behind all of this.
 
 -- Fluid storage 2 is a boiler's output box; a pipe has a single box at 1.
 local OUTPUT_BOX = 2
@@ -153,7 +154,16 @@ local function output_pipe_for(entity)
   return nil
 end
 
-script.on_event(defines.events.on_tick, function()
+-- The write is per segment, but deciding what to write costs a handful of
+-- engine calls per exchanger, every one of which is paid whether or not
+-- anything moved. A reactor's core temperature changes by fractions of a degree
+-- per tick, so a rewrite at 60 Hz spends that per-exchanger work re-asserting a
+-- number that has barely moved. Ten times a second is far finer than the signal
+-- it is following, and costs a sixth as much on a base with hundreds of
+-- exchangers.
+local PASSTHROUGH_INTERVAL_TICKS = 6
+
+script.on_nth_tick(PASSTHROUGH_INTERVAL_TICKS, function()
   local exchangers = storage.exchangers
   if not exchangers or not next(exchangers) then return end
 
