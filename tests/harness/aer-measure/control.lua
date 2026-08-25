@@ -195,6 +195,47 @@ experiments.exchanger_drain = {
   end,
 }
 
+-- Experiment 5 -------------------------------------------------------------
+-- What happens when steam of different temperatures meets in one pipe? This
+-- mod ships eight steam sources from 165 to 1000 degrees, so the answer
+-- decides whether tiers can share a pipe network at all.
+experiments.steam_mixing = {
+  setup = function(state)
+    state.cases = {
+      {label = "equal_500_1000", parts = {{500, 100}, {1000, 100}}},
+      {label = "mostly_cold_500x3_1000", parts = {{500, 300}, {1000, 100}}},
+      {label = "mostly_hot_500_1000x3", parts = {{500, 100}, {1000, 300}}},
+      {label = "three_way_165_500_1000", parts = {{165, 100}, {500, 100}, {1000, 100}}},
+    }
+    for i, case in ipairs(state.cases) do
+      case.tank = place("storage-tank", 500 + i * 6, 0)
+    end
+  end,
+  sample = function(state, tick)
+    if tick ~= 120 then return end
+
+    for _, case in ipairs(state.cases) do
+      local weighted, total = 0, 0
+      for _, part in ipairs(case.parts) do
+        local temperature, amount = part[1], part[2]
+        case.tank.insert_fluid{name = "steam", amount = amount, temperature = temperature}
+        weighted = weighted + temperature * amount
+        total = total + amount
+      end
+
+      local fluid = case.tank.get_fluid(1)
+      emit("steam_mixing", {
+        {"case", case.label},
+        {"inserted_total", total},
+        {"weighted_average", ("%.1f"):format(weighted / total)},
+        {"result_fluid", fluid and fluid.name or "none"},
+        {"result_amount", fluid and ("%.1f"):format(fluid.amount) or "0"},
+        {"result_temperature", fluid and ("%.1f"):format(fluid.temperature or -1) or "n/a"},
+      })
+    end
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false
