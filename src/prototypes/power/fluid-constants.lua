@@ -90,15 +90,46 @@ local constants = {
     mk4 = 9,
   },
 
-  -- Throughput deliberately grows more slowly than exchanger draw, which runs
-  -- 1 : 1.8 : 2.5 : 3.2. Capacity outrunning demand is what made higher tiers
-  -- easier to lay out; keeping it behind demand is what makes the same tileable
-  -- layout lose efficiency as the tiers rise, while still producing more power.
-  heat_tier_max_transfer = {
-    mk1 = "1GW",
-    mk2 = "1.4GW",
-    mk3 = "1.7GW",
-    mk4 = "1.9GW",
+  -- What one heat exchanger of each tier draws. Shared, because the exchangers
+  -- set their consumption from it and pipe throughput is derived from it, and a
+  -- second copy would be one balance pass away from disagreeing with the first.
+  -- mk1 is vanilla's own figure, which this mod does not change.
+  heat_tier_exchanger_draw = {
+    mk1 = 10,
+    mk2 = 16.5,
+    mk3 = 21.5,
+    mk4 = 26.5,
+  },
+
+  -- Exchangers on the busiest single run of the benchmark layout: a heat pipe
+  -- with exchangers down both sides, so mk4's twelve is a run six ranks deep.
+  -- Taken from the measured block in docs/power-footprint-benchmark.md rather
+  -- than invented, so throughput is sized against a spoke someone actually
+  -- built.
+  heat_tier_reference_spoke = {
+    mk1 = 8,
+    mk2 = 10,
+    mk3 = 10,
+    mk4 = 12,
+  },
+
+  -- How much more heat one pipe may carry than that reference spoke draws.
+  --
+  -- This is the width constraint, and it is deliberately a different axis from
+  -- the temperature gradient. Gradient limits how *long* a spoke can be; a
+  -- double-sided run is no longer than a single-sided one but draws twice the
+  -- heat through the same pipe, and only throughput notices that. So this is
+  -- what pushes the upper tiers off wide runs and onto more, narrower ones.
+  --
+  -- Meant to start mattering at mk3. mk1 and mk2 keep enough room that a
+  -- traditional layout never meets it; mk3 tightens; mk4 leaves only double the
+  -- reference spoke, so widening a run past the benchmark's is what finds the
+  -- ceiling.
+  heat_tier_flow_headroom = {
+    mk1 = 7,
+    mk2 = 5,
+    mk3 = 3,
+    mk4 = 2,
   },
 
   -- A reactor's ceiling sits this far above the optimal of the exchanger tier
@@ -208,6 +239,14 @@ local constants = {
 constants.heat_tier_ceiling = {}
 for tier, optimal in pairs(constants.heat_tier_optimal) do
   constants.heat_tier_ceiling[tier] = optimal / constants.reactor_optimal_fraction
+end
+
+-- Heat one pipe tier will carry, derived from the spoke it is sized against
+-- rather than set directly, so the design intent is what appears in the source.
+constants.heat_tier_max_transfer = {}
+for tier, spoke in pairs(constants.heat_tier_reference_spoke) do
+  constants.heat_tier_max_transfer[tier] = ("%gMW"):format(
+    spoke * constants.heat_tier_exchanger_draw[tier] * constants.heat_tier_flow_headroom[tier])
 end
 
 -- Degrees lost per pipe tile, at light load. The engine treats this as a floor

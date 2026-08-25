@@ -253,7 +253,7 @@ the pole tier carrying it.
 | Exchanger draw | 10 MW | 16.5 MW | 21.5 MW | 26.5 MW |
 | Pipe loss per tile, light load | 5.0 | 10.2 | 16.7 | 27.8 |
 | Pipe reach at light load | 25t | 16t | 12t | 9t |
-| Pipe throughput | 1 GW | 1.4 GW | 1.7 GW | 1.9 GW |
+| Pipe maximum heat flow | 560 MW | 825 MW | 645 MW | 636 MW |
 | Turbine optimal | 500 | 650 | 800 | 1000 |
 | Turbines per 2x2 block | 86 | 105 | 121 | 130 |
 | Turbine rated output | 5.56 MW | 9.17 MW | 11.94 MW | 14.73 MW |

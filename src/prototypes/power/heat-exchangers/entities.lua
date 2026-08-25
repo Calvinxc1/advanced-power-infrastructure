@@ -18,7 +18,7 @@ local heat_exchanger_mk2 = util.table.deepcopy(data.raw["boiler"]["heat-exchange
 -- more exchangers than the last: 48, 58.2, 67.0, 72.4 for a 2x2 block. The
 -- old 18/25/32 ladder only moved that from 48 to 60 across four tiers, which
 -- was small enough to absorb by adding a spoke or two.
-heat_exchanger_mk2.energy_consumption = "16.5MW"
+heat_exchanger_mk2.energy_consumption = ("%gMW"):format(constants.heat_tier_exchanger_draw.mk2)
 heat_exchanger_mk2.target_temperature = 650
 heat_exchanger_mk2.max_health = 500
 heat_exchanger_mk2.name = "aer_heat-exchanger-2"
@@ -47,7 +47,7 @@ fluid_helpers.apply_rubber_lined_entity_tint(heat_exchanger_mk2)
 data:extend({heat_exchanger_mk2})
 
 local heat_exchanger_mk3 = util.table.deepcopy(data.raw["boiler"]["heat-exchanger"])
-heat_exchanger_mk3.energy_consumption = "21.5MW"
+heat_exchanger_mk3.energy_consumption = ("%gMW"):format(constants.heat_tier_exchanger_draw.mk3)
 heat_exchanger_mk3.target_temperature = 800
 heat_exchanger_mk3.max_health = 650
 heat_exchanger_mk3.name = "aer_heat-exchanger-3"
