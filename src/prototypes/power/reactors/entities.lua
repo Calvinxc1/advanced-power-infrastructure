@@ -8,6 +8,12 @@ data.raw["reactor"]["nuclear-reactor"].next_upgrade = "aer_nuclear-reactor-2"
 data.raw["reactor"]["nuclear-reactor"].heat_buffer.max_temperature =
   constants.heat_tier_ceiling.mk1
 
+-- heat_buffer.max_transfer is deliberately left at vanilla's flat 10 GW on
+-- every reactor tier, and is the only number in the heat chain that does not
+-- scale. It never binds: a mk4 2x2 block pushes 1.92 GW against it, so making
+-- it tier up would read as consistency without changing anything in play.
+-- Reviewed under issue #14 and kept as a non-constraint on purpose.
+
 local function reset_to_base_reactor_graphics(reactor)
   reactor.lower_layer_picture = {
     filename = "__base__/graphics/entity/nuclear-reactor/reactor-pipes.png",
