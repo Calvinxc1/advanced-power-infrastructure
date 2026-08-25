@@ -72,6 +72,11 @@ end
 local function forget(entity)
   if entity and entity.unit_number then
     storage.exchangers[entity.unit_number] = nil
+    -- The pipe cache is keyed by unit_number, and unit numbers are never
+    -- reused. Left behind, an entry for a mined exchanger is never visited
+    -- again -- the scan below only reaches keys still in the registry -- so it
+    -- would hold a dead reference for the rest of the session.
+    output_pipes[entity.unit_number] = nil
   end
 end
 
