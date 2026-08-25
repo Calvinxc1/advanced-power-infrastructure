@@ -169,10 +169,6 @@ function helpers.heat_optimal_description(temperature)
   return {"description.aer_heat-optimal-temperature", tostring(temperature)}
 end
 
-function helpers.heat_passthrough_description()
-  return {"description.aer_heat-passthrough"}
-end
-
 function helpers.patch_boiler_extent(boiler_name, extent)
   local boiler = data.raw.boiler[boiler_name]
   if boiler then
