@@ -27,8 +27,10 @@ local function status_name(value)
 end
 
 local function place(name, x, y)
+  -- raise_built matters: without it the mod's own control.lua never sees these
+  -- entities, and the harness would be testing a registry that stayed empty.
   return surface().create_entity{
-    name = name, position = {x, y}, force = game.forces.player,
+    name = name, position = {x, y}, force = game.forces.player, raise_built = true,
   }
 end
 
@@ -538,6 +540,86 @@ experiments.drift_rate = {
         {"correction_interval_ticks", case.interval == 0 and "never" or case.interval},
         {"held_target", 500},
         {"temperature_each_second", table.concat(case.samples, ",")},
+      })
+    end
+  end,
+}
+
+-- Experiment 11 ------------------------------------------------------------
+-- End-to-end check of the shipped passthrough in src/control.lua: does steam
+-- actually leave at clamp(buffer, min_working, target)?
+experiments.passthrough = {
+  setup = function(state)
+    state.rows = {}
+    -- mk2 is min_working 500, target 650. Span below, inside and above.
+    for i, buffer in ipairs({450, 500, 550, 600, 650, 900}) do
+      local x = 1400 + i * 12
+      local exchanger = place("aer_heat-exchanger-2", x, 200)
+      local row = {buffer = buffer, exchanger = exchanger, pipes = {}}
+
+      local connections = exchanger.get_fluid_box_pipe_connections(2)
+      row.connection_count = connections and #connections or 0
+      for _, connection in ipairs(connections or {}) do
+        local target = connection.target_position or connection.position
+        if target then
+          row.target = ("(%.1f,%.1f)"):format(target.x, target.y)
+          for j = 0, 4 do
+            local pipe = surface().create_entity{
+              name = "pipe",
+              position = {target.x, target.y - j},
+              force = game.forces.player,
+              raise_built = true,
+            }
+            row.pipes[#row.pipes + 1] = pipe
+          end
+        end
+      end
+      row.pipes_created = #row.pipes
+      state.rows[#state.rows + 1] = row
+    end
+  end,
+  sample = function(state, tick)
+    for _, row in ipairs(state.rows) do
+      row.exchanger.temperature = row.buffer
+      row.exchanger.insert_fluid{name = "water", amount = 240}
+    end
+
+    if tick ~= 300 then return end
+
+    for _, row in ipairs(state.rows) do
+      local proto = row.exchanger.prototype
+      local buffer_proto = proto.heat_buffer_prototype
+      local connected = row.exchanger.has_fluid_segment(2)
+      local fluid = connected and row.exchanger.get_fluid_segment_fluid(2) or nil
+      local far = row.pipes[5] and row.pipes[5].valid
+        and row.pipes[5].has_fluid_segment(1)
+        and row.pipes[5].get_fluid_segment_fluid(1) or nil
+
+      -- Where does the segment actually live, if not on the machine box?
+      local neighbours = row.exchanger.fluidbox_neighbours
+      local group = neighbours and neighbours[2]
+      local probe = group and group[1]
+      emit("segment_location", {
+        {"buffer", row.buffer},
+        {"machine_box_has_segment", tostring(row.exchanger.has_fluid_segment(2))},
+        {"output_neighbour_count", group and #group or 0},
+        {"neighbour_name", probe and probe.name or "none"},
+        {"neighbour_has_segment", probe and tostring(probe.has_fluid_segment(1)) or "n/a"},
+        {"neighbour_segment_temp", (probe and probe.has_fluid_segment(1)
+          and probe.get_fluid_segment_fluid(1))
+          and ("%.1f"):format(probe.get_fluid_segment_fluid(1).temperature or -1) or "none"},
+      })
+
+      emit("passthrough", {
+        {"buffer", row.buffer},
+        {"min_working", buffer_proto and buffer_proto.min_working_temperature or "nil"},
+        {"target", proto.target_temperature},
+        {"pipes_created", row.pipes_created},
+        {"connection_target", row.target or "none"},
+        {"output_connected", tostring(connected)},
+        {"steam_at_exchanger", fluid and ("%.1f"):format(fluid.temperature or -1) or "none"},
+        {"steam_at_pipe_end", far and ("%.1f"):format(far.temperature or -1) or "none"},
+        {"status", status_name(row.exchanger.status)},
       })
     end
   end,

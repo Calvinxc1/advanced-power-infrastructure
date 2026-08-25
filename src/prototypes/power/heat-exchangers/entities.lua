@@ -15,7 +15,9 @@ heat_exchanger_mk2.name = "aer_heat-exchanger-2"
 heat_exchanger_mk2.minable.result =  "aer_heat-exchanger-2"
 heat_exchanger_mk2.fast_replaceable_group = "heat-exchanger"
 heat_exchanger_mk2.next_upgrade = "aer_heat-exchanger-3"
-heat_exchanger_mk2.energy_source.min_working_temperature = 650
+-- Starts working where the vanilla exchanger is optimal, so a network
+-- between the two tiers still drives it, at that network's temperature.
+heat_exchanger_mk2.energy_source.min_working_temperature = 500
 heat_exchanger_mk2.energy_source.minimum_glow_temperature = 500
 heat_exchanger_mk2.energy_source.max_temperature = 1300
 heat_exchanger_mk2.energy_source.specific_heat = "2MJ"
@@ -40,7 +42,8 @@ heat_exchanger_mk3.fast_replaceable_group = "heat-exchanger"
 -- re-points this at its Space Age tier when that tier exists, so the chain is
 -- correct in both loads without depending on load order.
 heat_exchanger_mk3.next_upgrade = nil
-heat_exchanger_mk3.energy_source.min_working_temperature = 800
+-- Starts working where mk2 is optimal.
+heat_exchanger_mk3.energy_source.min_working_temperature = 650
 heat_exchanger_mk3.energy_source.minimum_glow_temperature = 650
 heat_exchanger_mk3.energy_source.max_temperature = 1600
 heat_exchanger_mk3.energy_source.specific_heat = "3MJ"
