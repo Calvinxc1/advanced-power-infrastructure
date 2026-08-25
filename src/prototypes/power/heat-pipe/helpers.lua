@@ -17,6 +17,8 @@ function helpers.make_heat_pipe(name, minable_result, heat, next_upgrade, tint, 
   heat_pipe.heat_buffer.specific_heat = heat.specific_heat
   heat_pipe.heat_buffer.max_transfer = heat.max_transfer
   heat_pipe.heat_buffer.min_temperature_gradient = heat.min_temperature_gradient
+  fluid_helpers.set_description(heat_pipe,
+    fluid_helpers.heat_pipe_description(heat_pipe.heat_buffer))
   if tint then
     tint(heat_pipe)
   end
@@ -35,6 +37,11 @@ function helpers.make_heat_pipe_item(name, order, place_result, tint)
   if tint then
     tint(item)
   end
+  -- Read the entity this item places rather than repeating its numbers, so the
+  -- tooltip cannot drift from the prototype it describes.
+  local entity = data.raw["heat-pipe"][place_result]
+  fluid_helpers.set_description(item,
+    fluid_helpers.heat_pipe_description(entity and entity.heat_buffer))
   return item
 end
 

@@ -102,7 +102,11 @@ exchanger downstream produces cold steam.
 There is no error message for this. If a run is underperforming for no visible
 reason, look for a pipe you forgot to upgrade.
 
-The tiers are tinted, so you can spot the odd one out without checking each
+Every heat pipe now states its own numbers in its tooltip -- what it carries,
+what it moves, and what it costs you per tile -- so a suspect pipe can be
+checked directly.
+
+The tiers are also tinted, so you can spot the odd one out without checking each
 pipe individually:
 
 | Pipe tier | Appearance |

@@ -3,6 +3,8 @@ local heat_pipe_helpers = require("prototypes.power.heat-pipe.helpers")
 
 data.raw.item["heat-pipe"].order = "b[heat-pipe-1]"
 data.raw.item["heat-pipe"].subgroup = "aer_nuclear-power"
+fluid_helpers.set_description(data.raw.item["heat-pipe"],
+  fluid_helpers.heat_pipe_description(data.raw["heat-pipe"]["heat-pipe"].heat_buffer))
 
 local heat_pipe_mk2 = heat_pipe_helpers.make_heat_pipe_item(
   "aer_heat-pipe-2",

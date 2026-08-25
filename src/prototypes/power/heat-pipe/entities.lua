@@ -13,6 +13,8 @@ base_heat_pipe.heat_buffer.min_temperature_gradient = constants.heat_tier_gradie
 -- makes each reactor tier actually require its matching pipe.
 base_heat_pipe.heat_buffer.max_temperature = constants.heat_tier_ceiling.mk1
 base_heat_pipe.heat_buffer.max_transfer = constants.heat_tier_max_transfer.mk1
+fluid_helpers.set_description(base_heat_pipe,
+  fluid_helpers.heat_pipe_description(base_heat_pipe.heat_buffer))
 
 -- Terminates the base-game ladder. prototypes/power/space-age/heat-pipe/entities.lua
 -- re-points this at mk3 when that tier exists, so the chain is correct in both

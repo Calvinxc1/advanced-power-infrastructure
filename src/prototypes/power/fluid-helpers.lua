@@ -143,6 +143,22 @@ end
 -- overwrites, and several of these lines are conditional -- the pipeline extent
 -- only exists when Advanced Fluid Infrastructure is installed -- so anything
 -- adding a line has to compose rather than assign.
+-- A heat pipe's three defining numbers, none of which the engine surfaces. The
+-- per-tile loss is the one that decides layout, and the maximum matters because
+-- a pipe is a node in the heat network: the lowest-tier pipe in a run caps the
+-- whole run, with no error to say so.
+function helpers.heat_pipe_description(heat_buffer)
+  if not heat_buffer then
+    return nil
+  end
+  return {
+    "description.aer_heat-pipe-stats",
+    string.format("%g", heat_buffer.max_temperature),
+    tostring(heat_buffer.max_transfer),
+    string.format("%.1f", heat_buffer.min_temperature_gradient),
+  }
+end
+
 function helpers.compose_description(...)
   local parts = {""}
   for index = 1, select("#", ...) do
