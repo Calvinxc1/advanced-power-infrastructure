@@ -135,6 +135,66 @@ experiments.exchanger_threshold = {
   end,
 }
 
+-- Experiment 4 -------------------------------------------------------------
+-- #11, the regime that actually matters. Experiment 3 pins the buffer, which
+-- supplies unlimited energy and so measures only the best case. Here the
+-- buffer starts hot and is never topped up, so throughput is bounded by stored
+-- energy -- the real constraint when a network dips.
+--
+-- If sustained output falls off gradually as the buffer drains, the taper #11
+-- wants exists after all; it is just energy-driven rather than temperature-
+-- driven. If output stays flat and then stops dead, the cliff is real.
+experiments.exchanger_drain = {
+  setup = function(state)
+    state.rows = {}
+    for i, temperature in ipairs({450, 650, 900}) do
+      state.rows[#state.rows + 1] = {
+        start_temperature = temperature,
+        exchanger = place("aerm_decoupled-exchanger", 405, i * 12),
+        buckets = {},
+      }
+    end
+    state.primed = false
+  end,
+  sample = function(state, tick)
+    if not state.primed then
+      state.primed = true
+      for _, row in ipairs(state.rows) do
+        row.exchanger.temperature = row.start_temperature
+      end
+      return
+    end
+
+    for _, row in ipairs(state.rows) do
+      local exchanger = row.exchanger
+      exchanger.insert_fluid{name = "water", amount = 240}
+      local removed = exchanger.remove_fluid(2, 10000)
+      local amount = type(removed) == "table" and removed.amount or (removed or 0)
+
+      -- Bucket production per second so the decay curve is visible.
+      local bucket = math.floor(tick / 60) + 1
+      row.buckets[bucket] = (row.buckets[bucket] or 0) + (amount or 0)
+      row.last_temperature = exchanger.temperature
+      row.last_status = exchanger.status
+    end
+
+    if tick ~= 480 then return end
+
+    for _, row in ipairs(state.rows) do
+      local curve = {}
+      for bucket = 1, 8 do
+        curve[#curve + 1] = ("%.1f"):format(row.buckets[bucket] or 0)
+      end
+      emit("exchanger_drain", {
+        {"start_temperature", row.start_temperature},
+        {"end_temperature", ("%.1f"):format(row.last_temperature or -1)},
+        {"end_status", status_name(row.last_status)},
+        {"steam_per_second_curve", table.concat(curve, ",")},
+      })
+    end
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false
