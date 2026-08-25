@@ -179,14 +179,37 @@ because load is what costs you temperature.
 
 ## Reactor output is not what the tooltip says
 
-A reactor's listed heat output is its **standalone** figure. Each adjacent
-reactor adds another 100% of it, so a reactor in a 2x2 block -- two neighbours
--- produces three times its listed output.
+A reactor's listed heat output is its **standalone** figure. Neighbouring
+reactors add to it, so a reactor in a 2x2 block -- two neighbours -- produces
+three times its listed output.
 
 That is why a 2x2 block of steel reactors makes 480 MW rather than 160 MW.
 
+**The bonus is paid per heat connection, not per neighbour.** A reactor has
+three heat connections on each side. Every one that lines up with a connection
+on the reactor beside it adds 33% output. Two reactors placed flush line up all
+three and are worth the full 100%, exactly as in vanilla.
+
+Slide one along the shared edge and the bonus falls with the alignment:
+
+| Offset along the shared edge | Connections lined up | Bonus |
+| --- | ---: | ---: |
+| 0 tiles (flush) | 3 | 100% |
+| 2 tiles | 2 | 66% |
+| 4 tiles | 1 | 33% |
+
+Odd offsets pay **nothing**. The connections sit two tiles apart, so shifting by
+one tile lines up none of them -- a one tile offset is worse than a two tile
+one. If you are going to offset a reactor at all, offset it by an even number of
+tiles.
+
+This is a change from vanilla, where any offset at all removes the entire bonus.
+Here an offset block still works, just at reduced output, which makes a reactor
+row something you can thread around terrain rather than an all-or-nothing grid.
+
 Opening a reactor shows a panel with its base output, how many neighbours it
-has, and what it is actually producing right now.
+has, how many connections are lined up, and what it is actually producing right
+now.
 
 ## Things that will catch you out
 
