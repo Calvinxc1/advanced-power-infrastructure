@@ -12,6 +12,7 @@ from pathlib import Path
 
 
 INIT_UPLOAD_URL = "https://mods.factorio.com/api/v2/mods/releases/init_upload"
+MOD_INFO_URL = "https://mods.factorio.com/api/mods/{mod_name}/full"
 
 # This is the v2 Mod Portal API, authenticated with a scoped API key
 # (factorio.com/profile, "ModPortal: Upload Mods" permission), sent as
@@ -20,7 +21,11 @@ INIT_UPLOAD_URL = "https://mods.factorio.com/api/v2/mods/releases/init_upload"
 # reuse FACTORIO_MOD_PORTAL_TOKEN here, it will not authenticate this API.
 
 
-class ApiError(RuntimeError):
+class UploadError(RuntimeError):
+    """A failure during the upload sequence, before the release is confirmed."""
+
+
+class ApiError(UploadError):
     def __init__(self, status: int, body: str):
         super().__init__(f"HTTP {status}: {body}")
         self.status = status
@@ -85,15 +90,17 @@ def api_request(
         error_body = error.read().decode("utf-8", errors="replace")
         raise ApiError(error.code, error_body) from error
     except urllib.error.URLError as error:
-        fail(f"Request failed: {error}")
+        raise UploadError(f"Request failed: {error}") from error
 
     try:
         data = json.loads(response_body)
     except json.JSONDecodeError as error:
-        fail(f"Expected JSON response, got: {response_body}\n{error}")
+        raise UploadError(f"Expected JSON response, got: {response_body}") from error
 
     if data.get("error"):
-        fail(f"Factorio Mod Portal API error {data.get('error')}: {data.get('message', '')}")
+        raise UploadError(
+            f"Factorio Mod Portal API error {data.get('error')}: {data.get('message', '')}"
+        )
 
     return data
 
@@ -103,7 +110,7 @@ def init_upload(mod_name: str, token: str) -> str:
     response = api_request(INIT_UPLOAD_URL, "POST", body=body, boundary=boundary, token=token)
     upload_url = response.get("upload_url")
     if not isinstance(upload_url, str) or not upload_url:
-        fail(f"init_upload response did not include upload_url: {response}")
+        raise UploadError(f"init_upload response did not include upload_url: {response}")
     return upload_url
 
 
@@ -111,13 +118,51 @@ def finish_upload(upload_url: str, zip_path: Path) -> None:
     body, boundary = multipart_body({}, {"file": zip_path})
     response = api_request(upload_url, "POST", body=body, boundary=boundary)
     if response.get("success") is not True:
-        fail(f"finish_upload did not report success: {response}")
+        raise UploadError(f"finish_upload did not report success: {response}")
+
+
+def version_from_asset(mod_name: str, asset: Path) -> str | None:
+    """Recover the version from a "<mod_name>_<version>.zip" asset name.
+
+    Matching on the known mod name rather than splitting on the last underscore,
+    because mod names may themselves contain underscores.
+    """
+    prefix = f"{mod_name}_"
+    if asset.stem.startswith(prefix):
+        return asset.stem[len(prefix):] or None
+    return None
+
+
+def portal_has_release(mod_name: str, version: str) -> bool:
+    """Report whether the portal currently publishes this version.
+
+    Best effort: any failure to reach or read the portal returns False, so an
+    unconfirmed upload stays a failure rather than being reported as success.
+    """
+    url = MOD_INFO_URL.format(mod_name=urllib.parse.quote(mod_name, safe=""))
+    request = urllib.request.Request(url, headers={"User-Agent": f"{mod_name}-ci"})
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            data = json.load(response)
+    except urllib.error.HTTPError as error:
+        if error.code != 404:
+            print(f"Could not confirm release: HTTP {error.code} from {url}", file=sys.stderr)
+        return False
+    except (urllib.error.URLError, json.JSONDecodeError) as error:
+        print(f"Could not confirm release: {error}", file=sys.stderr)
+        return False
+
+    return any(release.get("version") == version for release in data.get("releases", []))
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Upload a packaged Factorio mod release to the Mod Portal.")
     parser.add_argument("--mod-name", required=True)
     parser.add_argument("--asset", required=True, type=Path)
+    parser.add_argument(
+        "--version",
+        help="Version being published. Defaults to the version in the asset filename.",
+    )
     return parser.parse_args()
 
 
@@ -129,8 +174,26 @@ def main() -> int:
     if not args.asset.is_file():
         fail(f"Release asset not found: {args.asset}")
 
-    upload_url = init_upload(args.mod_name, token)
-    finish_upload(upload_url, args.asset)
+    version = args.version or version_from_asset(args.mod_name, args.asset)
+
+    try:
+        upload_url = init_upload(args.mod_name, token)
+        finish_upload(upload_url, args.asset)
+    except UploadError as error:
+        # The portal documents no duplicate-version error, and the code it is
+        # most likely to return for one -- InvalidModRelease -- is the same code
+        # a malformed info.json produces. Matching on the error would therefore
+        # swallow real failures, so ask the portal what it actually holds: if the
+        # version is published, the release is done however this attempt failed.
+        if version and portal_has_release(args.mod_name, version):
+            print(f"Upload reported: {error}", file=sys.stderr)
+            print(
+                f"{args.mod_name} {version} is already published on the Mod Portal; "
+                "treating the upload as complete."
+            )
+            return 0
+        fail(str(error))
+
     print(f"Uploaded {args.asset.name} to Factorio Mod Portal mod {args.mod_name}.")
     return 0
 

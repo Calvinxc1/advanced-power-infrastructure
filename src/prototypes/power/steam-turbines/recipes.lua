@@ -29,25 +29,10 @@ steam_turbine_mk3.ingredients = optional_dependencies.ingredients(
   optional_dependencies.item("aer_rubber-lined-steam-turbine", 1),
   optional_dependencies.pipe_ingredients("reinforced", 20),
   optional_dependencies.pump_ingredients("reinforced", 2),
-  optional_dependencies.item("tungsten-plate", 20),
-  optional_dependencies.item("carbon-fiber", 10)
+  optional_dependencies.tungsten_plate(20),
+  optional_dependencies.carbon_fiber(10)
 )
 steam_turbine_mk3.results = {
   { type = "item", name = "aer_reinforced-steam-turbine", amount = 1 }
 }
 data:extend({steam_turbine_mk3})
-
-local steam_turbine_mk4 = util.table.deepcopy(data.raw.recipe["steam-turbine"])
-steam_turbine_mk4.name = "aer_foundation-steam-turbine"
-steam_turbine_mk4.enabled = false
-steam_turbine_mk4.ingredients = optional_dependencies.ingredients(
-  optional_dependencies.item("aer_reinforced-steam-turbine", 1),
-  optional_dependencies.pipe_ingredients("foundation", 20),
-  optional_dependencies.pump_ingredients("foundation", 2),
-  optional_dependencies.item("foundation", 2),
-  optional_dependencies.item("superconductor", 10)
-)
-steam_turbine_mk4.results = {
-  { type = "item", name = "aer_foundation-steam-turbine", amount = 1 }
-}
-data:extend({steam_turbine_mk4})

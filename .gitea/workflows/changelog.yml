@@ -1,5 +1,9 @@
 name: Changelog Format
 
+# Only pull requests into main. The changelog is written when a release branch
+# is cut, not on feature work -- feature branches draft their notes in
+# docs/pending-changelog.md instead -- so gating dev merges checked a file that
+# by policy nobody had touched.
 on:
   pull_request:
     branches: [main]
@@ -7,7 +11,7 @@ on:
 
 jobs:
   validate-changelog:
-    name: Validate changelog.txt against the Factorio changelog spec
+    name: "Gate: Validate changelog.txt against the Factorio changelog spec"
     runs-on: factorio-headless
 
     steps:

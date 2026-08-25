@@ -1,4 +1,42 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.0
+Date: 2026.08.25
+  Major Features:
+    - Reworked the nuclear heat chain. Heat exchangers now run across a temperature band instead of switching on and off at a single point: every tier works from 300 degrees up to its own optimal, and between those two the steam leaves at whatever temperature the heat network is actually at. Turbines taper with it, so a row that dips below optimal loses part of its output rather than all of it. Where a fuel boiler shares a steam header with heat exchangers, the header settles at the volume-weighted blend of everything feeding it, so mixing steam sources neither gains nor loses energy.
+    - Made distance cost temperature. Heat now cools as it travels along a pipe, and cools faster the harder the run is working, so a reactor block can no longer feed an arbitrarily long arm at full strength. Useful reach also shrinks as tiers rise: roughly 25 tiles at the steel tier down to 9 at mk4, before load is taken into account.
+    - Made heat pipe tier a requirement rather than an option. Each pipe tier now carries heat only up to the ceiling of the reactor tier it belongs to, so a single leftover lower-tier pipe throttles an entire run to its own maximum. There is no error when this happens, so the pipe tiers now carry distinct tints and their limits are stated in their tooltips.
+    - Changed the reactor neighbour bonus to be paid per heat connection rather than per neighbouring reactor. A reactor has three heat connections a side, and each one that lines up with the reactor beside it adds 33% output, so two reactors placed flush are worth the same 100% as before and a flush 2x2 block produces exactly what it always did. Sliding a reactor along the shared edge now costs part of the bonus instead of all of it: two tiles of offset pays 66%, four tiles pays 33%. Offsets by an odd number of tiles line up no connections at all and pay nothing, since the connections sit two tiles apart.
+  Gui:
+    - Added a heat output panel to the reactor window, showing base output, adjacent reactor count, how many heat connections are lined up, the resulting bonus, current output, and core temperature. A reactor's real output depends on what is built beside it, and nothing in game reported it.
+  Ease of use:
+    - Added the optimal heat temperature to every heat exchanger tooltip. The game reports the temperature an exchanger stops working at, but never the one it needs to reach full output.
+    - Added carrying temperature, throughput, and heat loss per tile to every heat pipe tooltip.
+    - Added the optimal steam temperature to every steam engine and steam turbine tooltip, and stated that hotter steam is consumed at the same rate with the surplus discarded. The game labels this number "Max. temperature", which reads as a ceiling; it is the temperature at which the generator reaches full output, and a foundation turbine fed 500 degree steam runs at 49% without stalling or warning.
+    - Added the steam temperature each boiler produces, and for heat exchangers the temperature their steam follows the heat network up to, so a generator tier can be matched to a tier that feeds it.
+    - Added a note to reactor tooltips stating what each adjacent reactor contributes.
+    - Split the crafting menu into four rows by power chain -- steam, nuclear, solar and storage, and fusion -- rather than leaving every tier in the single vanilla energy row, which this mod's tier ladders had made unreadable. Vanilla's own machine for each family moves into the matching row, so a row starts at tier 1 instead of beginning at tier 2 with its base tier stranded elsewhere. Three of this mod's subgroups had also shared an order value, so the game broke the tie alphabetically and laid them out heat exchanger, heat pipe, steam turbine rather than in progression order, and solar panels and accumulators had no subgroup at all.
+  Modding:
+    - Added a read-only remote interface, advanced-power-infrastructure, with reactor_output(unit_number). It returns a reactor's base output, adjacent reactor count, aligned heat connections, bonus, current output and core temperature -- the same figures its own panel shows, since the panel renders from this call rather than repeating the sum.
+  Balancing:
+    - Cut how much heat a single pipe will carry, and made it tighten with tier. A pipe now carries seven times its reference spoke's draw at the steel tier, five at mk2, three at mk3 and two at mk4. This is a limit on how *wide* a run can be rather than how long: a heat pipe with exchangers down both sides is no longer than one with a single column, but draws twice the heat through the same pipe, and only this notices. Traditional layouts never meet it at the lower tiers; from mk3 up it pushes toward more runs rather than wider ones.
+    - Raised the number of heat exchangers and turbines a reactor block needs at every tier above steel, while shrinking the distance heat will travel. Higher tiers are now harder to lay out rather than simply larger: a 2x2 block needs about 48 exchangers at the steel tier and about 72 at mk4.
+    - Held one heat exchanger to 1.8 steam turbines at every tier, so the ratio learned at the steel tier stays true all the way up.
+    - Held every building in this mod to a 24 tile pipeline extent at every tier -- boilers, steam engines, heat exchangers, steam turbines and fusion -- rather than letting it rise with the tier. Pipeline extent is no longer part of the progression: upgrading a building buys output, never reach, so pumps stay a real part of every layout. Pipes, underground pipes and offshore pumps keep their own tiers, since carrying fluid further is what upgrading those is for.
+    - Lowered reactor, heat pipe and heat exchanger temperature ceilings to sit just above the exchanger tier they belong to, rather than at roughly double it. Optimal is now 80 percent of a tier's ceiling instead of 50.
+    - Reduced the base game steam turbine from 5.82 MW to 5.56 MW so that one heat exchanger feeds exactly 1.8 turbines at every tier.
+    - Gave the base game heat exchanger and heat pipe this mod's tier 1 values, which they already carried for tint, pipeline extent, and upgrade path.
+  Changes:
+    - Kept the steel and rubber-lined boiler and steam engine tiers, the rubber-lined and reinforced steam turbine and heat exchanger tiers, the mk2 heat pipe, and the mk2 nuclear reactor available without Space Age.
+    - Restricted the holmium boiler, holmium steam engine, foundation steam turbine, mk4 heat exchanger, mk3 and mk4 heat pipes, and mk3 and mk4 nuclear reactors to Space Age, since their recipes need holmium plate, lithium plate, foundation, or superconductor.
+    - Restricted the solar panel, accumulator, and fusion tiers to Space Age, since every one of them is built from holmium, lithium, quantum processors, or Space Age's own fusion buildings.
+    - Substituted refined concrete and low-density structure for tungsten plate and carbon fiber in the reinforced tiers when Space Age is absent, matching the substitution Advanced Fluid Infrastructure already makes for its own reinforced tier.
+    - Gated the reinforced tiers on production and utility science instead of metallurgic and agricultural science when Space Age is absent.
+  Bugfixes:
+    - Fixed heat pipe tier tints never being applied to placed pipes. All four tiers rendered identically on the ground, which matters now that a lower-tier pipe silently caps a run. The tiers also carry stronger colours than the shared per-material tints gave them -- mk2 dark, mk3 green, mk4 light blue -- since a one tile sprite mostly covered by its own connection graphics needs more than a gentle multiplier to read. The heat glow is left untinted so it still shows temperature rather than tier.
+  Compatibility:
+    - The base game heat pipe now carries heat to a lower maximum and loses more temperature per tile than in vanilla, as tier 1 of this mod's ladder. Anything else built on base game heat pipes, including Space Age heating towers, is affected by the same change. Higher pipe tiers restore and exceed the vanilla ceiling.
+    - Made Space Age an optional dependency, so the mod now loads on base Factorio 2.1.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.3
 Date: 2026.08.23
   Bugfixes:

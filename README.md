@@ -1,17 +1,23 @@
 # Advanced Power Infrastructure
 
-Advanced Power Infrastructure is a Factorio 2.1 + Space Age mod that expands power generation and storage progression from early steam through late-game nuclear, fusion, solar, and accumulator upgrades.
+Advanced Power Infrastructure is a Factorio 2.1 mod that expands power generation and storage progression from early steam through late-game nuclear upgrades. Space Age is optional and adds the holmium, foundation, solar, accumulator, and fusion tiers on top.
 
 ## Requirements
 
 - Factorio 2.1.
-- Space Age.
+- Optional Space Age integration, which adds the holmium, foundation, solar, accumulator, and fusion tiers.
 
 ## Features
 
 - Additional boiler, steam engine, steam turbine, heat exchanger, heat pipe, and nuclear reactor tiers.
-- Promethium-tier fusion reactor and fusion generator upgrades.
-- Holmium and cryogenic solar panel and accumulator upgrades.
+- Promethium-tier fusion reactor and fusion generator upgrades (Space Age).
+- Holmium and cryogenic solar panel and accumulator upgrades (Space Age).
+
+### Without Space Age
+
+The ladders stop where Space Age materials begin. Boilers and steam engines keep their steel and rubber-lined tiers; steam turbines and heat exchangers keep their rubber-lined and reinforced tiers; heat pipes and nuclear reactors keep their mk2 tier. Solar, accumulators, and fusion are Space Age only, since every tier of those is built from holmium, lithium, quantum processors, or Space Age's own fusion buildings.
+
+The surviving reinforced tiers substitute refined concrete and low-density structure for tungsten plate and carbon fiber, and are gated on production and utility science instead of metallurgic and agricultural science. This matches the substitution Advanced Fluid Infrastructure already makes for its own reinforced tier, so the two mods' ladders stay aligned in a base-game load.
 - Power-focused progression that uses Space Age materials and science packs.
 - Optional integration with Advanced Fluid Infrastructure for power-machine pipeline extent descriptions.
 - Optional companion scope split with Advanced Energy Grid for electric grid infrastructure.
@@ -24,9 +30,11 @@ Electric poles, substations, and long-distance transmission belong in Advanced E
 
 Advanced Power Infrastructure, Advanced Energy Grid, and Advanced Fluid Infrastructure are designed to be played together as a set. Each mod loads and works fine on its own, but the staged progression is designed with all three installed together.
 
+Nuclear heat does not behave the way vanilla nuclear heat does here: distance costs temperature, each pipe tier caps the heat it will carry, and heat exchangers taper their output instead of cutting out. None of that is visible in a tooltip, and a layout that would be fine in vanilla can quietly produce well under what it should. [docs/nuclear-heat-guide.md](docs/nuclear-heat-guide.md) is the player reference for building around it.
+
 ## Status
 
-The current mod version is `0.2.1`. This is an early public release for Factorio 2.1. The mod loads successfully in standalone mode, and the core progression is implemented. Balance values, long-running save upgrade paths, and broad compatibility with other power mods should still be treated as experimental during the 0.2.x series.
+The current mod version is `0.3.0`. This is an early public release for Factorio 2.1. The mod loads successfully in standalone mode, and the core progression is implemented. Balance values, long-running save upgrade paths, and broad compatibility with other power mods should still be treated as experimental during the 0.x series.
 
 The current power footprint balance benchmark is documented in [docs/power-footprint-benchmark.md](docs/power-footprint-benchmark.md).
 

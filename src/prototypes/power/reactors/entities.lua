@@ -1,7 +1,18 @@
+local constants = require("prototypes.power.fluid-constants")
 local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 data.raw["reactor"]["nuclear-reactor"].fast_replaceable_group = "nuclear-reactor"
 data.raw["reactor"]["nuclear-reactor"].next_upgrade = "aer_nuclear-reactor-2"
+-- Ceiling sits just above the steel exchanger's 500 optimal, rather than at
+-- double it. Set before the tiers below deepcopy this prototype.
+data.raw["reactor"]["nuclear-reactor"].heat_buffer.max_temperature =
+  constants.heat_tier_ceiling.mk1
+
+-- heat_buffer.max_transfer is deliberately left at vanilla's flat 10 GW on
+-- every reactor tier, and is the only number in the heat chain that does not
+-- scale. It never binds: a mk4 2x2 block pushes 1.92 GW against it, so making
+-- it tier up would read as consistency without changing anything in play.
+-- Reviewed under issue #14 and kept as a non-constraint on purpose.
 
 local function reset_to_base_reactor_graphics(reactor)
   reactor.lower_layer_picture = {
@@ -96,43 +107,27 @@ end
 local reactor_mk2 = util.table.deepcopy(data.raw["reactor"]["nuclear-reactor"])
 reactor_mk2.consumption = "80MW"
 reactor_mk2.max_health = 1500
-reactor_mk2.heat_buffer.max_temperature = 1300
+-- Matches aer_heat-exchanger-2's 650 optimal.
+reactor_mk2.heat_buffer.max_temperature = constants.heat_tier_ceiling.mk2
 reactor_mk2.heat_buffer.specific_heat = "30MJ"
 reactor_mk2.name = "aer_nuclear-reactor-2"
 reactor_mk2.minable.result =  "aer_nuclear-reactor-2"
 reactor_mk2.fast_replaceable_group = "nuclear-reactor"
-reactor_mk2.next_upgrade = "aer_nuclear-reactor-3"
+-- Terminates the base-game ladder. prototypes/power/space-age/reactors/entities.lua
+-- re-points this at its Space Age tier when that tier exists, so the chain is
+-- correct in both loads without depending on load order.
+reactor_mk2.next_upgrade = nil
 reset_to_base_reactor_graphics(reactor_mk2)
 advanced_power_apply_rubber_lined_icon_tint(reactor_mk2)
 fluid_helpers.apply_rubber_lined_entity_tint(reactor_mk2)
 data:extend({reactor_mk2})
 
-local reactor_mk3 = util.table.deepcopy(data.raw["reactor"]["nuclear-reactor"])
-reactor_mk3.consumption = "120MW"
-reactor_mk3.max_health = 2000
-reactor_mk3.heat_buffer.max_temperature = 1600
-reactor_mk3.heat_buffer.specific_heat = "45MJ"
-reactor_mk3.name = "aer_nuclear-reactor-3"
-reactor_mk3.minable.result = "aer_nuclear-reactor-3"
-reactor_mk3.fast_replaceable_group = "nuclear-reactor"
-reactor_mk3.next_upgrade = "aer_nuclear-reactor-4"
-fluid_helpers.set_resistances(reactor_mk3, require("prototypes.power.fluid-constants").reinforced.resistances)
-reset_to_base_reactor_graphics(reactor_mk3)
-fluid_helpers.apply_reinforced_icon_tint(reactor_mk3)
-fluid_helpers.apply_reinforced_entity_tint(reactor_mk3)
-data:extend({reactor_mk3})
-
-local reactor_mk4 = util.table.deepcopy(data.raw["reactor"]["nuclear-reactor"])
-reactor_mk4.consumption = "160MW"
-reactor_mk4.max_health = 2500
-reactor_mk4.heat_buffer.max_temperature = 2200
-reactor_mk4.heat_buffer.specific_heat = "60MJ"
-reactor_mk4.name = "aer_nuclear-reactor-4"
-reactor_mk4.minable.result = "aer_nuclear-reactor-4"
-reactor_mk4.fast_replaceable_group = "nuclear-reactor"
-reactor_mk4.next_upgrade = nil
-fluid_helpers.set_resistances(reactor_mk4, require("prototypes.power.fluid-constants").foundation.resistances)
-reset_to_base_reactor_graphics(reactor_mk4)
-fluid_helpers.apply_foundation_icon_tint(reactor_mk4)
-fluid_helpers.apply_foundation_entity_tint(reactor_mk4)
-data:extend({reactor_mk4})
+-- The engine's neighbour bonus is switched off on every tier, and control.lua
+-- pays a bonus per aligned heat connection instead. The engine pays once per
+-- neighbouring reactor however many connections line up, which is exactly the
+-- distinction this is built to make. See issue #10.
+for _, reactor in ipairs({data.raw["reactor"]["nuclear-reactor"], reactor_mk2}) do
+  reactor.neighbour_bonus = 0
+  fluid_helpers.set_description(reactor,
+    fluid_helpers.reactor_connection_description(constants.reactor_connection_bonus))
+end

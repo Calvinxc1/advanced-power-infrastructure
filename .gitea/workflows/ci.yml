@@ -8,7 +8,7 @@ on:
 
 jobs:
   validate:
-    name: Validate Factorio mod
+    name: "Gate: Validate Factorio mod"
     runs-on: factorio-headless
     env:
       FACTORIO_BIN: /opt/factorio/bin/x64/factorio
@@ -42,6 +42,14 @@ jobs:
           file "$FACTORIO_BIN"
           "$FACTORIO_BIN" --version
 
+      - name: Run unit tests
+        run: |
+          set -euo pipefail
+          for test in tests/test_*.py; do
+            echo "== $test"
+            python3 "$test"
+          done
+
       - name: Prepare temporary Factorio mods directory
         run: |
           runner_temp="${RUNNER_TEMP:-/tmp}"
@@ -56,6 +64,11 @@ jobs:
         env:
           API_REQUIRE_FACTORIO: "1"
         run: ./scripts/validate.sh
+
+      - name: Validate mod without Space Age
+        env:
+          API_REQUIRE_FACTORIO: "1"
+        run: ./scripts/factorio-validate-base-game.sh
 
       - name: Download and validate declared dependency mod list
         env:

@@ -1,0 +1,6 @@
+require("prototypes.power.space-age.boilers")
+require("prototypes.power.space-age.steam-engines")
+require("prototypes.power.space-age.steam-turbines")
+require("prototypes.power.space-age.heat-exchangers")
+require("prototypes.power.space-age.heat-pipe")
+require("prototypes.power.space-age.reactors")
