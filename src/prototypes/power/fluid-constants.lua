@@ -82,6 +82,20 @@ local constants = {
   -- 50 percent it was before.
   reactor_optimal_fraction = 0.8,
 
+  -- What one aligned heat connection between two reactors is worth.
+  --
+  -- A reactor has three heat connections a side, so two flush reactors line up
+  -- all three and the pair is worth the full 100 percent vanilla pays -- every
+  -- exchanger, turbine and reach figure derived from a flush 2x2 block is
+  -- unchanged. Sliding one reactor along the shared edge breaks the alignment
+  -- two tiles at a time, and the bonus falls with it.
+  --
+  -- The engine cannot express this. Its neighbour bonus is paid once per
+  -- neighbouring reactor however many connection points pair up, and
+  -- LuaEntity.neighbour_bonus is read only, so the prototypes carry a bonus of
+  -- zero and control.lua pays it instead. See issue #10.
+  reactor_connection_bonus = 1 / 3,
+
   -- The optimal temperature of each heat exchanger tier. Every other heat
   -- temperature in the mod derives from these, so a tier cannot drift out of
   -- step with its own reactor or pipe.

@@ -154,16 +154,20 @@ function helpers.boiler_description(extent)
 end
 
 -- The engine reports a reactor's own output, which is its standalone figure and
--- wrong for any real build -- a reactor in a 2x2 block produces three times it.
--- Only the neighbour relationship is stated here; the live figure needs the
+-- wrong for any real build -- a reactor in a flush 2x2 block produces three
+-- times it. Only the connection rule is stated here; the live figure needs the
 -- runtime panel in control.lua, since it depends on what is built beside it.
-function helpers.reactor_neighbour_description(neighbour_bonus)
-  if not neighbour_bonus or neighbour_bonus <= 0 then
+--
+-- Read from the shared constant rather than from the prototype's own
+-- neighbour_bonus, which is now zero: the engine pays nothing and control.lua
+-- pays everything. See issue #10.
+function helpers.reactor_connection_description(connection_bonus)
+  if not connection_bonus or connection_bonus <= 0 then
     return nil
   end
   return {
     "description.aer_reactor-neighbour-note",
-    string.format("%d", neighbour_bonus * 100),
+    string.format("%d", connection_bonus * 100),
   }
 end
 

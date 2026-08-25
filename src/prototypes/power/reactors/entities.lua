@@ -122,8 +122,12 @@ advanced_power_apply_rubber_lined_icon_tint(reactor_mk2)
 fluid_helpers.apply_rubber_lined_entity_tint(reactor_mk2)
 data:extend({reactor_mk2})
 
--- Stated per tier from each prototype's own neighbour_bonus.
-fluid_helpers.set_description(data.raw["reactor"]["nuclear-reactor"],
-  fluid_helpers.reactor_neighbour_description(data.raw["reactor"]["nuclear-reactor"].neighbour_bonus))
-fluid_helpers.set_description(reactor_mk2,
-  fluid_helpers.reactor_neighbour_description(reactor_mk2.neighbour_bonus))
+-- The engine's neighbour bonus is switched off on every tier, and control.lua
+-- pays a bonus per aligned heat connection instead. The engine pays once per
+-- neighbouring reactor however many connections line up, which is exactly the
+-- distinction this is built to make. See issue #10.
+for _, reactor in ipairs({data.raw["reactor"]["nuclear-reactor"], reactor_mk2}) do
+  reactor.neighbour_bonus = 0
+  fluid_helpers.set_description(reactor,
+    fluid_helpers.reactor_connection_description(constants.reactor_connection_bonus))
+end
