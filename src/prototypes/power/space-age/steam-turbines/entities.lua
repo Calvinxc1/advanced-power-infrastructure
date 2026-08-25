@@ -21,8 +21,8 @@ steam_turbine_mk4.maximum_temperature = 1000
 steam_turbine_mk4.max_health = 1000
 steam_turbine_mk4.minable.result = "aer_foundation-steam-turbine"
 steam_turbine_mk4.next_upgrade = nil
-fluid_helpers.set_prototype_fluid_boxes_extent(steam_turbine_mk4, constants.foundation.pipeline_extent)
-fluid_helpers.set_description(steam_turbine_mk4, fluid_helpers.boiler_description(constants.foundation.pipeline_extent))
+fluid_helpers.set_prototype_fluid_boxes_extent(steam_turbine_mk4, constants.power_building_pipeline_extent)
+fluid_helpers.set_description(steam_turbine_mk4, fluid_helpers.boiler_description(constants.power_building_pipeline_extent))
 fluid_helpers.set_resistances(steam_turbine_mk4, constants.foundation.resistances)
 reset_steam_turbine_icon(steam_turbine_mk4)
 fluid_helpers.apply_foundation_icon_tint(steam_turbine_mk4)

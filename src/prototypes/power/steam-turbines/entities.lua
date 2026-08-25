@@ -14,8 +14,8 @@ end
 local steam_turbine_mk1 = data.raw["generator"]["steam-turbine"]
 steam_turbine_mk1.fast_replaceable_group = "steam-turbine"
 steam_turbine_mk1.next_upgrade = "aer_rubber-lined-steam-turbine"
-fluid_helpers.set_prototype_fluid_boxes_extent(steam_turbine_mk1, constants.steel.pipeline_extent)
-fluid_helpers.set_description(steam_turbine_mk1, fluid_helpers.boiler_description(constants.steel.pipeline_extent))
+fluid_helpers.set_prototype_fluid_boxes_extent(steam_turbine_mk1, constants.power_building_pipeline_extent)
+fluid_helpers.set_description(steam_turbine_mk1, fluid_helpers.boiler_description(constants.power_building_pipeline_extent))
 advanced_power_apply_steel_icon_tint(steam_turbine_mk1)
 tint_steam_turbine(steam_turbine_mk1, steel_tier_entity_tint)
 
@@ -26,8 +26,8 @@ steam_turbine_mk2.maximum_temperature = 650
 steam_turbine_mk2.max_health = 650
 steam_turbine_mk2.minable.result = "aer_rubber-lined-steam-turbine"
 steam_turbine_mk2.next_upgrade = "aer_reinforced-steam-turbine"
-fluid_helpers.set_prototype_fluid_boxes_extent(steam_turbine_mk2, constants.rubber_lined.pipeline_extent)
-fluid_helpers.set_description(steam_turbine_mk2, fluid_helpers.boiler_description(constants.rubber_lined.pipeline_extent))
+fluid_helpers.set_prototype_fluid_boxes_extent(steam_turbine_mk2, constants.power_building_pipeline_extent)
+fluid_helpers.set_description(steam_turbine_mk2, fluid_helpers.boiler_description(constants.power_building_pipeline_extent))
 reset_steam_turbine_icon(steam_turbine_mk2)
 advanced_power_apply_rubber_lined_icon_tint(steam_turbine_mk2)
 tint_steam_turbine(steam_turbine_mk2, rubber_lined_tier_entity_tint)
@@ -43,8 +43,8 @@ steam_turbine_mk3.minable.result = "aer_reinforced-steam-turbine"
 -- re-points this at its Space Age tier when that tier exists, so the chain is
 -- correct in both loads without depending on load order.
 steam_turbine_mk3.next_upgrade = nil
-fluid_helpers.set_prototype_fluid_boxes_extent(steam_turbine_mk3, constants.reinforced.pipeline_extent)
-fluid_helpers.set_description(steam_turbine_mk3, fluid_helpers.boiler_description(constants.reinforced.pipeline_extent))
+fluid_helpers.set_prototype_fluid_boxes_extent(steam_turbine_mk3, constants.power_building_pipeline_extent)
+fluid_helpers.set_description(steam_turbine_mk3, fluid_helpers.boiler_description(constants.power_building_pipeline_extent))
 fluid_helpers.set_resistances(steam_turbine_mk3, constants.reinforced.resistances)
 reset_steam_turbine_icon(steam_turbine_mk3)
 fluid_helpers.apply_reinforced_icon_tint(steam_turbine_mk3)

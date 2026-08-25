@@ -161,9 +161,11 @@ anything above its own optimal.
 **Keep one steam tier per pipe network.** There is no warning for this either.
 The fluid is still steam and the pipes still connect.
 
-**Pipeline extent still applies.** Long steam runs need pumps, and a pump has a
-throughput limit of its own. A steel pump will not feed an unlimited number of
-turbines.
+**Pipeline extent still applies, at every tier.** Heat exchangers and steam
+turbines are held to a 64 tile pipeline extent regardless of tier, so upgrading
+them never removes the need for pumps. Long steam runs need pumps, and a pump
+has a throughput limit of its own -- a steel pump will not feed an unlimited
+number of turbines. Expect pumps to be part of the layout, not a fix for one.
 
 **Check your power poles.** An array of this size can exceed the throughput of
 the pole tier carrying it.

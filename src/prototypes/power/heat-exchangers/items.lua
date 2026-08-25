@@ -5,7 +5,7 @@ data.raw.item["heat-exchanger"].order = "c[heat-exchanger-1]"
 data.raw.item["heat-exchanger"].subgroup = "aer_nuclear-power"
 fluid_helpers.set_description(data.raw.item["heat-exchanger"], fluid_helpers.compose_description(
   fluid_helpers.heat_optimal_description(500),
-  fluid_helpers.boiler_description(fluid_constants.steel.pipeline_extent)))
+  fluid_helpers.boiler_description(fluid_constants.power_building_pipeline_extent)))
 advanced_power_apply_steel_icon_tint(data.raw.item["heat-exchanger"])
 
 local heat_exchanger_mk2 = util.table.deepcopy(data.raw.item["heat-exchanger"])
@@ -15,7 +15,7 @@ heat_exchanger_mk2.order = "c[heat-exchanger-2]"
 heat_exchanger_mk2.place_result = "aer_heat-exchanger-2"
 fluid_helpers.set_description(heat_exchanger_mk2, fluid_helpers.compose_description(
   fluid_helpers.heat_optimal_description(650),
-  fluid_helpers.boiler_description(fluid_constants.rubber_lined.pipeline_extent)))
+  fluid_helpers.boiler_description(fluid_constants.power_building_pipeline_extent)))
 heat_exchanger_mk2.icon = "__base__/graphics/icons/heat-boiler.png"
 heat_exchanger_mk2.icon_size = 64
 heat_exchanger_mk2.icons = nil
@@ -29,7 +29,7 @@ heat_exchanger_mk3.order = "c[heat-exchanger-3]"
 heat_exchanger_mk3.place_result = "aer_heat-exchanger-3"
 fluid_helpers.set_description(heat_exchanger_mk3, fluid_helpers.compose_description(
   fluid_helpers.heat_optimal_description(800),
-  fluid_helpers.boiler_description(fluid_constants.reinforced.pipeline_extent)))
+  fluid_helpers.boiler_description(fluid_constants.power_building_pipeline_extent)))
 heat_exchanger_mk3.icon = "__base__/graphics/icons/heat-boiler.png"
 heat_exchanger_mk3.icon_size = 64
 heat_exchanger_mk3.icons = nil

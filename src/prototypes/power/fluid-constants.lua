@@ -7,6 +7,13 @@ local constants = {
   -- upgrade path has to be thought through rather than followed blindly.
   heat_exchanger_min_working_temperature = 300,
 
+  -- Steam-producing and steam-consuming buildings are held to this pipeline
+  -- extent at every tier, rather than inheriting their material tier's. Letting
+  -- it rise with tier solved the plumbing problem the upper tiers are supposed
+  -- to pose: a higher-tier run stopped needing pumps at all. Pinning it keeps
+  -- power blocks compartmentalised and keeps pumps a real part of the layout.
+  power_building_pipeline_extent = 64,
+
   -- How far a lightly loaded run should reach before it drops below optimal.
   -- Shrinking with tier is deliberate: a bigger reactor is meant to be harder
   -- to lay out, not merely bigger. Gradient is derived from this rather than

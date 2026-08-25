@@ -19,10 +19,10 @@ heat_exchanger_mk4.energy_source.minimum_glow_temperature = 850
 heat_exchanger_mk4.energy_source.max_temperature = 2200
 heat_exchanger_mk4.energy_source.specific_heat = "4MJ"
 heat_exchanger_mk4.energy_source.max_transfer = "8GW"
-fluid_helpers.set_prototype_fluid_boxes_extent(heat_exchanger_mk4, constants.foundation.pipeline_extent)
+fluid_helpers.set_prototype_fluid_boxes_extent(heat_exchanger_mk4, constants.power_building_pipeline_extent)
 fluid_helpers.set_description(heat_exchanger_mk4, fluid_helpers.compose_description(
   fluid_helpers.heat_optimal_description(1000),
-  fluid_helpers.boiler_description(constants.foundation.pipeline_extent)))
+  fluid_helpers.boiler_description(constants.power_building_pipeline_extent)))
 fluid_helpers.set_resistances(heat_exchanger_mk4, constants.foundation.resistances)
 heat_exchanger_mk4.icon = "__base__/graphics/icons/heat-boiler.png"
 heat_exchanger_mk4.icon_size = 64

@@ -3,10 +3,10 @@ local fluid_helpers = require("prototypes.power.fluid-helpers")
 
 data.raw["boiler"]["heat-exchanger"].fast_replaceable_group = "heat-exchanger"
 data.raw["boiler"]["heat-exchanger"].next_upgrade = "aer_heat-exchanger-2"
-fluid_helpers.set_prototype_fluid_boxes_extent(data.raw["boiler"]["heat-exchanger"], constants.steel.pipeline_extent)
+fluid_helpers.set_prototype_fluid_boxes_extent(data.raw["boiler"]["heat-exchanger"], constants.power_building_pipeline_extent)
 fluid_helpers.set_description(data.raw["boiler"]["heat-exchanger"], fluid_helpers.compose_description(
   fluid_helpers.heat_optimal_description(500),
-  fluid_helpers.boiler_description(constants.steel.pipeline_extent)))
+  fluid_helpers.boiler_description(constants.power_building_pipeline_extent)))
 advanced_power_apply_steel_icon_tint(data.raw["boiler"]["heat-exchanger"])
 data.raw["boiler"]["heat-exchanger"].energy_source.min_working_temperature =
   constants.heat_exchanger_min_working_temperature
@@ -25,10 +25,10 @@ heat_exchanger_mk2.energy_source.minimum_glow_temperature = 500
 heat_exchanger_mk2.energy_source.max_temperature = 1300
 heat_exchanger_mk2.energy_source.specific_heat = "2MJ"
 heat_exchanger_mk2.energy_source.max_transfer = "4GW"
-fluid_helpers.set_prototype_fluid_boxes_extent(heat_exchanger_mk2, constants.rubber_lined.pipeline_extent)
+fluid_helpers.set_prototype_fluid_boxes_extent(heat_exchanger_mk2, constants.power_building_pipeline_extent)
 fluid_helpers.set_description(heat_exchanger_mk2, fluid_helpers.compose_description(
   fluid_helpers.heat_optimal_description(650),
-  fluid_helpers.boiler_description(constants.rubber_lined.pipeline_extent)))
+  fluid_helpers.boiler_description(constants.power_building_pipeline_extent)))
 heat_exchanger_mk2.icon = "__base__/graphics/icons/heat-boiler.png"
 heat_exchanger_mk2.icon_size = 64
 heat_exchanger_mk2.icons = nil
@@ -53,10 +53,10 @@ heat_exchanger_mk3.energy_source.minimum_glow_temperature = 650
 heat_exchanger_mk3.energy_source.max_temperature = 1600
 heat_exchanger_mk3.energy_source.specific_heat = "3MJ"
 heat_exchanger_mk3.energy_source.max_transfer = "6GW"
-fluid_helpers.set_prototype_fluid_boxes_extent(heat_exchanger_mk3, constants.reinforced.pipeline_extent)
+fluid_helpers.set_prototype_fluid_boxes_extent(heat_exchanger_mk3, constants.power_building_pipeline_extent)
 fluid_helpers.set_description(heat_exchanger_mk3, fluid_helpers.compose_description(
   fluid_helpers.heat_optimal_description(800),
-  fluid_helpers.boiler_description(constants.reinforced.pipeline_extent)))
+  fluid_helpers.boiler_description(constants.power_building_pipeline_extent)))
 fluid_helpers.set_resistances(heat_exchanger_mk3, constants.reinforced.resistances)
 heat_exchanger_mk3.icon = "__base__/graphics/icons/heat-boiler.png"
 heat_exchanger_mk3.icon_size = 64
