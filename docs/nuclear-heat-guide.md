@@ -121,11 +121,27 @@ Replacing a heat pipe replaces the entity, and the replacement starts cold. An
 upgrade drops that section of network to ambient temperature and it has to heat
 back up.
 
-On a large array this is not quick. A cold start to optimal takes several
-minutes, and longer if exchangers are drawing while it warms, because they are
-consuming the heat that would otherwise be warming the network.
+On a large array this is not quick. A full 2x2 block starting from cold, with
+nothing drawing:
 
-Upgrade during a lull, or upgrade a section at a time.
+| Tier | To optimal | To full ceiling |
+| --- | ---: | ---: |
+| Steel (mk1) | ~4 minutes | ~5 minutes |
+| mk2 | ~6 minutes | ~8 minutes |
+| mk3 | ~8 minutes | ~10 minutes |
+| mk4 | ~10 minutes | ~12 minutes |
+
+And that is the optimistic case. Exchangers start drawing the moment the network
+passes 300 degrees, and they consume the heat that would otherwise be raising
+it. A block whose exchangers can draw everything its reactors produce warms
+very slowly indeed once past 300, because almost nothing is left over.
+
+What rescues it is steam backpressure: an exchanger whose output has nowhere to
+go stops drawing. So a network warms fastest when turbine demand is satisfied,
+and slowest when every exchanger is free to run flat out.
+
+Upgrade during a lull, upgrade a section at a time, and expect a cold start to
+take a while.
 
 ## A worked layout
 

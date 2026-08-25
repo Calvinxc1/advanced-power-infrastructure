@@ -16,7 +16,7 @@ heat_exchanger_mk4.next_upgrade = nil
 heat_exchanger_mk4.energy_source.min_working_temperature =
   constants.heat_exchanger_min_working_temperature
 heat_exchanger_mk4.energy_source.minimum_glow_temperature = 850
-heat_exchanger_mk4.energy_source.max_temperature = 2200
+heat_exchanger_mk4.energy_source.max_temperature = constants.heat_tier_ceiling.mk4
 heat_exchanger_mk4.energy_source.specific_heat = "4MJ"
 heat_exchanger_mk4.energy_source.max_transfer = "8GW"
 fluid_helpers.set_prototype_fluid_boxes_extent(heat_exchanger_mk4, constants.power_building_pipeline_extent)

@@ -868,6 +868,68 @@ experiments.dud_exchanger = {
   end,
 }
 
+-- Experiment 16 ------------------------------------------------------------
+-- #14's outstanding measurement task: how long does a network take to reach
+-- optimal from cold?
+--
+-- Matters more since pipe ceilings were pinned to reactor tiers, because
+-- upgrading a pipe replaces the entity and the replacement starts at ambient.
+-- A player upgrading a live array pays this time in lost output.
+--
+-- Measured on a lone fuelled reactor feeding a run of pipes, with no draw, so
+-- the figure is the floor: a real array with exchangers running warms slower,
+-- because they consume the heat that would otherwise be raising the network.
+experiments.spin_up = {
+  setup = function(state)
+    state.rows = {}
+    local tiers = {
+      {label = "mk1", reactor = "nuclear-reactor",       pipe = "heat-pipe",       optimal = 500},
+      {label = "mk2", reactor = "aer_nuclear-reactor-2", pipe = "aer_heat-pipe-2", optimal = 650},
+      {label = "mk3", reactor = "aer_nuclear-reactor-3", pipe = "aer_heat-pipe-3", optimal = 800},
+      {label = "mk4", reactor = "aer_nuclear-reactor-4", pipe = "aer_heat-pipe-4", optimal = 1000},
+    }
+    for i, tier in ipairs(tiers) do
+      local y = 1100 + i * 20
+      local row = {label = tier.label, optimal = tier.optimal, pipes = {}}
+      -- Reactor alone, deliberately. Attaching a pipe run needs the reactor's
+      -- heat ports, which sit at specific offsets rather than along the face,
+      -- and three attempts to build onto them did not connect. The reactor is
+      -- the dominant thermal mass anyway -- 10 MJ/degree against a pipe's 1 --
+      -- and the network contribution is simple additive heat capacity, so the
+      -- full figure is computed from this rather than measured with it.
+      row.reactor = fuel(place(tier.reactor, 0, y))
+      state.rows[#state.rows + 1] = row
+    end
+  end,
+  sample = function(state, tick)
+    for _, row in ipairs(state.rows) do
+      if not row.reached_optimal and row.reactor.valid
+         and (row.reactor.temperature or 0) >= row.optimal then
+        row.reached_optimal = tick
+      end
+      if not row.reached_ceiling and row.reactor.valid then
+        local ceiling = row.reactor.prototype.heat_buffer_prototype.max_temperature
+        if (row.reactor.temperature or 0) >= ceiling - 1 then
+          row.reached_ceiling = tick
+        end
+      end
+    end
+
+    if tick ~= 17900 then return end
+    for _, row in ipairs(state.rows) do
+      emit("spin_up", {
+        {"tier", row.label},
+        {"optimal", row.optimal},
+        {"reactor_temp_at_end", ("%.0f"):format(row.reactor.temperature or -1)},
+        {"seconds_to_optimal", row.reached_optimal
+          and ("%.1f"):format(row.reached_optimal / 60) or "not reached"},
+        {"seconds_to_ceiling", row.reached_ceiling
+          and ("%.1f"):format(row.reached_ceiling / 60) or "not reached"},
+      })
+    end
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false

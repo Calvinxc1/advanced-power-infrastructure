@@ -10,6 +10,8 @@ fluid_helpers.set_description(data.raw["boiler"]["heat-exchanger"], fluid_helper
 advanced_power_apply_steel_icon_tint(data.raw["boiler"]["heat-exchanger"])
 data.raw["boiler"]["heat-exchanger"].energy_source.min_working_temperature =
   constants.heat_exchanger_min_working_temperature
+data.raw["boiler"]["heat-exchanger"].energy_source.max_temperature =
+  constants.heat_tier_ceiling.mk1
 
 local heat_exchanger_mk2 = util.table.deepcopy(data.raw["boiler"]["heat-exchanger"])
 -- Draw grows more slowly than reactor output, so each tier needs markedly
@@ -26,7 +28,11 @@ heat_exchanger_mk2.next_upgrade = "aer_heat-exchanger-3"
 heat_exchanger_mk2.energy_source.min_working_temperature =
   constants.heat_exchanger_min_working_temperature
 heat_exchanger_mk2.energy_source.minimum_glow_temperature = 500
-heat_exchanger_mk2.energy_source.max_temperature = 1300
+-- A node in the heat network like a pipe, so its ceiling comes from the same
+-- shared table. Left at 1300 it sat well above a network topping out at
+-- 812.5, which never bound but made the tier ladder unreadable from the
+-- prototypes.
+heat_exchanger_mk2.energy_source.max_temperature = constants.heat_tier_ceiling.mk2
 heat_exchanger_mk2.energy_source.specific_heat = "2MJ"
 heat_exchanger_mk2.energy_source.max_transfer = "4GW"
 fluid_helpers.set_prototype_fluid_boxes_extent(heat_exchanger_mk2, constants.power_building_pipeline_extent)
@@ -54,7 +60,7 @@ heat_exchanger_mk3.next_upgrade = nil
 heat_exchanger_mk3.energy_source.min_working_temperature =
   constants.heat_exchanger_min_working_temperature
 heat_exchanger_mk3.energy_source.minimum_glow_temperature = 650
-heat_exchanger_mk3.energy_source.max_temperature = 1600
+heat_exchanger_mk3.energy_source.max_temperature = constants.heat_tier_ceiling.mk3
 heat_exchanger_mk3.energy_source.specific_heat = "3MJ"
 heat_exchanger_mk3.energy_source.max_transfer = "6GW"
 fluid_helpers.set_prototype_fluid_boxes_extent(heat_exchanger_mk3, constants.power_building_pipeline_extent)
