@@ -10,6 +10,8 @@ The mod version is defined in `src/info.json`. Release notes live in `src/change
 
 Versioning policy is documented in [semantic-versioning.md](semantic-versioning.md). The top changelog entry must match the `src/info.json` version.
 
+Feature work does not write to `src/changelog.txt`. The changelog format cannot express an unreleased entry, so release notes earned on feature branches are drafted in [pending-changelog.md](pending-changelog.md) and moved into `src/changelog.txt` when a release branch is cut and the version is decided.
+
 ## Branch Model
 
 This repository uses a full GitFlow model:
@@ -110,11 +112,12 @@ When `dev` is ready to promote:
    git push origin release/<version-or-purpose>
    ```
 
-3. Open a pull request from `release/<version-or-purpose>` to `main`.
-4. Confirm CI passes.
-5. Merge the release PR into `main`.
-6. Delete the release branch after merge.
-7. Merge or fast-forward `main` back into `dev` so `dev` contains the release merge ancestry.
+3. Move the pending entry from [pending-changelog.md](pending-changelog.md) into `src/changelog.txt` under a new `Version:` / `Date:` header, set the matching version in `src/info.json`, and empty the pending file. Skip this step for purpose-named release branches that carry no player-visible change.
+4. Open a pull request from `release/<version-or-purpose>` to `main`.
+5. Confirm CI passes.
+6. Merge the release PR into `main`.
+7. Delete the release branch after merge.
+8. Merge or fast-forward `main` back into `dev` so `dev` contains the release merge ancestry.
 
 ## Hotfix Procedure
 
