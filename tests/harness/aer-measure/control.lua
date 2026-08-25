@@ -320,6 +320,229 @@ experiments.superheater = {
   end,
 }
 
+-- Experiment 8 -------------------------------------------------------------
+-- Can control.lua give steam a temperature that tracks the heat network?
+--
+-- set_fluid_segment_fluid writes a whole connected pipe network at once, so the
+-- cost would scale with the number of steam networks rather than the number of
+-- exchangers. Part A proves the segment write works and propagates. Part B
+-- reports the exchanger's real pipe connection geometry so a wired rig can be
+-- built without guessing at offsets.
+experiments.segment_rewrite = {
+  setup = function(state)
+    -- Part A: a bare pipe run, no machine attached.
+    state.pipes = {}
+    for i = 1, 8 do
+      state.pipes[i] = place("pipe", 800 + i, 0)
+    end
+
+    -- Part B: geometry of the exchanger's boxes.
+    state.exchanger = place("aer_heat-exchanger-2", 805, 20)
+  end,
+  sample = function(state, tick)
+    if tick == 60 then
+      local head = state.pipes[1]
+      head.insert_fluid{name = "steam", amount = 400, temperature = 650}
+
+      local before = head.get_fluid_segment_fluid(1)
+      state.before = before and ("%s@%.1f x%.1f"):format(
+        before.name, before.temperature or -1, before.amount) or "empty"
+
+      if before and before.amount > 0 then
+        head.set_fluid_segment_fluid(1, {
+          name = "steam", amount = before.amount, temperature = 500,
+        })
+      end
+
+      local after = head.get_fluid_segment_fluid(1)
+      state.after = after and ("%s@%.1f x%.1f"):format(
+        after.name, after.temperature or -1, after.amount) or "empty"
+
+      local far = state.pipes[8].get_fluid_segment_fluid(1)
+      state.far_end = far and ("%s@%.1f x%.1f"):format(
+        far.name, far.temperature or -1, far.amount) or "empty"
+      state.same_segment = tostring(
+        state.pipes[8].get_fluid_segment_id(1) == head.get_fluid_segment_id(1))
+    end
+
+    if tick ~= 120 then return end
+
+    emit("segment_rewrite", {
+      {"before_write", state.before or "n/a"},
+      {"after_write", state.after or "n/a"},
+      {"far_end", state.far_end or "n/a"},
+      {"far_end_same_segment", state.same_segment or "n/a"},
+    })
+
+    -- Report the exchanger's connection geometry for the wired rig.
+    for index = 1, 2 do
+      local ok, connections = pcall(function()
+        return state.exchanger.get_fluid_box_pipe_connections(index)
+      end)
+      if ok and connections then
+        local described = {}
+        for _, connection in ipairs(connections) do
+          local target = connection.target_position or connection.position
+          described[#described + 1] = target
+            and ("(%.1f,%.1f)"):format(target.x, target.y) or "?"
+        end
+        emit("exchanger_geometry", {
+          {"box_index", index},
+          {"entity_position", ("(%.1f,%.1f)"):format(
+            state.exchanger.position.x, state.exchanger.position.y)},
+          {"has_segment", tostring(state.exchanger.has_fluid_segment(index))},
+          {"connections", table.concat(described, " ")},
+        })
+      end
+    end
+  end,
+}
+
+-- Experiment 9 -------------------------------------------------------------
+-- How fast does a rewritten segment drift back toward the boiler's fixed 650
+-- output, and what does the rewrite actually cost?
+--
+-- Pipes are placed on the connection target the engine reports, rather than at
+-- a guessed offset, because guessing it failed twice.
+experiments.drift_and_cost = {
+  setup = function(state)
+    state.exchanger = place("aer_heat-exchanger-2", 905, 40)
+
+    -- Ask the engine where the output box wants its pipe, then build there.
+    state.pipes = {}
+    local connections = state.exchanger.get_fluid_box_pipe_connections(2)
+    for _, connection in ipairs(connections or {}) do
+      local target = connection.target_position or connection.position
+      if target then
+        state.wired_at = ("(%.1f,%.1f)"):format(target.x, target.y)
+        local step = (target.y < state.exchanger.position.y) and -1 or 1
+        for i = 0, 5 do
+          state.pipes[#state.pipes + 1] =
+            surface().create_entity{
+              name = "pipe",
+              position = {target.x, target.y + step * i},
+              force = game.forces.player,
+            }
+        end
+      end
+    end
+
+    state.samples = {}
+    -- A separate population, to time a realistic batch of segment writes.
+    state.rigs = {}
+    for i = 1, 50 do
+      state.rigs[i] = place("pipe", 1000 + i * 2, 60)
+      state.rigs[i].insert_fluid{name = "steam", amount = 100, temperature = 650}
+    end
+  end,
+  sample = function(state, tick)
+    local exchanger = state.exchanger
+    exchanger.temperature = 900
+    exchanger.insert_fluid{name = "water", amount = 240}
+
+    if tick == 180 then
+      state.connected = tostring(exchanger.has_fluid_segment(2))
+      if exchanger.has_fluid_segment(2) then
+        local current = exchanger.get_fluid_segment_fluid(2)
+        state.before = current and ("%.1f x%.1f"):format(
+          current.temperature or -1, current.amount) or "empty"
+        if current and current.amount > 0 then
+          exchanger.set_fluid_segment_fluid(2,
+            {name = "steam", amount = current.amount, temperature = 500})
+        end
+      end
+    end
+
+    if tick > 180 and tick <= 300 and (tick - 180) % 15 == 0 then
+      local now = exchanger.has_fluid_segment(2)
+        and exchanger.get_fluid_segment_fluid(2) or nil
+      state.samples[#state.samples + 1] =
+        ("+%d:%.1f"):format(tick - 180, now and now.temperature or -1)
+    end
+
+    if tick == 320 then
+      local profiler = helpers.create_profiler()
+      for _, pipe in ipairs(state.rigs) do
+        if pipe.valid and pipe.has_fluid_segment(1) then
+          local fluid = pipe.get_fluid_segment_fluid(1)
+          if fluid and fluid.amount > 0 then
+            pipe.set_fluid_segment_fluid(1,
+              {name = "steam", amount = fluid.amount, temperature = 520})
+          end
+        end
+      end
+      profiler.stop()
+      log{"", "AERM_PROFILE writes=50 elapsed=", profiler}
+    end
+
+    if tick ~= 340 then return end
+    emit("drift_and_cost", {
+      {"wired_at", state.wired_at or "no connection reported"},
+      {"output_connected", state.connected or "n/a"},
+      {"segment_before_write", state.before or "n/a"},
+      {"drift_after_write", table.concat(state.samples, " ")},
+    })
+  end,
+}
+
+-- Experiment 10 ------------------------------------------------------------
+-- Drift, measured on a bare segment so no plumbing geometry is involved.
+--
+-- A mk2 exchanger produces 141.7 steam/second at a fixed 650 degrees, which is
+-- 2.36 units per tick. Injecting exactly that into a segment held at 500
+-- reproduces the drift a rewrite would have to fight, and shows how often the
+-- rewrite must run to hold a target temperature.
+experiments.drift_rate = {
+  setup = function(state)
+    state.cases = {}
+    -- Vary the correction interval: every tick, every 6, every 30, never.
+    for i, interval in ipairs({1, 6, 30, 0}) do
+      local pipes = {}
+      for j = 1, 10 do
+        pipes[j] = place("pipe", 1200 + i * 20 + j, 100)
+      end
+      pipes[1].insert_fluid{name = "steam", amount = 400, temperature = 500}
+      state.cases[#state.cases + 1] =
+        {interval = interval, head = pipes[1], samples = {}}
+    end
+  end,
+  sample = function(state, tick)
+    for _, case in ipairs(state.cases) do
+      local head = case.head
+      if head.valid and head.has_fluid_segment(1) then
+        -- The boiler's contribution: 2.36 units per tick at its fixed 650.
+        head.insert_fluid{name = "steam", amount = 2.36, temperature = 650}
+
+        -- Drain downstream demand so the segment does not simply fill up.
+        head.remove_fluid_segment_fluid(1, 2.36)
+
+        if case.interval > 0 and tick % case.interval == 0 then
+          local fluid = head.get_fluid_segment_fluid(1)
+          if fluid and fluid.amount > 0 then
+            head.set_fluid_segment_fluid(1,
+              {name = "steam", amount = fluid.amount, temperature = 500})
+          end
+        end
+
+        if tick % 60 == 0 and tick <= 300 then
+          local fluid = head.get_fluid_segment_fluid(1)
+          case.samples[#case.samples + 1] =
+            ("%.1f"):format(fluid and fluid.temperature or -1)
+        end
+      end
+    end
+
+    if tick ~= 360 then return end
+    for _, case in ipairs(state.cases) do
+      emit("drift_rate", {
+        {"correction_interval_ticks", case.interval == 0 and "never" or case.interval},
+        {"held_target", 500},
+        {"temperature_each_second", table.concat(case.samples, ",")},
+      })
+    end
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false
