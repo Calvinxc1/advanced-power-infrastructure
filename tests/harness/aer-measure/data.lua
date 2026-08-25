@@ -139,3 +139,22 @@ end
 per_category.neighbour_connectable = {connections = connections}
 
 data:extend({per_category})
+
+-- Flow cap probes. max_transfer caps how much heat a pipe will move at once,
+-- and the shipped tiers now sit close enough to real spoke draw that it will
+-- bind in play -- so what a bound cap looks like matters, and had never been
+-- looked at.
+--
+-- The temperature gradient is turned right down on these so that any sag along
+-- the run is the cap rather than distance. Ceilings are raised so nothing
+-- clips.
+for _, megawatts in ipairs({50, 150, 2000}) do
+  local pipe = table.deepcopy(data.raw["heat-pipe"]["heat-pipe"])
+  pipe.name = "aerm_flow-" .. megawatts
+  pipe.next_upgrade = nil
+  pipe.minable = {mining_time = 0.1, result = "heat-pipe"}
+  pipe.heat_buffer.max_temperature = 1000
+  pipe.heat_buffer.min_temperature_gradient = 0.1
+  pipe.heat_buffer.max_transfer = megawatts .. "MW"
+  data:extend({pipe})
+end

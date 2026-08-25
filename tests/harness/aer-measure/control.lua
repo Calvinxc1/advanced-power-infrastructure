@@ -1696,6 +1696,138 @@ experiments.pipeline_extent = {
   end,
 }
 
+-- Experiment 19 ------------------------------------------------------------
+-- What does a bound flow cap actually look like?
+--
+-- max_transfer caps how much heat a pipe moves at once. The shipped tiers now
+-- sit two to seven times a real spoke's draw, so this will bind in play, and
+-- nothing had ever looked at how it presents. Two things worth knowing: whether
+-- the cap is really a hard ceiling on delivered power, and whether a player can
+-- see which part of their build is starved.
+--
+-- Findings, stable across readings at 60, 180 and 300 seconds:
+--
+--   cap        delivered   pipe profile at 1, 3, 5, 8, 10
+--   50MW           50 MW   998  40  33  23  16
+--   150MW         150 MW   995  88  68  38  17
+--   2000MW       1237 MW   956 760 565 284 113   (cap never binds)
+--
+-- The cap is an exact, hard ceiling on delivered power -- 50 and 150 to the
+-- megawatt, unchanged over five minutes. Nothing breaks, nothing warns; the
+-- pipe simply refuses to move more.
+--
+-- Its signature is a cliff, not a sag. A bound run holds the first pipe at
+-- source temperature and collapses everything after it to near ambient, even
+-- though heat is flowing the whole time -- downstream pipes pass heat along as
+-- fast as they get it and never accumulate any. An unbound run shows the smooth
+-- decline distance loss produces. The two are easy to tell apart by eye, which
+-- is the useful part: a cold run behind one blazing pipe means throughput,
+-- a evenly cooling run means distance.
+--
+-- What this rig does NOT show is a starved machine at steady state. The
+-- exchangers have no steam pipes, so they back up, stop drawing, and merely
+-- soak heat -- reaching their 812.5 ceiling in about 180 seconds at 150MW and
+-- still climbing through 621 at 300 seconds under 50MW. That measures charge
+-- time under a cap, not what a continuously loaded exchanger settles at. Adding
+-- drainage would answer that.
+--
+-- Two rigs per cap, so the questions do not confound each other.
+--
+-- Delivery: an infinite source, ten capped pipes, and a sink held cold while the
+-- run charges. Releasing the sink and reading its temperature 30 ticks later
+-- gives energy actually delivered -- 10 MJ of specific heat per degree -- which
+-- is a wattage to compare against the cap.
+--
+-- Legibility: the same run feeding six mk2 exchangers, 99 MW of demand. Against
+-- a 50 MW cap that is twice what can arrive; against 150 MW it fits. Their
+-- statuses and buffer temperatures are what a player would actually see.
+experiments.flow_cap = {
+  setup = function(state)
+    state.cases = {}
+    for index, megawatts in ipairs({50, 150, 2000}) do
+      local pipe_name = "aerm_flow-" .. megawatts
+      if not prototypes.entity[pipe_name] then break end
+
+      local y = 5000 + index * 40
+      local case = {label = megawatts .. "MW", cap = megawatts, pipes = {}, exchangers = {}}
+
+      -- Delivery rig.
+      case.source = place("heat-interface", 5000, y)
+      for step = 1, 10 do
+        case.pipes[step] = place(pipe_name, 5000 + step, y)
+      end
+      case.sink = place("heat-interface", 5011, y)
+
+      -- Legibility rig, on its own run so the sink cannot steal its heat.
+      case.load_source = place("heat-interface", 5100, y)
+      case.load_pipes = {}
+      for step = 1, 14 do
+        case.load_pipes[step] = place(pipe_name, 5100 + step, y)
+      end
+      -- An exchanger's heat connection is its south face, so the pipe row sits
+      -- one and a half tiles below each one.
+      for slot = 1, 6 do
+        case.exchangers[slot] = place("aer_heat-exchanger-2", 5100 + slot * 2, y - 1.5)
+      end
+
+      state.cases[#state.cases + 1] = case
+    end
+  end,
+  sample = function(state, tick)
+    -- Sampled three times, far apart. A capped run charges slowly -- at 50 MW,
+    -- filling fourteen pipes and six exchanger buffers takes minutes -- so an
+    -- early reading is a warm-up wavefront, not a ceiling. Only agreement
+    -- between the later two proves equilibrium.
+    local samples = {3600, 10800, 18000}
+    local measuring = false
+    for _, at in ipairs(samples) do
+      if tick > at - 30 and tick <= at then measuring = true end
+    end
+
+    for _, case in ipairs(state.cases) do
+      if case.source.valid then case.source.temperature = 1000 end
+      if case.load_source.valid then case.load_source.temperature = 1000 end
+      -- The sink is held cold so the run always faces a full gradient, and
+      -- released only for the 30 ticks whose energy is being counted.
+      if not measuring and case.sink.valid then case.sink.temperature = 0 end
+      for _, exchanger in ipairs(case.exchangers) do
+        if exchanger.valid then exchanger.insert_fluid{name = "water", amount = 200} end
+      end
+    end
+
+    local is_sample = false
+    for _, at in ipairs(samples) do
+      if tick == at then is_sample = true end
+    end
+    if not is_sample then return end
+
+    for _, case in ipairs(state.cases) do
+      local delivered = (case.sink.temperature or 0) * 10e6 / 0.5
+
+      local profile, temps, working = {}, {}, 0
+      for _, i in ipairs({1, 3, 5, 8, 10}) do
+        local pipe = case.pipes[i]
+        profile[#profile + 1] = ("%d:%.0f"):format(i, pipe and pipe.valid and pipe.temperature or -1)
+      end
+      for slot, exchanger in ipairs(case.exchangers) do
+        temps[#temps + 1] = ("%d:%.0f"):format(slot, exchanger.valid and exchanger.temperature or -1)
+        if exchanger.valid and exchanger.status ~= defines.entity_status.low_temperature then
+          working = working + 1
+        end
+      end
+
+      emit("flow_cap", {
+        {"seconds", tick / 60},
+        {"cap", case.label},
+        {"delivered_MW", ("%.0f"):format(delivered / 1e6)},
+        {"pipe_profile", table.concat(profile, " ")},
+        {"exchanger_temps", table.concat(temps, " ")},
+        {"exchangers_running", ("%d/6"):format(working)},
+      })
+    end
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false
