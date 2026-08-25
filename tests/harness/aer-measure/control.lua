@@ -699,6 +699,120 @@ experiments.gradient = {
   end,
 }
 
+-- Experiment 13 ------------------------------------------------------------
+-- Does feeding a run from two connections instead of one raise the far-end
+-- temperature? Observed in play: a doubled tap read a few degrees hotter.
+--
+-- If parallel entry genuinely helps, it is a design lever -- players can spend
+-- space near the reactor to buy reach. If it is only shortening the path, it is
+-- an artefact of routing and should be described as such.
+experiments.parallel_entry = {
+  setup = function(state)
+    state.cases = {}
+
+    -- Single tap: source, then a straight chain.
+    local single = {label = "single_tap", pipes = {}}
+    single.source = place("heat-interface", 1200, 500)
+    for j = 1, 20 do single.pipes[j] = place("heat-pipe", 1200 + j, 500) end
+    state.cases[#state.cases + 1] = single
+
+    -- Double tap: two pipes leave the source on different rows and rejoin,
+    -- then the same straight chain. Path length to the join is equal.
+    local double = {label = "double_tap", pipes = {}}
+    double.source = place("heat-interface", 1200, 540)
+    place("heat-pipe", 1201, 540)
+    place("heat-pipe", 1200, 541)
+    place("heat-pipe", 1201, 541)
+    for j = 2, 20 do double.pipes[j] = place("heat-pipe", 1200 + j, 540) end
+    double.pipes[1] = surface().find_entity("heat-pipe", {1201.5, 540.5})
+    state.cases[#state.cases + 1] = double
+
+    -- Wide trunk: the first four tiles are doubled, then a single chain.
+    local trunk = {label = "wide_trunk", pipes = {}}
+    trunk.source = place("heat-interface", 1200, 580)
+    for j = 1, 4 do place("heat-pipe", 1200 + j, 581) end
+    place("heat-pipe", 1200, 581)
+    for j = 1, 20 do trunk.pipes[j] = place("heat-pipe", 1200 + j, 580) end
+    state.cases[#state.cases + 1] = trunk
+  end,
+  sample = function(state, tick)
+    for _, case in ipairs(state.cases) do
+      if case.source.valid then case.source.temperature = 625 end
+    end
+
+    if tick ~= 17000 then return end
+    for _, case in ipairs(state.cases) do
+      local probe = case.pipes[20]
+      local mid = case.pipes[10]
+      emit("parallel_entry", {
+        {"layout", case.label},
+        {"tile_10", mid and mid.valid and ("%.2f"):format(mid.temperature) or "?"},
+        {"tile_20", probe and probe.valid and ("%.2f"):format(probe.temperature) or "?"},
+      })
+    end
+  end,
+}
+
+-- Experiment 14 ------------------------------------------------------------
+-- Experiment 13 found no benefit to a doubled tap, but it used a pinned source
+-- with no load, so nothing was ever throughput-limited. In play a doubled tap
+-- reads hotter, and higher pipe tiers read hotter still with gradient held
+-- constant -- which points at max_transfer rather than min_temperature_gradient.
+--
+-- This rig forces maximum flow: a source pinned hot at one end, a sink pinned
+-- cold at the other, so heat moves as fast as the run allows. If max_transfer
+-- is per connection, a doubled tap should now show a difference that
+-- experiment 13 could not see.
+experiments.throughput = {
+  setup = function(state)
+    state.cases = {}
+
+    local function build(label, pipe_name, y, taps)
+      local case = {label = label, pipes = {}, taps = taps}
+      case.source = place("heat-interface", 1300, y)
+      -- Extra parallel entries alongside the first two tiles.
+      for tap = 2, taps do
+        place(pipe_name, 1300, y + tap - 1)
+        place(pipe_name, 1301, y + tap - 1)
+      end
+      for j = 1, 20 do case.pipes[j] = place(pipe_name, 1300 + j, y) end
+      case.sink = place("heat-interface", 1321, y)
+      state.cases[#state.cases + 1] = case
+    end
+
+    build("tier1_1tap", "heat-pipe", 700, 1)
+    build("tier1_2tap", "heat-pipe", 740, 2)
+    build("tier2_1tap", "aer_heat-pipe-2", 780, 1)
+    build("tier3_1tap", "aer_heat-pipe-3", 820, 1)
+    build("tier4_1tap", "aer_heat-pipe-4", 860, 1)
+  end,
+  sample = function(state, tick)
+    for _, case in ipairs(state.cases) do
+      if case.source.valid then case.source.temperature = 625 end
+      -- Infinite sink: pinned cold, so the run carries all it can.
+      if case.sink.valid then case.sink.temperature = 15 end
+    end
+
+    if tick ~= 17000 then return end
+    for _, case in ipairs(state.cases) do
+      local profile = {}
+      for _, i in ipairs({1, 5, 10, 15, 20}) do
+        local pipe = case.pipes[i]
+        profile[#profile + 1] = ("%d:%s"):format(
+          i, pipe and pipe.valid and ("%.2f"):format(pipe.temperature) or "?")
+      end
+      local proto = case.pipes[1].prototype.heat_buffer_prototype
+      emit("throughput", {
+        {"case", case.label},
+        {"taps", case.taps},
+        {"max_transfer", proto and proto.max_transfer or "?"},
+        {"gradient", proto and proto.min_temperature_gradient or "?"},
+        {"profile", table.concat(profile, " ")},
+      })
+    end
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false

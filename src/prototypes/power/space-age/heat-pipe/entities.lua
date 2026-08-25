@@ -11,7 +11,7 @@ local heat_pipe_mk3 = heat_pipe_helpers.make_heat_pipe(
   "aer_heat-pipe-3",
   {
     minimum_glow_temperature = 650,
-    max_temperature = 1600,
+    max_temperature = constants.heat_tier_ceiling.mk3,
     specific_heat = "3MJ",
     max_transfer = "6GW",
   },
@@ -26,7 +26,7 @@ local heat_pipe_mk4 = heat_pipe_helpers.make_heat_pipe(
   "aer_heat-pipe-4",
   {
     minimum_glow_temperature = 850,
-    max_temperature = 2200,
+    max_temperature = constants.heat_tier_ceiling.mk4,
     specific_heat = "4MJ",
     max_transfer = "8GW",
   },

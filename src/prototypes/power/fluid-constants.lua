@@ -1,4 +1,4 @@
-return {
+local constants = {
   -- Every heat exchanger tier starts working at the same network temperature,
   -- rather than each tier raising its own floor. A higher tier will therefore
   -- run on a network built for a lower one -- it just produces that network's
@@ -18,6 +18,16 @@ return {
   -- that matches it, so optimal is 80 percent of the ceiling rather than the
   -- 50 percent it was before.
   reactor_optimal_fraction = 0.8,
+
+  -- The optimal temperature of each heat exchanger tier. Every other heat
+  -- temperature in the mod derives from these, so a tier cannot drift out of
+  -- step with its own reactor or pipe.
+  heat_tier_optimal = {
+    mk1 = 500,
+    mk2 = 650,
+    mk3 = 800,
+    mk4 = 1000,
+  },
 
   iron = {
     pipeline_extent = 24,
@@ -64,3 +74,14 @@ return {
     },
   },
 }
+
+-- Each tier's heat network ceiling, shared by the reactor that produces the heat
+-- and the pipe that carries it. Matching them is what makes a pipe tier a
+-- requirement rather than an option: a pipe is a node in the network like any
+-- other, so a lower-tier pipe caps the whole network at its own maximum.
+constants.heat_tier_ceiling = {}
+for tier, optimal in pairs(constants.heat_tier_optimal) do
+  constants.heat_tier_ceiling[tier] = optimal / constants.reactor_optimal_fraction
+end
+
+return constants

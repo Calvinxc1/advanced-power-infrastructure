@@ -9,6 +9,10 @@ base_heat_pipe.next_upgrade = "aer_heat-pipe-2"
 -- every tier inherits the gradient from here.
 base_heat_pipe.heat_buffer.min_temperature_gradient =
   constants.heat_pipe_temperature_gradient
+-- Capped at the tier it carries. A pipe is a node in the heat network, so a
+-- lower-tier pipe throttles the whole run to its own maximum -- which is what
+-- makes each reactor tier actually require its matching pipe.
+base_heat_pipe.heat_buffer.max_temperature = constants.heat_tier_ceiling.mk1
 
 -- Terminates the base-game ladder. prototypes/power/space-age/heat-pipe/entities.lua
 -- re-points this at mk3 when that tier exists, so the chain is correct in both
@@ -18,7 +22,7 @@ local heat_pipe_mk2 = heat_pipe_helpers.make_heat_pipe(
   "aer_heat-pipe-2",
   {
     minimum_glow_temperature = 500,
-    max_temperature = 1300,
+    max_temperature = constants.heat_tier_ceiling.mk2,
     specific_heat = "2MJ",
     max_transfer = "4GW",
   },
