@@ -655,15 +655,24 @@ local function megawatts(watts)
   return string.format("%.1f MW", watts / 1000000)
 end
 
-local function panel_rows(entity)
+-- Everything the panel reports about one reactor, as numbers.
+--
+-- Split out from the rows it renders so the figures can be read without a GUI.
+-- The panel cannot be tested headless -- GUI events need a player and there is
+-- no API to create one -- so the numbers are reachable through the remote
+-- interface below and measured there instead. What stays untested is the widget
+-- construction, not the arithmetic.
+--
+-- The bonus comes from this mod's own record rather than
+-- LuaEntity.neighbour_bonus, which is now zero on every tier: the engine pays
+-- nothing and control.lua pays everything. Falls back to computing it when a
+-- reactor somehow is not in the registry, so the panel can never quietly report
+-- a reactor as solo.
+local function reactor_output(entity)
   local prototype = entity.prototype
-  -- get_max_energy_usage is per tick; the tooltip figure is per second.
+  -- get_max_energy_usage is per tick; the reported figure is per second.
   local base = prototype.get_max_energy_usage() * 60
 
-  -- Read from this mod's own record rather than LuaEntity.neighbour_bonus,
-  -- which is now zero on every tier: the engine pays nothing and the bonus
-  -- above is paid here. Falls back to computing it if a reactor somehow is not
-  -- in the registry, so the panel can never quietly report a reactor as solo.
   local record = storage.reactors and storage.reactors[entity.unit_number]
   local bonus, connections, neighbours
   if record and record.bonus then
@@ -671,14 +680,39 @@ local function panel_rows(entity)
   else
     bonus, connections, neighbours = bonus_for(entity)
   end
+  bonus = bonus or 0
 
   return {
-    {"aer-reactor-gui.base", megawatts(base)},
-    {"aer-reactor-gui.neighbours", string.format("%d", neighbours or 0)},
-    {"aer-reactor-gui.connections", string.format("%d", connections or 0)},
-    {"aer-reactor-gui.bonus", string.format("+%d%%", math.floor((bonus or 0) * 100 + 0.5))},
-    {"aer-reactor-gui.current", megawatts(base * (1 + (bonus or 0)))},
-    {"aer-reactor-gui.temperature", string.format("%.0f °C", entity.temperature or 0)},
+    base_output = base,
+    neighbours = neighbours or 0,
+    connections = connections or 0,
+    bonus = bonus,
+    current_output = base * (1 + bonus),
+    temperature = entity.temperature or 0,
+  }
+end
+
+-- Read-only, and the same values the panel renders rather than a second
+-- calculation that could drift from it. The harness measures through this; any
+-- other mod wanting a reactor's real output can too.
+remote.add_interface("advanced-power-infrastructure", {
+  reactor_output = function(unit_number)
+    local record = storage.reactors and storage.reactors[unit_number]
+    local entity = record and record.entity
+    if not (entity and entity.valid) then return nil end
+    return reactor_output(entity)
+  end,
+})
+
+local function panel_rows(entity)
+  local output = reactor_output(entity)
+  return {
+    {"aer-reactor-gui.base", megawatts(output.base_output)},
+    {"aer-reactor-gui.neighbours", string.format("%d", output.neighbours)},
+    {"aer-reactor-gui.connections", string.format("%d", output.connections)},
+    {"aer-reactor-gui.bonus", string.format("+%d%%", math.floor(output.bonus * 100 + 0.5))},
+    {"aer-reactor-gui.current", megawatts(output.current_output)},
+    {"aer-reactor-gui.temperature", string.format("%.0f °C", output.temperature)},
   }
 end
 

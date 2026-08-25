@@ -42,6 +42,8 @@ behaviour and base-game prototypes, but adds no breaking migration.
     - Added the optimal heat temperature to every heat exchanger tooltip. The game reports the temperature an exchanger stops working at, but never the one it needs to reach full output.
     - Added carrying temperature, throughput, and heat loss per tile to every heat pipe tooltip.
     - Added a note to reactor tooltips stating what each adjacent reactor contributes.
+  Modding:
+    - Added a read-only remote interface, advanced-power-infrastructure, with reactor_output(unit_number). It returns a reactor's base output, adjacent reactor count, aligned heat connections, bonus, current output and core temperature -- the same figures its own panel shows, since the panel renders from this call rather than repeating the sum.
   Balancing:
     - Raised the number of heat exchangers and turbines a reactor block needs at every tier above steel, while shrinking the distance heat will travel. Higher tiers are now harder to lay out rather than simply larger: a 2x2 block needs about 48 exchangers at the steel tier and about 72 at mk4.
     - Held one heat exchanger to 1.8 steam turbines at every tier, so the ratio learned at the steel tier stays true all the way up.
