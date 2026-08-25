@@ -246,6 +246,8 @@ DISCORD_RELEASE_WEBHOOK_URL
 
 The announcement helper extracts only the `Version: {version}` section matching `src/info.json` from the Factorio-format changelog, then posts it to Discord through the configured webhook. The Discord message title is the mod name followed by the previous version, `->`, and the new version. The matching changelog section is posted underneath as a `text` code block without truncation.
 
+A section longer than one embed description is delivered as several messages rather than being cut. Discord allows 4096 characters per embed description and 6000 across all embeds in a single message, so a long section cannot be sent as multiple embeds in one message; it is split into one message per part instead, each titled with `(part/total)`. Splits fall on category boundaries so a message never begins mid-bullet, and messages are posted one at a time in order, since Discord does not guarantee ordering between concurrent webhook posts. Version 0.3.0 was the first release to need this, at 8213 characters against a 4084 character budget.
+
 ```sh
 ./scripts/post-discord-release.py --mod-name "$MOD_NAME" --mod-title "$mod_title" --previous-version "$PREVIOUS_MOD_VERSION" --version "$MOD_VERSION" --changelog-file src/changelog.txt
 ```
