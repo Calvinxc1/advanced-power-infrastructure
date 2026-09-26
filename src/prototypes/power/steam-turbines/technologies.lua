@@ -11,7 +11,7 @@ local function add_prerequisite(technology, prerequisite)
 end
 
 if optional_dependencies.has_advanced_fluid_infrastructure then
-  add_prerequisite(data.raw.technology["nuclear-power"], "afi_steel-pipe-infrastructure")
+  add_prerequisite(data.raw.technology["nuclear-power"], optional_dependencies.fluid_name("steel", "pipe-infrastructure"))
 end
 
 local steam_turbine_mk2 = util.table.deepcopy(data.raw.technology["nuclear-power"])

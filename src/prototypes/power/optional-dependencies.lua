@@ -52,9 +52,36 @@ function optional_dependencies.ingredients(...)
   return result
 end
 
+-- The prototype that fills an Advanced Fluid Infrastructure tier's role in this
+-- load. Another mod can supply a tier -- under Krastorio 2 the steel tier is
+-- K2's steel pipe, pump and fluid-handling technology, and the afi_ prototypes
+-- are never built -- so names go through its prototype_name. A release without
+-- prototype_name never substitutes, and the afi_ name stands.
+function optional_dependencies.fluid_name(tier, role)
+  local api = AdvancedFluidInfrastructure
+  if api and api.prototype_name then
+    return api.prototype_name(tier, role)
+  end
+  return "afi_" .. tier .. "-" .. role
+end
+
+local FLUID_TECHNOLOGY_ROLES = { "pipe-infrastructure", "pump-infrastructure" }
+
+-- A technology named by its afi_ name, resolved as fluid_name does. Names
+-- outside this mod's afi_ technologies come back unchanged.
+function optional_dependencies.fluid_technology(name)
+  for _, role in ipairs(FLUID_TECHNOLOGY_ROLES) do
+    local tier = string.match(name, "^afi_(.+)%-" .. string.gsub(role, "%-", "%%-") .. "$")
+    if tier then
+      return optional_dependencies.fluid_name(tier, role)
+    end
+  end
+  return name
+end
+
 function optional_dependencies.pipe_ingredients(tier, amount)
   if optional_dependencies.has_advanced_fluid_infrastructure then
-    return optional_dependencies.item("afi_" .. tier .. "-pipe", amount)
+    return optional_dependencies.item(optional_dependencies.fluid_name(tier, "pipe"), amount)
   end
 
   if tier == "steel" then
@@ -92,7 +119,7 @@ end
 
 function optional_dependencies.pump_ingredients(tier, amount)
   if optional_dependencies.has_advanced_fluid_infrastructure then
-    return optional_dependencies.item("afi_" .. tier .. "-pump", amount)
+    return optional_dependencies.item(optional_dependencies.fluid_name(tier, "pump"), amount)
   end
 
   if tier == "rubber-lined" then
@@ -208,9 +235,16 @@ function optional_dependencies.reinforced_unit_ingredients()
   )
 end
 
+-- The afi_ technologies in the Advanced Fluid Infrastructure list are resolved
+-- through fluid_technology. Under Krastorio 2 the steel pipe and pump
+-- technologies are both K2's fluid handling, so the result is deduplicated.
 function optional_dependencies.prerequisites(advanced_fluid_infrastructure, fallback)
   if optional_dependencies.has_advanced_fluid_infrastructure then
-    return advanced_fluid_infrastructure
+    local resolved = {}
+    for _, name in ipairs(advanced_fluid_infrastructure) do
+      table.insert(resolved, optional_dependencies.fluid_technology(name))
+    end
+    return optional_dependencies.concat(resolved)
   end
 
   return fallback
