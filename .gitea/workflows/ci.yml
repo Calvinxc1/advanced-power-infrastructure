@@ -172,8 +172,28 @@ jobs:
         env:
           FACTORIO_MOD_PORTAL_USERNAME: ${{ secrets.FACTORIO_MOD_PORTAL_USERNAME }}
           FACTORIO_MOD_PORTAL_TOKEN: ${{ secrets.FACTORIO_MOD_PORTAL_TOKEN }}
+          GITEA_SERVER_URL: ${{ github.server_url }}
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          FLUID_INFRASTRUCTURE_REPOSITORY: ${{ github.repository_owner }}/advanced-fluid-infrastructure
         # Spaced Out (Space Age on), Krastorio 2, Space Exploration, and SE
         # with K2 (Space Age off), each with the heat-chain invariant
-        # assertions. The declared-dependency step above skips these overhauls
-        # because they bring hard requirements of their own.
-        run: ./scripts/validate-overhauls.sh
+        # assertions, alone and with Advanced Fluid Infrastructure. The
+        # declared-dependency step above skips these overhauls because they
+        # bring hard requirements of their own. AFI is its dev branch rather
+        # than the Mod Portal release, so its unreleased overhaul integration
+        # is what this mod is checked against.
+        run: |
+          set -euo pipefail
+          temp_base="${RUNNER_TEMP:-/tmp}"
+          mkdir -p "$temp_base"
+          fluid_dir="$(mktemp -d "$temp_base/advanced-fluid-infrastructure.XXXXXX")"
+          trap 'rm -rf -- "$fluid_dir"' EXIT
+          git -C "$fluid_dir" init -q .
+          git -C "$fluid_dir" remote add origin "$GITEA_SERVER_URL/$FLUID_INFRASTRUCTURE_REPOSITORY.git"
+          GIT_CONFIG_COUNT=1 \
+          GIT_CONFIG_KEY_0=http.extraHeader \
+          GIT_CONFIG_VALUE_0="Authorization: token $GITEA_TOKEN" \
+            git -C "$fluid_dir" fetch --no-tags --depth=1 origin dev
+          git -C "$fluid_dir" checkout -q --force FETCH_HEAD
+          echo "Advanced Fluid Infrastructure dev at $(git -C "$fluid_dir" rev-parse --short HEAD)"
+          API_FLUID_INFRASTRUCTURE_DIR="$fluid_dir" ./scripts/validate-overhauls.sh

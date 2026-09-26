@@ -8,6 +8,13 @@
 #   Space Exploration        Space Age off  (SE declares ! space-age)
 #   SE with Krastorio 2      Space Age off
 #
+# Each is loaded a second time with Advanced Fluid Infrastructure, which hands
+# its steel tier to Krastorio 2's steel pipes and pumps: every pipe and pump
+# ingredient and prerequisite this mod names has to follow it. AFI comes from
+# the checkout at API_FLUID_INFRASTRUCTURE_DIR (its repository root) when that
+# is set, so its unreleased integration is exercised, and from the Mod Portal
+# otherwise.
+#
 # The declared-dependency validation cannot reach these: it skips optional
 # dependencies that bring hard requirements of their own. Here each load names
 # its overhaul and downloads that mod's hard requirements with it.
@@ -35,16 +42,27 @@ work_dir="$(mktemp -d "$temp_base/api-overhauls.XXXXXX")"
 trap 'rm -rf -- "$work_dir"' EXIT
 cache_dir="${API_OVERHAUL_CACHE_DIR:-$work_dir/cache}"
 
-# label | Space Age (on/off) | overhaul mods, space separated
+fluid_name="advanced-fluid-infrastructure"
+fluid_dir="${API_FLUID_INFRASTRUCTURE_DIR:-}"
+if [[ -n "$fluid_dir" && ! -f "$fluid_dir/src/info.json" ]]; then
+  echo "API_FLUID_INFRASTRUCTURE_DIR has no src/info.json: $fluid_dir" >&2
+  exit 1
+fi
+
+# label | Space Age (on/off) | overhaul mods, space separated | with AFI (yes/no)
 loads=(
-  "Krastorio 2 Spaced Out|on|Krastorio2-spaced-out"
-  "Krastorio 2|off|Krastorio2"
-  "Space Exploration|off|space-exploration"
-  "Space Exploration with Krastorio 2|off|space-exploration Krastorio2"
+  "Krastorio 2 Spaced Out|on|Krastorio2-spaced-out|no"
+  "Krastorio 2|off|Krastorio2|no"
+  "Space Exploration|off|space-exploration|no"
+  "Space Exploration with Krastorio 2|off|space-exploration Krastorio2|no"
+  "Krastorio 2 Spaced Out with AFI|on|Krastorio2-spaced-out|yes"
+  "Krastorio 2 with AFI|off|Krastorio2|yes"
+  "Space Exploration with AFI|off|space-exploration|yes"
+  "Space Exploration with Krastorio 2 and AFI|off|space-exploration Krastorio2|yes"
 )
 
 for load in "${loads[@]}"; do
-  IFS="|" read -r label space_age overhauls <<<"$load"
+  IFS="|" read -r label space_age overhauls with_fluid <<<"$load"
   echo
   echo "=== $label (Space Age $space_age)"
 
@@ -54,12 +72,22 @@ for load in "${loads[@]}"; do
   for overhaul in $overhauls; do
     mod_args+=(--mod "$overhaul")
   done
+  expected="$overhauls"
+  if [[ "$with_fluid" == "yes" ]]; then
+    expected="$expected $fluid_name"
+    if [[ -z "$fluid_dir" ]]; then
+      mod_args+=(--mod "$fluid_name")
+    fi
+  fi
   "$repo_root/scripts/download-factorio-mods.py" \
     --mods-dir "$mods_dir" \
     --cache-dir "$cache_dir" \
     "${mod_args[@]}"
 
   ln -s "$repo_root/src" "$mods_dir/$mod_name"
+  if [[ "$with_fluid" == "yes" && -n "$fluid_dir" ]]; then
+    ln -s "$fluid_dir/src" "$mods_dir/$fluid_name"
+  fi
   ln -s "$fixture_dir" "$mods_dir/$fixture_name"
 
   log_path="$work_dir/${label// /-}.log"
@@ -73,7 +101,7 @@ for load in "${loads[@]}"; do
 
   # A load that passes without the overhaul, the assertions, or this mod in
   # it proves nothing, so each must show up in the log.
-  for loaded in $overhauls "$fixture_name" "$mod_name"; do
+  for loaded in $expected "$fixture_name" "$mod_name"; do
     if ! grep -q "Checksum of $loaded:" "$log_path"; then
       echo "$label: $loaded did not load." >&2
       exit 1
