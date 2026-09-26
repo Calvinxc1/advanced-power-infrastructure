@@ -158,3 +158,46 @@ for _, megawatts in ipairs({50, 150, 2000}) do
   pipe.heat_buffer.max_transfer = megawatts .. "MW"
   data:extend({pipe})
 end
+
+-- Energy-scale probes. Krastorio 2 multiplies the nuclear chain's energy
+-- figures (a heat exchanger draws 50 MW, not 10) without touching temperature.
+-- Scaling every energy field of a heat chain by one factor -- draw, specific
+-- heat, max_transfer -- should leave its temperature profile unchanged, since
+-- heat moved per degree and heat drawn both grow by that factor. These
+-- variants test that, and show what happens when only part of it scales.
+local function scaled(megajoules, factor)
+  return ("%gMJ"):format(megajoules * factor)
+end
+
+local function scaled_pipe(name, specific_heat_factor, transfer)
+  local pipe = table.deepcopy(data.raw["heat-pipe"]["heat-pipe"])
+  pipe.name = name
+  pipe.next_upgrade = nil
+  pipe.minable = {mining_time = 0.1, result = "heat-pipe"}
+  pipe.heat_buffer.specific_heat = scaled(1, specific_heat_factor)
+  pipe.heat_buffer.max_transfer = transfer
+  data:extend({pipe})
+end
+
+local base_pipe = data.raw["heat-pipe"]["heat-pipe"]
+local base_transfer = tonumber((base_pipe.heat_buffer.max_transfer:gsub("MW", "")))
+scaled_pipe("aerm_scale-pipe-x5", 5, ("%gMW"):format(base_transfer * 5))
+scaled_pipe("aerm_scale-pipe-k2", 6, "6GW")
+
+local exchanger = table.deepcopy(data.raw.boiler["heat-exchanger"])
+exchanger.name = "aerm_scale-exchanger-x5"
+exchanger.next_upgrade = nil
+exchanger.minable = {mining_time = 0.1, result = "heat-exchanger"}
+exchanger.energy_consumption = "50MW"
+exchanger.energy_source.specific_heat = "5MJ"
+exchanger.energy_source.max_transfer = "10GW"
+data:extend({exchanger})
+
+-- A steam boiler control.lua has never heard of: vanilla's boiler under another
+-- name, standing in for an overhaul's own (Space Exploration's big heat
+-- exchanger, for one). See the foreign_steam_source experiment.
+local foreign = table.deepcopy(data.raw.boiler["boiler"])
+foreign.name = "aerm_foreign-boiler"
+foreign.next_upgrade = nil
+foreign.minable = {mining_time = 0.1, result = "boiler"}
+data:extend({foreign})

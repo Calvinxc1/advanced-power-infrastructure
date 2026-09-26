@@ -1828,6 +1828,123 @@ experiments.flow_cap = {
   end,
 }
 
+-- Foreign steam source -------------------------------------------------------
+-- The passthrough rewrites a whole steam segment to the volume-weighted mean
+-- of its sources, so every source on the segment has to be counted. Overhauls
+-- bring steam boilers this mod never lists by name. Does one sharing a header
+-- with an exchanger get its vote, or is its steam handed the exchanger's
+-- temperature?
+--
+-- The mixed_steam_blend rig again, with the boiler swapped for an identical
+-- boiler under an unknown name. Counted, it reads the same as that rig's
+-- mixed_temperature (394.2 before interval drift); ignored, 500.
+experiments.foreign_steam_source = {
+  setup = function(state)
+    state.boiler = place("aerm_foreign-boiler", 1000, 120)
+    state.exchanger = place("aer_heat-exchanger-2", 1020, 120)
+    state.boiler_pipe = attach_pipe(state.boiler, 2)
+    state.exchanger_pipe = attach_pipe(state.exchanger, 2)
+    state.joined = join_pipes(state.boiler_pipe, state.exchanger_pipe)
+    state.boiler.insert{name = "coal", count = 50}
+  end,
+  sample = function(state, tick)
+    for _, machine in ipairs({state.boiler, state.exchanger}) do
+      if machine and machine.valid then machine.insert_fluid{name = "water", amount = 200} end
+    end
+    if state.exchanger and state.exchanger.valid then state.exchanger.temperature = 500 end
+
+    if tick ~= 200 then return end
+    local pipe = state.exchanger_pipe
+    local fluid = pipe and pipe.valid and pipe.has_fluid_segment(1) and pipe.get_fluid_segment_fluid(1)
+    local boiler_segment = state.boiler_pipe and state.boiler_pipe.valid
+      and state.boiler_pipe.has_fluid_segment(1) and state.boiler_pipe.get_fluid_segment_id(1)
+    emit("foreign_steam_source", {
+      {"pipes_joined", state.joined},
+      {"one_segment", boiler_segment == (pipe and pipe.get_fluid_segment_id(1))},
+      {"boiler_status", status_name(state.boiler.status)},
+      {"exchanger_status", status_name(state.exchanger.status)},
+      {"mixed_temperature", fluid and ("%.1f"):format(fluid.temperature or -1) or "none"},
+    })
+  end,
+}
+
+-- Energy scale -------------------------------------------------------------
+-- Krastorio 2 multiplies the nuclear chain's energy figures without touching
+-- temperature. If every energy field of a heat chain scales by one factor --
+-- exchanger draw, pipe and exchanger specific heat, max_transfer -- is the
+-- temperature profile along a loaded run unchanged? That is what would let
+-- this mod scale its tiers to K2's energy while every reach figure in
+-- docs/nuclear-heat-guide.md stays true.
+--
+-- Four identical runs from a source pinned at the tier 1 ceiling: a 13 tile
+-- pipe with four exchangers along it. Steam is drained every tick so the
+-- exchangers draw continuously rather than backing up.
+experiments.energy_scale = {
+  setup = function(state)
+    state.cases = {}
+    local variants = {
+      {label = "x1", pipe = "heat-pipe", exchanger = "heat-exchanger"},
+      {label = "x5", pipe = "aerm_scale-pipe-x5", exchanger = "aerm_scale-exchanger-x5"},
+      {label = "x5_k2_pipe", pipe = "aerm_scale-pipe-k2", exchanger = "aerm_scale-exchanger-x5"},
+      {label = "x5_unscaled_pipe", pipe = "heat-pipe", exchanger = "aerm_scale-exchanger-x5"},
+    }
+    for index, variant in ipairs(variants) do
+      local y = 6000 + index * 20
+      local case = {label = variant.label, pipes = {}, exchangers = {}}
+      case.source = place("heat-interface", 6000, y)
+      for step = 1, 13 do
+        case.pipes[step] = place(variant.pipe, 6000 + step, y)
+      end
+      -- North-facing exchangers are three tiles wide with their heat
+      -- connection on the south face, so they sit above the run, spaced three
+      -- apart, the last one over the far end.
+      for slot = 1, 4 do
+        case.exchangers[slot] = place(variant.exchanger, 6000 + 1 + slot * 3, y - 1.5)
+      end
+      state.cases[#state.cases + 1] = case
+    end
+  end,
+  sample = function(state, tick)
+    for _, case in ipairs(state.cases) do
+      if case.source.valid then case.source.temperature = 625 end
+      for _, exchanger in ipairs(case.exchangers) do
+        if exchanger and exchanger.valid then
+          exchanger.insert_fluid{name = "water", amount = 1000}
+          -- 2.1: remove_fluid(index, amount) -- the API docs list the
+          -- parameters alphabetically, not in call order. An exchanger has two
+          -- storages; drain whichever holds the steam.
+          for index = 1, 2 do
+            local fluid = exchanger.get_fluid(index)
+            if fluid and fluid.name == "steam" then exchanger.remove_fluid(index, fluid.amount) end
+          end
+        end
+      end
+    end
+
+    if tick ~= 3600 and tick ~= 10800 and tick ~= 18000 then return end
+    for _, case in ipairs(state.cases) do
+      local profile, temps, running = {}, {}, 0
+      for _, i in ipairs({1, 4, 7, 10, 13}) do
+        local pipe = case.pipes[i]
+        profile[#profile + 1] = ("%d:%s"):format(
+          i, pipe and pipe.valid and ("%.1f"):format(pipe.temperature) or "?")
+      end
+      for slot, exchanger in ipairs(case.exchangers) do
+        local valid = exchanger and exchanger.valid
+        temps[#temps + 1] = ("%d:%s"):format(slot, valid and ("%.1f"):format(exchanger.temperature) or "?")
+        if valid and exchanger.status == defines.entity_status.working then running = running + 1 end
+      end
+      emit("energy_scale", {
+        {"seconds", tick / 60},
+        {"variant", case.label},
+        {"pipe_profile", table.concat(profile, " ")},
+        {"exchanger_temps", table.concat(temps, " ")},
+        {"working", ("%d/4"):format(running)},
+      })
+    end
+  end,
+}
+
 -- Driver -------------------------------------------------------------------
 local state = {}
 local started = false

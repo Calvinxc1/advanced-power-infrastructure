@@ -155,5 +155,102 @@ class DownloadTests(unittest.TestCase):
         self.assertEqual(query, {"username": ["user"], "token": ["token"]})
 
 
+class UnloadableOptionalDependencyTests(unittest.TestCase):
+    """An optional dependency that could not load in the run is skipped."""
+
+    def resolve(self, catalog: dict[str, object], dependencies: list[str]) -> list[str]:
+        resolver = MODULE.DependencyResolver("2.1", catalog.__getitem__)
+        return [item.name for item in resolver.resolve({"name": "local-mod", "dependencies": dependencies})]
+
+    def test_optional_with_unmet_hard_requirements_is_skipped(self) -> None:
+        # Krastorio 2 without flib and its assets aborts the load before this
+        # mod's own code runs.
+        catalog = {"overhaul": metadata("overhaul", [release("overhaul", "1.0.0", ["library", "~ assets"])])}
+        self.assertEqual(self.resolve(catalog, ["base", "? overhaul"]), [])
+
+    def test_optional_incompatible_with_a_builtin_is_skipped(self) -> None:
+        catalog = {"no-expansion": metadata("no-expansion", [release("no-expansion", "1.0.0", ["! space-age"])])}
+        self.assertEqual(self.resolve(catalog, ["base", "? no-expansion"]), [])
+
+    def test_requirement_declared_alongside_is_available(self) -> None:
+        catalog = {
+            "overhaul": metadata("overhaul", [release("overhaul", "1.0.0", ["library"])]),
+            "library": metadata("library", [release("library", "1.0.0")]),
+        }
+        self.assertEqual(self.resolve(catalog, ["? overhaul", "library"]), ["library", "overhaul"])
+
+    def test_required_dependency_is_never_skipped(self) -> None:
+        catalog = {"hard": metadata("hard", [release("hard", "1.0.0", ["unlisted"])])}
+        self.assertEqual(self.resolve(catalog, ["hard"]), ["hard"])
+
+
+class FollowRequirementsTests(unittest.TestCase):
+    def test_hard_requirements_are_followed_but_optional_ones_are_not(self) -> None:
+        # "shim" is absent from the catalog: following it would raise KeyError.
+        catalog = {
+            "overhaul": metadata("overhaul", [release("overhaul", "1.0.0", ["library", "~ assets", "? shim"])]),
+            "library": metadata("library", [release("library", "1.0.0", ["base >= 2.1.0"])]),
+            "assets": metadata("assets", [release("assets", "1.0.0")]),
+        }
+        resolver = MODULE.DependencyResolver("2.1", catalog.__getitem__, follow_requirements=True)
+        resolved = resolver.resolve({"name": "cli", "dependencies": ["overhaul"]})
+        self.assertEqual([item.name for item in resolved], ["assets", "library", "overhaul"])
+
+
+class RunningVersionSelectionTests(unittest.TestCase):
+    RELEASES = [
+        release("overhaul", "2.1.2", ["base >= 2.1.0"]),
+        release("overhaul", "2.1.3", ["base >= 2.1.20"]),
+    ]
+
+    def select(self, running: str | None) -> str:
+        return MODULE.select_release("overhaul", metadata("overhaul", self.RELEASES), "2.1", [], running).version
+
+    def test_newest_when_the_installed_factorio_loads_it(self) -> None:
+        self.assertEqual(self.select("2.1.20"), "2.1.3")
+
+    def test_walks_back_when_the_newest_needs_a_newer_base(self) -> None:
+        # The CI image at 2.1.9 cannot load Krastorio2 2.1.3.
+        self.assertEqual(self.select("2.1.9"), "2.1.2")
+
+    def test_unknown_factorio_version_takes_the_newest(self) -> None:
+        self.assertEqual(self.select(None), "2.1.3")
+
+    def test_nothing_loadable_is_an_error(self) -> None:
+        with self.assertRaises(MODULE.DownloadError):
+            self.select("2.0.0")
+
+
+class CacheTests(unittest.TestCase):
+    def test_cached_archive_is_linked_without_downloading(self) -> None:
+        payload = b"cached archive"
+        cached_release = MODULE.Release(
+            name="dependency",
+            version="1.0.0",
+            file_name="dependency_1.0.0.zip",
+            download_url="/download/dependency_1.0.0.zip",
+            sha1=hashlib.sha1(payload).hexdigest(),
+            dependencies=(),
+        )
+        original_urlopen = MODULE.urlopen
+        try:
+            def fail_urlopen(*_: object, **__: object) -> None:
+                raise AssertionError("a cached archive must not be downloaded again")
+
+            MODULE.urlopen = fail_urlopen
+            with tempfile.TemporaryDirectory() as directory:
+                cache_dir, mods_dir = Path(directory) / "cache", Path(directory) / "mods"
+                cache_dir.mkdir()
+                mods_dir.mkdir()
+                (cache_dir / cached_release.file_name).write_bytes(payload)
+                destination = MODULE.ModPortalClient("user", "token").download(
+                    cached_release, mods_dir, cache_dir
+                )
+                self.assertTrue(destination.is_symlink())
+                self.assertEqual(destination.read_bytes(), payload)
+        finally:
+            MODULE.urlopen = original_urlopen
+
+
 if __name__ == "__main__":
     unittest.main()

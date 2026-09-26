@@ -7,6 +7,11 @@
 # path only ever exercises the Space Age branch. This script builds an isolated
 # mods directory containing nothing but this mod and pins a mod-list.json that
 # disables the expansion, so the base-game branch is covered too.
+#
+# Set API_BASE_GAME_EXTRA_MODS_DIR to a directory of already-downloaded mods to
+# include them in the run with Space Age still disabled. Overhauls that exclude
+# Space Age (Space Exploration) or are validated without it (Krastorio 2) are
+# loaded this way by scripts/validate-overhauls.sh.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -54,11 +59,30 @@ mkdir -p "$mods_dir" "$config_dir" "$write_dir"
 
 ln -s "$repo_root/src" "$mods_dir/$mod_name"
 
-python3 - "$mods_dir/mod-list.json" "$mod_name" <<'PY'
-import json
-import sys
+extra_mods_dir="${API_BASE_GAME_EXTRA_MODS_DIR:-}"
+if [[ -n "$extra_mods_dir" ]]; then
+  if [[ ! -d "$extra_mods_dir" ]]; then
+    echo "API_BASE_GAME_EXTRA_MODS_DIR is not a directory: $extra_mods_dir" >&2
+    exit 1
+  fi
+  for entry in "$extra_mods_dir"/*; do
+    [[ -e "$entry" ]] || continue
+    base="$(basename "$entry")"
+    [[ "$base" == "mod-list.json" || "$base" == "mod-settings.dat" ]] && continue
+    # Skip any Mod Portal copy of this mod so Factorio does not see two
+    # releases of it alongside the checkout under test.
+    [[ "$base" == "$mod_name" || "$base" == "${mod_name}_"* ]] && continue
+    ln -s "$(readlink -f "$entry")" "$mods_dir/$base"
+  done
+fi
 
-path, mod_name = sys.argv[1], sys.argv[2]
+python3 - "$mods_dir" "$mod_name" <<'PY'
+import json
+import re
+import sys
+from pathlib import Path
+
+mods_dir, mod_name = Path(sys.argv[1]), sys.argv[2]
 mods = [
     {"name": "base", "enabled": True},
     {"name": "elevated-rails", "enabled": False},
@@ -66,7 +90,20 @@ mods = [
     {"name": "space-age", "enabled": False},
     {"name": mod_name, "enabled": True},
 ]
-with open(path, "w", encoding="utf-8") as handle:
+
+# Anything linked in from API_BASE_GAME_EXTRA_MODS_DIR has to be listed
+# explicitly: Factorio only auto-enables what it finds when no mod-list.json
+# pins the set, and this script exists precisely to pin it.
+known = {entry["name"] for entry in mods}
+for entry in sorted(mods_dir.iterdir()):
+    if entry.name in ("mod-list.json", "mod-settings.dat"):
+        continue
+    name = re.sub(r"_\d[\d.]*$", "", entry.name.removesuffix(".zip"))
+    if name and name not in known:
+        known.add(name)
+        mods.append({"name": name, "enabled": True})
+
+with open(mods_dir / "mod-list.json", "w", encoding="utf-8") as handle:
     json.dump({"mods": mods}, handle, indent=2)
 PY
 

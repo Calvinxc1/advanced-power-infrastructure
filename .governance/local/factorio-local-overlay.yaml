@@ -13,6 +13,9 @@ optional_dependencies:
   - advanced-fluid-infrastructure >= 0.0.1
   - advanced-energy-grid >= 0.0.1
   - RampantArsenalFork
+  - Krastorio2
+  - Krastorio2-spaced-out
+  - space-exploration
 upstream_or_fork_source: DanielWinks/Factorio-Advanced-Electric
 scope_boundaries:
   - Owns expanded power generation and storage progression for Factorio 2.1 and Space Age.
@@ -28,6 +31,9 @@ validation_available:
   format: false
   factorio_load: true
 workspace_specific_rules:
+  - "Krastorio 2 (? Krastorio2, and Spaced Out through it) and Space Exploration (? space-exploration) are optional dependencies (Jason, 2026-09-26). Under an overhaul energy follows the overhaul and temperature stays this mod's: src/prototypes/power/energy-scale.lua (data-final-fixes, after SE's own final fixes) rebuilds every tier from the figures src/prototypes/power/energy-reference.lua records at the end of the data stage, scaling each family by whatever the overhaul made of its first rung (K2: 250 MW reactor, 50 MW exchanger, 10 MW turbine, 1.5 MW boiler, 0.75 MW engine, 100 kW solar panel, 10 MJ accumulator) and setting temperatures, ceilings, gradients and neighbour_bonus back. Heat buffers (specific heat, max_transfer) scale with exchanger draw, which the energy_scale harness experiment showed leaves a loaded run's temperature profile unchanged (within 0.6 degrees at 5x, also with K2 loaded). In a load with no overhaul every factor is 1 and nothing changes."
+  - "Space Exploration's high-temperature chain (antimatter reactor, big heat exchanger, naquium heat pipe) stays SE's own and is not linked into these ladders (Jason, 2026-09-26). SE's condenser turbine mirrors the vanilla steam turbine by SE's own design in space-exploration-postprocess, so it inherits the mk1 turbine's figures."
+  - "control.lua counts every steam-producing boiler prototype as a fixed-temperature source when rewriting a segment, not only this mod's, so an overhaul's boiler sharing a header with this mod's exchangers keeps its vote (foreign_steam_source harness experiment). Every aer_ technology waits on whatever unlocks its recipes' ingredients (src/prototypes/power/technology-fixes.lua). scripts/validate-overhauls.sh, run in CI, loads the mod with K2 Spaced Out, K2, SE and SE with K2 and the tests/fixtures/api-energy-scale-test invariants."
   - Preserve the repo-local aer_ custom prototype ID namespace unless an intentional migration plan is part of the task.
   - Keep lifecycle entrypoints shallow in src/data.lua, src/data-updates.lua, and src/data-final-fixes.lua.
   - Keep power prototype logic organized under src/prototypes/power by system.
