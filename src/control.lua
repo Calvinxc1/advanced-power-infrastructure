@@ -161,6 +161,35 @@ local PRODUCERS = {
   ["aer_holmium-reinforced-boiler"] = "fixed",
 }
 
+-- Any other boiler that makes steam -- an overhaul's, such as Space
+-- Exploration's 5000 degree big heat exchanger -- is a fixed source too. The
+-- engine pins its steam to its target like any fuel boiler, so it drives no
+-- rewrite; but it can share a header with this mod's exchangers, and a
+-- segment's mean has to count every source feeding it, or the rewrite would
+-- hand an exchanger's temperature to steam that source made. Resolved from the
+-- prototype once per name.
+local producer_kinds = {}
+
+local function producer_kind(name)
+  local kind = producer_kinds[name]
+  if kind ~= nil then return kind or nil end
+
+  kind = PRODUCERS[name]
+  if not kind then
+    local prototype = prototypes.entity[name]
+    if prototype and prototype.type == "boiler" then
+      for _, box in pairs(prototype.fluidbox_prototypes) do
+        if box.production_type == "output" and box.filter and box.filter.name == "steam" then
+          kind = "fixed"
+          break
+        end
+      end
+    end
+  end
+  producer_kinds[name] = kind or false
+  return kind
+end
+
 -- prototype name -> {follows_heat, min_working, target, rate}, resolved once per
 -- prototype rather than per entity per pass. false marks a prototype that
 -- cannot be resolved, so the work is not repeated for it either.
@@ -195,7 +224,7 @@ local function spec_for(entity)
   local buffer = prototype.heat_buffer_prototype
 
   cached = {
-    follows_heat = PRODUCERS[name] == "follows-heat",
+    follows_heat = producer_kind(name) == "follows-heat",
     min_working = buffer and buffer.min_working_temperature or 0,
     target = target,
     -- Units of steam per tick. Only the ratio between sources on one segment is
@@ -244,7 +273,7 @@ local function producing_temperature(entity, spec)
 end
 
 local function track(entity)
-  if entity and entity.valid and PRODUCERS[entity.name] then
+  if entity and entity.valid and producer_kind(entity.name) then
     storage.producers[entity.unit_number] = entity
   end
 end
@@ -268,12 +297,13 @@ local function rescan()
   -- ever present in a save from a development build of this branch.
   storage.exchangers = nil
 
-  -- Only ask for prototypes this load actually has. The mk4 exchanger and the
-  -- holmium boiler are Space Age only, and find_entities_filtered errors on an
-  -- unknown name rather than ignoring it.
+  -- Every steam boiler this load has, this mod's and any other's. Asking by
+  -- type rather than listing names also keeps Space Age only tiers out of the
+  -- filter in a base-game load, where find_entities_filtered would error on
+  -- an unknown name.
   local names = {}
-  for name in pairs(PRODUCERS) do
-    if prototypes.entity[name] then names[#names + 1] = name end
+  for name in pairs(prototypes.get_entity_filtered{{filter = "type", type = "boiler"}}) do
+    if producer_kind(name) then names[#names + 1] = name end
   end
   if #names == 0 then return end
 

@@ -22,6 +22,14 @@ The surviving reinforced tiers substitute refined concrete and low-density struc
 - Optional integration with Advanced Fluid Infrastructure for power-machine pipeline extent descriptions.
 - Optional companion scope split with Advanced Energy Grid for electric grid infrastructure.
 
+### Krastorio 2 and Space Exploration
+
+Krastorio 2 (including Spaced Out) and Space Exploration are supported.
+
+- Under Krastorio 2 energy follows Krastorio 2 and temperature stays this mod's. Krastorio 2's 250 MW reactor, 50 MW heat exchanger, 10 MW turbine, 1.5 MW boiler and 0.75 MW steam engine are the first rung of each ladder, and every tier keeps its multiplier over that rung: reactors 250, 500, 750 and 1000 MW, five turbines per exchanger at every tier. Heat exchangers keep their 500, 650, 800 and 1000 degree optima and 300 degree working floor, and the reactor and heat pipe ceilings are unchanged. Heat pipes and reactors scale their heat capacity and throughput with the exchangers, which leaves every reach figure in [docs/nuclear-heat-guide.md](docs/nuclear-heat-guide.md) unchanged. The Space Age solar panel and accumulator tiers keep their 4x and 8x over Krastorio 2's 100 kW panel and 10 MJ accumulator.
+- Space Exploration's high-temperature chain -- antimatter reactor, 5000 degree big heat exchanger, naquium heat pipe -- stays Space Exploration's own, above these ladders.
+- `./scripts/validate-overhauls.sh` loads the mod with each overhaul and checks the heat-chain invariants; CI runs it.
+
 ## Scope
 
 This mod owns power generation and storage: boilers, steam engines, steam turbines, heat exchangers, heat pipes, nuclear reactors, fusion power, solar panels, accumulators, recipes, technologies, and related balance data.

@@ -8,6 +8,8 @@ import hashlib
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 import tempfile
 from collections import defaultdict
@@ -37,6 +39,7 @@ class Dependency:
     name: str
     operator: str | None = None
     version: str | None = None
+    optional: bool = False
 
 
 @dataclass(frozen=True)
@@ -68,7 +71,76 @@ def parse_dependency(value: str) -> Dependency | None:
         name=match.group("name"),
         operator=match.group("operator"),
         version=match.group("version"),
+        optional=match.group("prefix") in {"?", "(?)"},
     )
+
+
+def required_dependencies(release: Release) -> list[Dependency]:
+    """The mods a release cannot load without: required and `~` declarations."""
+
+    required = []
+    for declaration in release.dependencies:
+        match = DEPENDENCY_PATTERN.fullmatch(declaration)
+        if not match or match.group("prefix") not in {None, "~"}:
+            continue
+        required.append(
+            Dependency(
+                name=match.group("name"),
+                operator=match.group("operator"),
+                version=match.group("version"),
+            )
+        )
+    return required
+
+
+def incompatible_builtin(release: Release) -> str | None:
+    """The built-in mod a release declares itself incompatible with, if any.
+
+    Validation always enables the built-ins it can see, so Space Exploration,
+    which declares `! space-age`, can never load in a Space Age run.
+    """
+
+    for declaration in release.dependencies:
+        match = DEPENDENCY_PATTERN.fullmatch(declaration)
+        if match and match.group("prefix") == "!" and match.group("name") in BUILTIN_MODS:
+            return match.group("name")
+    return None
+
+
+def running_factorio_version() -> str | None:
+    """The version of the Factorio these downloads are for.
+
+    FACTORIO_VERSION when set (the CI image exports it), else the binary's own
+    report. None when neither is available.
+    """
+
+    declared = os.environ.get("FACTORIO_VERSION")
+    if declared:
+        return declared.strip()
+
+    binary = os.environ.get("FACTORIO_BIN") or shutil.which("factorio")
+    if not binary or not os.access(binary, os.X_OK):
+        return None
+    try:
+        output = subprocess.run(
+            [binary, "--version"], capture_output=True, text=True, timeout=60, check=True
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+    match = re.search(r"Version:\s*([0-9][0-9.]*)", output)
+    return match.group(1) if match else None
+
+
+def loads_on(release: Release, factorio_version: str | None) -> bool:
+    """Whether the running Factorio satisfies the release's `base` constraint."""
+
+    if factorio_version is None:
+        return True
+    for declaration in release.dependencies:
+        dependency = parse_dependency(declaration)
+        if dependency is not None and dependency.name == "base":
+            return satisfies(factorio_version, dependency)
+    return True
 
 
 def version_parts(value: str) -> tuple[int, ...]:
@@ -128,6 +200,7 @@ def select_release(
     metadata: Mapping[str, object],
     factorio_version: str,
     constraints: Iterable[Dependency],
+    running_version: str | None = None,
 ) -> Release:
     releases = metadata.get("releases")
     if not isinstance(releases, list):
@@ -152,7 +225,25 @@ def select_release(
             f"No Factorio {factorio_version} release of {name!r} satisfies {requested}"
         )
 
-    return max(compatible, key=lambda release: version_parts(release.version))
+    # A release's factorio_version names a series ("2.1"), not a patch level,
+    # so the newest can still need a newer base than the Factorio installed --
+    # which then refuses the whole mod list. Walk back to one that loads, and
+    # say so, so image drift stays visible.
+    compatible.sort(key=lambda release: version_parts(release.version), reverse=True)
+    newest = compatible[0]
+    for candidate in compatible:
+        if loads_on(candidate, running_version):
+            if candidate is not newest:
+                print(
+                    f"{name}: newest {factorio_version} release {newest.version} does not load on "
+                    f"Factorio {running_version}; using {candidate.version} instead. "
+                    "Update the CI image to test against the current release.",
+                    file=sys.stderr,
+                )
+            return candidate
+    raise DownloadError(
+        f"No Factorio {factorio_version} release of {name!r} loads on Factorio {running_version}"
+    )
 
 
 class DependencyResolver:
@@ -161,10 +252,14 @@ class DependencyResolver:
         factorio_version: str,
         fetch_metadata: Callable[[str], Mapping[str, object]],
         builtin_mods: frozenset[str] = BUILTIN_MODS,
+        follow_requirements: bool = False,
+        running_version: str | None = None,
     ) -> None:
         self.factorio_version = factorio_version
         self.fetch_metadata = fetch_metadata
         self.builtin_mods = builtin_mods
+        self.follow_requirements = follow_requirements
+        self.running_version = running_version
         self.constraints: dict[str, list[Dependency]] = defaultdict(list)
         self.releases: dict[str, Release] = {}
 
@@ -182,24 +277,67 @@ class DependencyResolver:
         # in, since that can reach arbitrarily far into the Mod Portal graph
         # (e.g. a hidden-optional compatibility shim for a mod nobody has,
         # several hops away, with no Factorio-version-compatible release).
-        for declaration in dependencies:
-            dependency = parse_dependency(declaration)
+        #
+        # With follow_requirements, each dependency's own hard requirements
+        # are resolved as well, recursively; that is how an overhaul such as
+        # Krastorio 2 is brought in with the mods it cannot load without.
+        #
+        # Without it, an optional dependency that could not load in this run
+        # is skipped rather than downloaded: one with hard requirements the
+        # closure does not include (it would abort the load), or one
+        # incompatible with a built-in the run enables. Declaring it is a
+        # load-order statement about real games, not a claim it can be
+        # exercised here.
+        parsed = [parse_dependency(declaration) for declaration in dependencies]
+        declared = {dependency.name for dependency in parsed if dependency is not None}
+        available = set(self.builtin_mods) | declared | {name}
+        for dependency in parsed:
             if dependency is None or dependency.name in self.builtin_mods:
                 continue
             self.constraints[dependency.name].append(dependency)
+            if dependency.optional and not self.follow_requirements:
+                release = self._select(dependency.name)
+                reason = self._unloadable_reason(release, available)
+                if reason is not None:
+                    print(f"Skipped optional dependency {dependency.name}: it {reason}")
+                    continue
             self._resolve_mod(dependency.name)
 
         return [self.releases[name] for name in sorted(self.releases)]
 
-    def _resolve_mod(self, name: str) -> None:
-        metadata = self.fetch_metadata(name)
-        release = select_release(
+    def _select(self, name: str) -> Release:
+        return select_release(
             name,
-            metadata,
+            self.fetch_metadata(name),
             self.factorio_version,
             self.constraints[name],
+            self.running_version,
         )
+
+    def _unloadable_reason(self, release: Release, available: set[str]) -> str | None:
+        builtin = incompatible_builtin(release)
+        if builtin is not None:
+            return f"is incompatible with {builtin}"
+        missing = sorted(
+            dependency.name
+            for dependency in required_dependencies(release)
+            if dependency.name not in available
+        )
+        if missing:
+            return "requires " + ", ".join(missing) + ", which this closure does not download"
+        return None
+
+    def _resolve_mod(self, name: str) -> None:
+        if name in self.releases:
+            return
+        release = self._select(name)
         self.releases[name] = release
+        if self.follow_requirements:
+            for dependency in required_dependencies(release):
+                if dependency.name in self.builtin_mods:
+                    continue
+                self.constraints[dependency.name].append(dependency)
+                self._resolve_mod(dependency.name)
 
 
 class ModPortalClient:
@@ -221,7 +359,19 @@ class ModPortalClient:
             raise DownloadError(f"Mod Portal metadata for {name!r} is not an object")
         return result
 
-    def download(self, release: Release, mods_dir: Path) -> Path:
+    def download(self, release: Release, mods_dir: Path, cache_dir: Path | None = None) -> Path:
+        # With a cache, the archive is fetched into (or found in) the cache
+        # and linked into mods_dir, so mods directories built from
+        # overlapping closures share one download of each release.
+        if cache_dir is not None and cache_dir.resolve() != mods_dir.resolve():
+            cached = cache_dir / release.file_name
+            if not (cached.exists() and file_sha1(cached) == release.sha1.lower()):
+                self.download(release, cache_dir)
+            destination = mods_dir / release.file_name
+            if not destination.exists():
+                destination.symlink_to(cached.resolve())
+            return destination
+
         parsed = urlsplit(release.download_url)
         if parsed.scheme or parsed.netloc or not parsed.path.startswith("/download"):
             raise DownloadError(f"Mod Portal returned an unsafe download path for {release.name!r}")
@@ -257,10 +407,30 @@ class ModPortalClient:
         return destination
 
 
+def file_sha1(path: Path) -> str:
+    digest = hashlib.sha1()
+    with path.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest().lower()
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mods-dir", required=True, type=Path)
-    parser.add_argument("--from-info", required=True, type=Path)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--from-info", type=Path)
+    source.add_argument(
+        "--mod",
+        action="append",
+        help="Mod Portal name to download with its hard requirements; repeatable.",
+    )
+    parser.add_argument("--factorio-version", default="2.1", help="Series for --mod (default 2.1).")
+    parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        help="Keep archives here and link them into --mods-dir, reusing any already present.",
+    )
     parser.add_argument("--username", default=os.environ.get("FACTORIO_MOD_PORTAL_USERNAME"))
     parser.add_argument("--token", default=os.environ.get("FACTORIO_MOD_PORTAL_TOKEN"))
     return parser.parse_args()
@@ -273,20 +443,32 @@ def main() -> int:
             "FACTORIO_MOD_PORTAL_USERNAME and FACTORIO_MOD_PORTAL_TOKEN are required"
         )
 
-    try:
-        root_info = json.loads(args.from_info.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
-        raise DownloadError(f"Cannot read {args.from_info}: {error}") from error
-    if not isinstance(root_info, Mapping):
-        raise DownloadError(f"{args.from_info} must contain a JSON object")
+    if args.mod:
+        root_info = {
+            "name": "overhaul-validation",
+            "factorio_version": args.factorio_version,
+            "dependencies": args.mod,
+        }
+    else:
+        try:
+            root_info = json.loads(args.from_info.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise DownloadError(f"Cannot read {args.from_info}: {error}") from error
+        if not isinstance(root_info, Mapping):
+            raise DownloadError(f"{args.from_info} must contain a JSON object")
 
     args.mods_dir.mkdir(parents=True, exist_ok=True)
+    if args.cache_dir:
+        args.cache_dir.mkdir(parents=True, exist_ok=True)
     client = ModPortalClient(args.username, args.token)
     releases = DependencyResolver(
-        str(root_info.get("factorio_version", "")), client.fetch_metadata
+        str(root_info.get("factorio_version", "")),
+        client.fetch_metadata,
+        follow_requirements=bool(args.mod),
+        running_version=running_factorio_version(),
     ).resolve(root_info)
     for release in releases:
-        client.download(release, args.mods_dir)
+        client.download(release, args.mods_dir, args.cache_dir)
         print(f"Downloaded {release.name} {release.version}")
     return 0
 

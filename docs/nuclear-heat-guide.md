@@ -24,6 +24,14 @@ This is the reference for what changed and how to build around it.
 If you only read one thing: **keep exchangers close to the reactor, and split
 them across several short runs rather than one long one.**
 
+## With Krastorio 2
+
+Krastorio 2 runs nuclear at five times the energy: a 50 MW steel exchanger, a
+250 MW reactor. Every temperature and every distance in this guide is the same
+there, because heat pipes and reactors carry five times the heat as well, which
+leaves the temperature along a run unchanged. Only the power figures grow, and a
+Krastorio 2 exchanger feeds five turbines instead of 1.8.
+
 ## Why your steam might be cold
 
 A heat exchanger has three temperatures that matter.

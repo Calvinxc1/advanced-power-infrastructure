@@ -1,0 +1,10 @@
+{
+  "name": "api-energy-scale-test",
+  "version": "0.0.1",
+  "title": "API heat-chain invariant assertions",
+  "author": "Advanced Power Infrastructure",
+  "factorio_version": "2.1",
+  "dependencies": [
+    "advanced-power-infrastructure >= 0.3.0"
+  ]
+}
