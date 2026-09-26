@@ -172,9 +172,10 @@ jobs:
         env:
           FACTORIO_MOD_PORTAL_USERNAME: ${{ secrets.FACTORIO_MOD_PORTAL_USERNAME }}
           FACTORIO_MOD_PORTAL_TOKEN: ${{ secrets.FACTORIO_MOD_PORTAL_TOKEN }}
-          GITEA_SERVER_URL: ${{ github.server_url }}
-          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
-          FLUID_INFRASTRUCTURE_REPOSITORY: ${{ github.repository_owner }}/advanced-fluid-infrastructure
+          # The public GitHub mirror of Advanced Fluid Infrastructure. The job's
+          # GITEA_TOKEN reads only this repository, and the mirror carries
+          # every branch, so no credential is needed.
+          FLUID_INFRASTRUCTURE_URL: https://github.com/Calvinxc1/advanced-fluid-infrastructure.git
         # Spaced Out (Space Age on), Krastorio 2, Space Exploration, and SE
         # with K2 (Space Age off), each with the heat-chain invariant
         # assertions, alone and with Advanced Fluid Infrastructure. The
@@ -189,11 +190,8 @@ jobs:
           fluid_dir="$(mktemp -d "$temp_base/advanced-fluid-infrastructure.XXXXXX")"
           trap 'rm -rf -- "$fluid_dir"' EXIT
           git -C "$fluid_dir" init -q .
-          git -C "$fluid_dir" remote add origin "$GITEA_SERVER_URL/$FLUID_INFRASTRUCTURE_REPOSITORY.git"
-          GIT_CONFIG_COUNT=1 \
-          GIT_CONFIG_KEY_0=http.extraHeader \
-          GIT_CONFIG_VALUE_0="Authorization: token $GITEA_TOKEN" \
-            git -C "$fluid_dir" fetch --no-tags --depth=1 origin dev
+          git -C "$fluid_dir" remote add origin "$FLUID_INFRASTRUCTURE_URL"
+          GIT_TERMINAL_PROMPT=0 git -C "$fluid_dir" fetch --no-tags --depth=1 origin dev
           git -C "$fluid_dir" checkout -q --force FETCH_HEAD
           echo "Advanced Fluid Infrastructure dev at $(git -C "$fluid_dir" rev-parse --short HEAD)"
           API_FLUID_INFRASTRUCTURE_DIR="$fluid_dir" ./scripts/validate-overhauls.sh
