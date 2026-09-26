@@ -93,19 +93,29 @@ local function missing_unlock(technology_name, item_name)
 end
 
 -- Each of this mod's technologies waits on whatever unlocks its recipes'
--- ingredients, unless it already does. In every load the steel boiler is built
--- from a steel furnace, which advanced material processing unlocks; under
--- Space Age the reinforced tiers take carbon fiber; Space Exploration moves
--- boilers, steam engines and electronic circuits onto technologies of its own.
+-- ingredients and the science packs it bills, unless it already does. In every
+-- load the steel boiler is built from a steel furnace, which advanced material
+-- processing unlocks; under Space Age the reinforced tiers take carbon fiber
+-- and the mk4 reactor bills cryogenic science, which lithium processing does
+-- not come after; Space Exploration moves boilers, steam engines and
+-- electronic circuits onto technologies of its own. A pack nothing crafts, such
+-- as base-game space science from a rocket launch, is left alone.
 for technology_name, technology in pairs(data.raw.technology) do
   if string.sub(technology_name, 1, 4) == "aer_" then
+    local needed = {}
     for _, recipe_name in pairs(unlocks(technology_name)) do
       local recipe = data.raw.recipe[recipe_name]
       for _, ingredient in pairs(recipe and recipe.ingredients or {}) do
-        local unlocker = missing_unlock(technology_name, ingredient.name)
-        if unlocker then
-          add_prerequisite(technology, unlocker)
-        end
+        table.insert(needed, ingredient.name)
+      end
+    end
+    for _, ingredient in pairs(technology.unit and technology.unit.ingredients or {}) do
+      table.insert(needed, ingredient[1] or ingredient.name)
+    end
+    for _, item_name in pairs(needed) do
+      local unlocker = missing_unlock(technology_name, item_name)
+      if unlocker then
+        add_prerequisite(technology, unlocker)
       end
     end
   end

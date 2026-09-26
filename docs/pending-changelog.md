@@ -36,5 +36,6 @@ do differently. Internal implementation detail belongs in commit messages.
   Bugfixes:
     - The steel boiler technology now requires advanced material processing, which unlocks the steel furnace it is built from.
     - With Space Age, the reinforced steam turbine and mk3 heat exchanger technologies now require carbon fiber, which their recipes use.
+    - With Space Age, the mk4 nuclear reactor technology now requires cryogenic science, which its research costs.
     - Steam made by another mod's boiler on the same header as this mod's heat exchangers is no longer rewritten to the exchangers' temperature.
 ```
